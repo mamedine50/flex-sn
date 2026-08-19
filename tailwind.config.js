@@ -38,9 +38,12 @@ module.exports = {
       borderRadius: Object.fromEntries(
         Object.entries(radius).map(([nom, v]) => [nom, `${v}px`]),
       ),
-      minHeight: Object.fromEntries(
-        Object.entries(touch).map(([nom, v]) => [nom, `${v}px`]),
-      ),
+      // `touch` plutôt que `min` : `min-h-min` existe déjà chez Tailwind, et
+      // l'écraser rendrait une classe standard silencieusement fausse.
+      minHeight: {
+        touch: `${touch.min}px`,
+        driving: `${touch.driving}px`,
+      },
     },
   },
   plugins: [

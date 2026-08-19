@@ -36,6 +36,19 @@ export const fr = {
     urbainSous: 'Fixez votre prix',
     interurbain: "D'une ville à l'autre",
     interurbainSous: 'Trajets interurbains',
+
+    // Pastille du point de départ. Un état par situation : l'écran ne ment
+    // jamais sur ce qu'il sait de la position.
+    pointDepart: 'Point de départ',
+    choisirDepart: 'Choisir mon point de départ',
+    localisationEnCours: 'Recherche de votre position…',
+    maPosition: 'Ma position',
+    localisationRefusee: 'Localisation désactivée',
+    ouvrirReglages: 'Ouvrir les réglages',
+
+    horsLigne: 'Hors ligne. Vous pouvez préparer votre trajet.',
+    carteIndisponible: 'La carte ne se charge pas.',
+    carteIndisponibleAide: "Vérifiez le réseau. Le reste de l'écran fonctionne.",
   },
 
   prix: {

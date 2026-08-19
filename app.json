@@ -9,13 +9,29 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "sn.flex.app"
+      "bundleIdentifier": "sn.flex.app",
+      "config": {
+        "googleMapsApiKey": "$EXPO_PUBLIC_GOOGLE_MAPS_KEY_IOS"
+      }
     },
     "android": {
       "package": "sn.flex.app",
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "config": {
+        "googleMaps": {
+          "apiKey": "$EXPO_PUBLIC_GOOGLE_MAPS_KEY_ANDROID"
+        }
+      }
     },
-    "plugins": ["expo-router"],
+    "plugins": [
+      "expo-router",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Flex utilise votre position pour proposer votre point de départ aux conducteurs proches."
+        }
+      ]
+    ],
     "experiments": {
       "typedRoutes": true
     }

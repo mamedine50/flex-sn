@@ -35,6 +35,17 @@ export const en: Dictionnaire = {
     urbainSous: 'Set your price',
     interurbain: 'City to city',
     interurbainSous: 'Intercity rides',
+
+    pointDepart: 'Pickup point',
+    choisirDepart: 'Choose my pickup point',
+    localisationEnCours: 'Finding your position…',
+    maPosition: 'My position',
+    localisationRefusee: 'Location turned off',
+    ouvrirReglages: 'Open settings',
+
+    horsLigne: 'Offline. You can still plan your ride.',
+    carteIndisponible: 'The map is not loading.',
+    carteIndisponibleAide: 'Check your network. The rest of the screen works.',
   },
 
   prix: {

@@ -90,6 +90,21 @@ Budget non négociable, cible Android d'entrée de gamme en 3G :
 - La règle tombe le jour où les polygones réels des communes remplacent les centroïdes —
   le test `todo` de `supabase/tests/110_communes.sql` passera au vert ce jour-là.
 
+## Interface — gabarit
+
+- **Toute géométrie (hauteur, largeur, marge, espacement, rayon) passe par des classes
+  NativeWind.** Jamais par `style` inline à côté d'un `className` : NativeWind l'ignore
+  sans avertissement. Seules exceptions, les valeurs calculées au runtime qui n'ont pas
+  de classe — zone sûre, dimensions mesurées.
+- **Une capture prouve un appareil un jour donné. Une assertion mesurée prouve la règle
+  partout.** Tout écran à gabarit contraint porte son assertion, exécutée sous `__DEV__`
+  à chaque lancement. Voir `src/lib/gabarit.ts`.
+- Les états qu'on ne sait pas déclencher se forcent par `src/components/PanneauDev.tsx`,
+  appui long, `__DEV__` seulement. Un état qu'on ne sait pas déclencher est un état qu'on
+  n'a pas.
+- Ni le panneau de développement ni les assertions ne passent par `src/i18n` : ils ne
+  sont pas l'interface et ne seront jamais traduits.
+
 ## Écriture d'interface
 
 - Voix active. Un bouton dit ce qui se passe : « Envoyer ma proposition », pas « Soumettre ».
