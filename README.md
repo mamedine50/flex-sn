@@ -42,12 +42,30 @@ Hors périmètre V1, à ne pas construire : colis, fret, moto, repas, abonnement
 - **Chaque couleur d'accent a deux jetons** : un pour remplir, un pour écrire. Voir `docs/design.md`.
 - **Le paiement réel arrive en dernier.** Tant que le compte marchand n'existe pas, « Payer » passe sans transaction.
 - Cartes en affichage seul : jamais Places, Directions ni Geocoding facturés.
+- **La recommandation de prix est un MINIMUM, pas un milieu.** L'écran écrit
+  « Recommandé à partir de 2 100 F » — jamais « suggéré », jamais « environ ». Le
+  passager peut la proposer telle quelle ou la dépasser ; les bornes de
+  `bornes_prix` restent le garde-fou serveur. La recommandation est une aide, la
+  borne est une loi.
+- **Pas de tarification dynamique. La négociation EST le mécanisme d'ajustement.**
+  Aucun multiplicateur d'heure, de météo ou de demande : quand ça bouchonne, les
+  conducteurs contre-proposent plus haut, et c'est exactement ce que le produit sait
+  faire. Un coefficient horaire ne sera envisagé que mesuré sur nos propres données,
+  jamais deviné.
 
 ## Ce qui reste à trancher
 
-- Toggle Passager/Conducteur dans l'entête, ou plateforme uniforme sans choix de rôle.
 - Commission : sur le passager, sur le conducteur, ou les deux.
 - Zone de lancement : Dakar entier ou un corridor unique.
+- **Pricing interurbain (corridors à prix d'usage) — après V1.** Un Dakar–Touba a un
+  prix que tout le monde connaît, pas un prix au kilomètre : la formule urbaine
+  servirait un chiffre faux. En attendant, `prix_suggere()` rend NULL sur
+  l'interurbain, le champ s'ouvre vide et exige une saisie. Les journaux
+  `events_prix` couvrent déjà les deux services — ce sont eux qui donneront les prix
+  d'usage réels le jour où on s'y mettra.
+
+_(Le toggle Passager/Conducteur est tranché : plateforme uniforme, conduire est une
+capacité et non un type de compte. Voir `20260819090100_capacite_conducteur.sql`.)_
 
 ---
 
@@ -119,7 +137,8 @@ d'architecture**, pas des oublis. Ne les « réparez » pas — les tests de
 | Signalement | Pourquoi c'est voulu |
 |---|---|
 | `security_definer_view` sur `profils_publics`, `vehicules_publics`, `demandes_ouvertes` | La RLS filtre des **lignes**, pas des **colonnes**. La confidentialité de Flex est une affaire de colonnes : un conducteur a le droit de savoir qu'une demande existe, pas qui la pose. Ces vues contournent la RLS mais ne projettent que le non-confidentiel. C'est le seul endroit du schéma où la RLS est contournée. |
-| `authenticated_security_definer_function_executable` sur les 6 RPC | C'est toute l'architecture : aucune table n'accorde d'écriture au client, tout passe par ces fonctions. Leur retirer `execute` fermerait l'application. `expire_stale()` n'est **pas** dans la liste — elle est réservée à `service_role`, et c'est vérifié. |
+| `rls_enabled_no_policy` sur `events_prix` | Voulu, et c'est le verrou : RLS active, **aucune** policy, `select` accordé au seul `service_role`. Le journal de calibrage tarifaire n'est lisible par personne d'autre — pas même par celui qui vient d'en provoquer une ligne. |
+| `authenticated_security_definer_function_executable` sur les RPC | C'est toute l'architecture : aucune table n'accorde d'écriture au client, tout passe par ces fonctions. Leur retirer `execute` fermerait l'application. `expire_stale()` n'est **pas** dans la liste — elle est réservée à `service_role`, et c'est vérifié. |
 
 Toute autre remontée est un vrai défaut et se corrige.
 
@@ -145,6 +164,10 @@ Toute autre remontée est un vrai défaut et se corrige.
   plusieurs.
 - Le keystore de production ne doit jamais entrer dans le dépôt. `.gitignore` couvre
   `*.jks`, `*.keystore` et `credentials.json`.
+- **Activer la protection contre les mots de passe compromis** (Auth → Policies →
+  leaked password protection). Signalée par les advisors. La production passe par OTP
+  téléphone, mais tant que l'authentification par mot de passe reste ouverte, elle
+  doit l'être.
 - **Supprimer le compte `dev@flex.test`** du projet distant. Il sert au panneau de
   développement pour ouvrir une session sans OTP ; son mot de passe est en clair dans
   `src/lib/sessionDev.ts`. Il n'a rien à faire sur une base ouverte au public.

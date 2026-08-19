@@ -70,8 +70,11 @@ export const en: Dictionnaire = {
     pointSurLaCarte: 'Point on the map',
     confirmerCePoint: 'Confirm this point',
 
-    prixSuggere: 'Suggested price',
+    recommandeAPartirDe: 'Recommended from {prix}',
     saisirPrix: 'Enter your price',
+    interurbainSansRecommandation:
+      'No recommendation for intercity rides: name your price.',
+    peagesNonCompris: 'Tolls not included.',
     prixManquant: 'Enter the price you are offering.',
 
     bornesEnCours: 'Loading the price range…',

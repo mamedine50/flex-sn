@@ -163,6 +163,14 @@ export default function FixerPrix() {
       p_destination_lon: destination.lon,
       p_destination_libelle: destination.libelle,
       p_prix_xof: prix,
+      // Ce que l'écran affichait au moment de la saisie. Le serveur en déduit si
+      // le passager a touché au pré-rempli — c'est la seule ligne du journal
+      // qu'il est seul à connaître.
+      // `undefined` et non `null` : le type généré porte un paramètre optionnel,
+      // et PostgREST omet alors la clé — la valeur par défaut de la fonction
+      // s'applique, ce qui est exactement ce qu'on veut quand il n'y a pas eu de
+      // recommandation.
+      p_recommandation_xof: suggere ?? undefined,
     });
 
     if (error) {
@@ -174,7 +182,7 @@ export default function FixerPrix() {
     void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setEnvoi({ statut: 'envoye' });
     router.push('/offres');
-  }, [depart, destination, prix, service]);
+  }, [depart, destination, prix, service, suggere]);
 
   const envoiPossible =
     Boolean(depart) &&
@@ -227,7 +235,9 @@ export default function FixerPrix() {
 
         <View className="mt-16 rounded-card bg-card p-16">
           <Text className="text-[12px] font-semibold text-muted">
-            {suggere !== null && prix === suggere ? t('prix.prixSuggere') : t('prix.montant')}
+            {suggere !== null && prix === suggere
+              ? t('prix.recommandeAPartirDe', { prix: formatXof(suggere) })
+              : t('prix.montant')}
           </Text>
 
           {bornes.statut === 'chargement' ? (
@@ -300,6 +310,14 @@ export default function FixerPrix() {
                   max: formatXof(bornes.bornes.max),
                 })}
               </Text>
+
+              {/* L'interurbain n'a pas de recommandation : son prix est un usage,
+                  pas un calcul, et le servir au kilomètre serait faux. */}
+              {service === 'interurbain' ? (
+                <Text className="mt-8 text-[13px] font-semibold text-muted">
+                  {t('prix.interurbainSansRecommandation')} {t('prix.peagesNonCompris')}
+                </Text>
+              ) : null}
 
               {horsBornes && prix !== null ? (
                 <Text className="mt-8 text-[13px] font-bold text-danger">

@@ -36,6 +36,7 @@ export type Database = {
     Tables: {
       bornes_prix: {
         Row: {
+          facteur_detour: number
           max_xof: number
           min_xof: number
           prix_base_xof: number | null
@@ -43,6 +44,7 @@ export type Database = {
           service: Database["public"]["Enums"]["service_course"]
         }
         Insert: {
+          facteur_detour?: number
           max_xof: number
           min_xof: number
           prix_base_xof?: number | null
@@ -50,6 +52,7 @@ export type Database = {
           service: Database["public"]["Enums"]["service_course"]
         }
         Update: {
+          facteur_detour?: number
           max_xof?: number
           min_xof?: number
           prix_base_xof?: number | null
@@ -84,6 +87,75 @@ export type Database = {
           region?: string
         }
         Relationships: []
+      }
+      events_prix: {
+        Row: {
+          cree_le: string
+          delai_premiere_offre_s: number | null
+          demande_id: string
+          distance_m: number
+          maille_arrivee_lat: number
+          maille_arrivee_lon: number
+          maille_depart_lat: number
+          maille_depart_lon: number
+          nb_contre_offres: number
+          nb_offres: number
+          prix_convenu_xof: number | null
+          prix_modifie: boolean
+          prix_propose_xof: number
+          recommandation_xof: number | null
+          service: Database["public"]["Enums"]["service_course"]
+        }
+        Insert: {
+          cree_le?: string
+          delai_premiere_offre_s?: number | null
+          demande_id: string
+          distance_m: number
+          maille_arrivee_lat: number
+          maille_arrivee_lon: number
+          maille_depart_lat: number
+          maille_depart_lon: number
+          nb_contre_offres?: number
+          nb_offres?: number
+          prix_convenu_xof?: number | null
+          prix_modifie: boolean
+          prix_propose_xof: number
+          recommandation_xof?: number | null
+          service: Database["public"]["Enums"]["service_course"]
+        }
+        Update: {
+          cree_le?: string
+          delai_premiere_offre_s?: number | null
+          demande_id?: string
+          distance_m?: number
+          maille_arrivee_lat?: number
+          maille_arrivee_lon?: number
+          maille_depart_lat?: number
+          maille_depart_lon?: number
+          nb_contre_offres?: number
+          nb_offres?: number
+          prix_convenu_xof?: number | null
+          prix_modifie?: boolean
+          prix_propose_xof?: number
+          recommandation_xof?: number | null
+          service?: Database["public"]["Enums"]["service_course"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_prix_demande_id_fkey"
+            columns: ["demande_id"]
+            isOneToOne: true
+            referencedRelation: "demandes_ouvertes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_prix_demande_id_fkey"
+            columns: ["demande_id"]
+            isOneToOne: true
+            referencedRelation: "ride_requests"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       offers: {
         Row: {
@@ -594,6 +666,20 @@ export type Database = {
         }
         Relationships: []
       }
+      stats_routes: {
+        Row: {
+          distance_moyenne_m: number | null
+          maille_arrivee_lat: number | null
+          maille_arrivee_lon: number | null
+          maille_depart_lat: number | null
+          maille_depart_lon: number | null
+          nb_demandes: number | null
+          nb_prix_libres_conclus: number | null
+          p25_prix_convenu_xof: number | null
+          taux_reponse: number | null
+        }
+        Relationships: []
+      }
       vehicules_publics: {
         Row: {
           conducteur_id: string | null
@@ -667,6 +753,7 @@ export type Database = {
           p_destination_libelle: string
           p_destination_lon: number
           p_prix_xof: number
+          p_recommandation_xof?: number
           p_service: Database["public"]["Enums"]["service_course"]
         }
         Returns: {

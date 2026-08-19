@@ -74,8 +74,13 @@ export const fr = {
     pointSurLaCarte: 'Point sur la carte',
     confirmerCePoint: 'Confirmer ce point',
 
-    prixSuggere: 'Prix suggéré',
+    // « Recommandé à partir de », jamais « suggéré » ni « environ » : c'est un
+    // MINIMUM que le passager peut dépasser, pas un milieu autour duquel viser.
+    recommandeAPartirDe: 'Recommandé à partir de {prix}',
     saisirPrix: 'Entrez votre prix',
+    interurbainSansRecommandation:
+      'Pas de recommandation sur l’interurbain : proposez votre prix.',
+    peagesNonCompris: 'Péages non compris.',
     prixManquant: 'Entrez le prix que vous proposez.',
 
     // Les bornes viennent de la base. Sans elles on n'affiche AUCUN prix :

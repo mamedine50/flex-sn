@@ -67,6 +67,10 @@ supabase migration list   # local et distant doivent afficher les mêmes version
 | (tarif) | 20260819200000_tarif_de_reference.sql |
 | (offres) | 20260819210000_offres_recues.sql |
 | (tarifs) | 20260819220000_tarifs_provisoires.sql |
+| (tarification) | 20260819230000_tarification.sql |
+| (journal) | 20260819240000_events_prix.sql |
+| (journal) | 20260819250000_journal_negociation.sql |
+| (déclencheur) | 20260819260000_fermer_fonction_declencheur.sql |
 
 ## Tant que ce n'est pas fait
 
