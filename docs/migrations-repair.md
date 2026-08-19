@@ -71,6 +71,7 @@ supabase migration list   # local et distant doivent afficher les mêmes version
 | (journal) | 20260819240000_events_prix.sql |
 | (journal) | 20260819250000_journal_negociation.sql |
 | (déclencheur) | 20260819260000_fermer_fonction_declencheur.sql |
+| (droits anon) | 20260819270000_fermer_fonctions_anon.sql |
 
 ## Tant que ce n'est pas fait
 

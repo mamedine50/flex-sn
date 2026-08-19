@@ -70,6 +70,13 @@ Règles permanentes de ce dépôt. À lire avant toute modification.
   reconstruit par accumulation diverge du serveur dès qu'un seul événement manque, sans
   que rien ne le signale. On relit donc aussi au retour au premier plan ET à l'ouverture
   de session — une session qui s'ouvre change ce que la RLS laisse voir.
+- **Les droits par défaut de Supabase accordent `EXECUTE` à `anon` et `authenticated`
+  sur toute fonction créée dans `public`.** Chaque nouvelle fonction choisit donc
+  EXPLICITEMENT ses exécutants : `revoke all ... from public, anon, authenticated`
+  puis `grant execute` à qui de droit. Y compris les fonctions de déclencheur et les
+  utilitaires, qui n'ont aucune raison d'être appelables. L'inventaire de
+  `supabase/tests/010_schema.sql` ferme la porte par défaut : la liste blanche `anon`
+  est vide, celle d'`authenticated` est nommée fonction par fonction.
 - **Les advisors Supabase font partie des gardes.** On les relit après chaque série de
   migrations appliquées sur le distant, et on note ce qui reste comme délibéré. Ce qui
   est délibéré aujourd'hui est listé dans le README — on ne le « répare » pas.

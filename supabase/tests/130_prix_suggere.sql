@@ -8,6 +8,15 @@ create extension if not exists pgtap with schema public;
 
 select plan(9);
 
+-- Les tests calculent leurs valeurs attendues avec ces utilitaires. Le PRODUIT
+-- ne les appelle que depuis des fonctions SECURITY DEFINER, qui n'ont pas besoin
+-- du droit ; l'inventaire de 010 vérifie qu'ils restent fermés. Ici, le droit
+-- est rendu pour la seule transaction de test, qui sera annulée.
+grant execute on function public.arrondir_zone(double precision) to authenticated;
+grant execute on function public.taille_cellule_deg() to authenticated;
+grant execute on function public.duree_demande(public.service_course) to authenticated;
+grant execute on function public.duree_offre(public.service_course) to authenticated;
+
 -- Plateau → Ouakam, environ 6 km à vol d'oiseau.
 create temp table trajet as
 select 14.6928::double precision as d_lat, -17.4467::double precision as d_lon,

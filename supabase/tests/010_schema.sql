@@ -2,7 +2,7 @@
 begin;
 create extension if not exists pgtap with schema public;
 
-select plan(26);
+select plan(28);
 
 -- Les cinq tables minimales, plus les bornes de prix.
 select has_table('public', 'profiles', 'profiles existe');
@@ -68,6 +68,48 @@ select hasnt_column('public', 'demandes_ouvertes', 'depart_lon',
   'demandes_ouvertes ne porte pas la longitude exacte du départ');
 select hasnt_column('public', 'demandes_ouvertes', 'depart_libelle',
   'demandes_ouvertes ne porte pas le libellé du départ — souvent une adresse');
+
+-- ------------------------------------------------- inventaire des exécutants --
+-- Les droits par défaut de Supabase accordent `execute` à anon et authenticated
+-- sur toute fonction créée dans `public`. Une fonction de déclencheur s'est déjà
+-- retrouvée exposée en RPC à `anon` par ce mécanisme, sans que personne l'ait
+-- voulu. Cet inventaire ferme la porte par défaut : le prochain oubli tombe ici,
+-- pas dans une relecture d'advisors.
+--
+-- La liste blanche est VIDE et doit le rester tant qu'aucune fonction n'a de
+-- raison explicite d'être appelée sans session.
+select is(
+  (select coalesce(string_agg(
+            p.proname || '(' || pg_get_function_identity_arguments(p.oid) || ')',
+            ', ' order by p.proname), '')
+   from pg_proc p
+   join pg_namespace n on n.oid = p.pronamespace
+   where n.nspname = 'public'
+     and p.prokind = 'f'
+     and has_function_privilege('anon', p.oid, 'execute')
+     and p.proname <> all (array[]::text[])),
+  '',
+  'aucune fonction de public n''est exécutable par anon — liste blanche vide'
+);
+
+-- Même inventaire côté `authenticated`, mais avec une liste blanche : là, les
+-- RPC métier ont une raison d'être appelées. Toute NOUVELLE entrée doit être
+-- ajoutée sciemment ici, ce qui force à se poser la question.
+select is(
+  (select coalesce(string_agg(p.proname, ', ' order by p.proname), '')
+   from pg_proc p
+   join pg_namespace n on n.oid = p.pronamespace
+   where n.nspname = 'public'
+     and p.prokind = 'f'
+     and has_function_privilege('authenticated', p.oid, 'execute')
+     and p.proname <> all (array[
+       'accept_offer', 'commune_la_plus_proche', 'create_ride_request',
+       'demandes_proches', 'est_conducteur', 'maj_position', 'maj_profil',
+       'prix_suggere', 'refuse_offer', 'submit_offer'
+     ])),
+  '',
+  'seules les RPC métier listées sont exécutables par authenticated'
+);
 
 -- Les fonctions métier existent et expire_stale() n'est pas offerte au client.
 select has_function('public', 'accept_offer', array['uuid'], 'accept_offer existe');
