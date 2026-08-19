@@ -28,6 +28,14 @@ const CORRESPONDANCE: Record<string, CleTraduction> = {
   contre_offre_identique: 'erreurs.contreOffreIdentique',
   offre_indisponible: 'erreurs.dejaVerrouillee',
   demande_introuvable: 'erreurs.demandeExpiree',
+  course_etrangere: 'erreurs.courseEtrangere',
+  course_introuvable: 'erreurs.courseIntrouvable',
+  course_deja_annulee: 'erreurs.courseDejaAnnulee',
+  course_commencee: 'erreurs.courseCommencee',
+  course_terminee: 'erreurs.courseCommencee',
+  course_non_terminee: 'erreurs.courseNonTerminee',
+  deja_note: 'erreurs.dejaNote',
+  etape_invalide: 'erreurs.etapeInvalide',
 };
 
 export function cleErreur(erreur: PostgrestError | Error | null): CleTraduction {

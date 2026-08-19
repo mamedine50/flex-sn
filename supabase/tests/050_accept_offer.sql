@@ -9,8 +9,6 @@ select plan(14);
 -- ne les appelle que depuis des fonctions SECURITY DEFINER, qui n'ont pas besoin
 -- du droit ; l'inventaire de 010 vérifie qu'ils restent fermés. Ici, le droit
 -- est rendu pour la seule transaction de test, qui sera annulée.
-grant execute on function public.arrondir_zone(double precision) to authenticated;
-grant execute on function public.taille_cellule_deg() to authenticated;
 grant execute on function public.duree_demande(public.service_course) to authenticated;
 grant execute on function public.duree_offre(public.service_course) to authenticated;
 

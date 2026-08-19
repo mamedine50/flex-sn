@@ -171,6 +171,45 @@ export const fr = {
     conducteurArrive: 'Votre conducteur arrive',
     plaque: 'Plaque {plaque}',
     terminee: 'Course terminée',
+
+    // Le cycle, vu du passager puis du conducteur.
+    verrouillee: 'Course confirmée',
+    verrouilleeConducteur: 'Prévenez le passager que vous partez',
+    en_route: 'Votre conducteur est en route',
+    en_routeConducteur: 'Vous êtes en route',
+    arrive: 'Votre conducteur est arrivé',
+    arriveConducteur: 'Vous êtes sur place',
+    commencee: 'Course en cours',
+    commenceeConducteur: 'Course en cours',
+    annulee: 'Course annulée',
+
+    // Les actions du conducteur, une par étape.
+    partir: 'Je pars',
+    signalerArrivee: 'Je suis arrivé',
+    demarrer: 'Démarrer la course',
+    terminer: 'Terminer la course',
+
+    appeler: 'Appeler',
+    ecrire: 'Écrire',
+    annuler: 'Annuler la course',
+    confirmerAnnulation: 'Annuler cette course ?',
+    confirmerAnnulationAide: 'L’autre personne en sera prévenue immédiatement.',
+    garderLaCourse: 'Garder la course',
+    annuleePar: 'Annulée par {prenom}',
+    annuleeParVous: 'Vous avez annulé cette course.',
+
+    immobile: 'Votre conducteur n’a pas bougé depuis {minutes} min.',
+    horsLigne: 'Hors ligne. Le suivi reprendra au retour du réseau.',
+    resynchronisation: 'Mise à jour…',
+    aucuneCourse: 'Vous n’avez pas de course en cours.',
+
+    // Notation en double aveugle.
+    noter: 'Comment s’est passée la course ?',
+    noterAide: 'Votre note reste cachée jusqu’à ce que l’autre ait noté.',
+    envoyerNote: 'Envoyer ma note',
+    dejaNote: 'Merci, votre note est enregistrée.',
+    dejaNoteAide: 'Elle sera visible quand l’autre aura noté, ou dans sept jours.',
+    etoiles: '{n} sur 5',
   },
 
   erreurs: {
@@ -193,5 +232,12 @@ export const fr = {
     conducteurIndisponible: 'Vous avez déjà une course en cours.',
     prixIncoherent: 'Ce prix ne correspond pas à la demande.',
     contreOffreIdentique: 'Proposez un prix différent de celui du passager.',
+    courseEtrangere: 'Cette course n’est pas la vôtre.',
+    courseIntrouvable: 'Cette course n’existe plus.',
+    courseDejaAnnulee: 'Cette course vient d’être annulée.',
+    courseCommencee: 'La course a commencé : elle se termine, elle ne s’annule plus.',
+    courseNonTerminee: 'On note une course une fois terminée.',
+    dejaNote: 'Vous avez déjà noté cette course.',
+    etapeInvalide: 'Cette étape n’est pas la suivante.',
   },
 } as const;

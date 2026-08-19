@@ -6,14 +6,13 @@
 begin;
 create extension if not exists pgtap with schema public;
 
-select plan(22);
+select plan(25);
 
 -- Les tests calculent leurs valeurs attendues avec ces utilitaires. Le PRODUIT
 -- ne les appelle que depuis des fonctions SECURITY DEFINER, qui n'ont pas besoin
 -- du droit ; l'inventaire de 010 vérifie qu'ils restent fermés. Ici, le droit
 -- est rendu pour la seule transaction de test, qui sera annulée.
-grant execute on function public.arrondir_zone(double precision) to authenticated;
-grant execute on function public.taille_cellule_deg() to authenticated;
+-- (retiré volontairement : on veut les droits de PRODUCTION ici)
 grant execute on function public.duree_demande(public.service_course) to authenticated;
 grant execute on function public.duree_offre(public.service_course) to authenticated;
 
@@ -195,11 +194,36 @@ set local role postgres;
 select public.t_devenir((select passager from f));
 set local role authenticated;
 
+-- LA PLAQUE, dans les deux sens : sur la course active de l'appelant, et là
+-- seulement. Jamais dans la file d'offres — ni avant, ni après.
 select is(
   (select plaque from public.vehicles where conducteur_id = (select conducteur from f)),
   'DK-5555-EE',
   'le passager a la plaque pour monter dans la bonne voiture'
 );
+select hasnt_column('public', 'vehicules_publics', 'plaque',
+  'la plaque n''est pas dans la vue publique des véhicules');
+set local role postgres;
+
+select public.t_devenir((select conducteur from f));
+set local role authenticated;
+select is(
+  (select plaque from public.vehicles where conducteur_id = (select conducteur from f)),
+  'DK-5555-EE',
+  'et le conducteur lit la sienne — la policy vaut dans les deux sens'
+);
+set local role postgres;
+
+select public.t_devenir((select temoin from f));
+set local role authenticated;
+select is_empty(
+  $$ select 1 from public.vehicles $$,
+  'un tiers ne voit aucune plaque, même pendant la course'
+);
+set local role postgres;
+
+select public.t_devenir((select passager from f));
+set local role authenticated;
 
 set local role postgres;
 

@@ -77,6 +77,12 @@ Règles permanentes de ce dépôt. À lire avant toute modification.
   utilitaires, qui n'ont aucune raison d'être appelables. L'inventaire de
   `supabase/tests/010_schema.sql` ferme la porte par défaut : la liste blanche `anon`
   est vide, celle d'`authenticated` est nommée fonction par fonction.
+- **Une fonction appelée depuis une VUE ou une POLICY est vérifiée contre celui qui
+  interroge**, pas contre le propriétaire — même pour une vue en
+  `security_invoker = false`, qui ne protège que l'accès aux tables. Ces fonctions-là
+  ont donc besoin d'un `grant execute` explicite. Le défaut est LATENT : tant que le
+  filtre de la vue rend zéro ligne, la fonction n'est jamais évaluée et tout paraît
+  fonctionner.
 - **Les advisors Supabase font partie des gardes.** On les relit après chaque série de
   migrations appliquées sur le distant, et on note ce qui reste comme délibéré. Ce qui
   est délibéré aujourd'hui est listé dans le README — on ne le « répare » pas.

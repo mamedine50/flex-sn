@@ -88,6 +88,69 @@ export type Database = {
         }
         Relationships: []
       }
+      evaluations: {
+        Row: {
+          auteur_id: string
+          cible_id: string
+          commentaire: string | null
+          course_id: string
+          cree_le: string
+          note: number
+        }
+        Insert: {
+          auteur_id: string
+          cible_id: string
+          commentaire?: string | null
+          course_id: string
+          cree_le?: string
+          note: number
+        }
+        Update: {
+          auteur_id?: string
+          cible_id?: string
+          commentaire?: string | null
+          course_id?: string
+          cree_le?: string
+          note?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evaluations_auteur_id_fkey"
+            columns: ["auteur_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evaluations_auteur_id_fkey"
+            columns: ["auteur_id"]
+            isOneToOne: false
+            referencedRelation: "profils_publics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evaluations_cible_id_fkey"
+            columns: ["cible_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evaluations_cible_id_fkey"
+            columns: ["cible_id"]
+            isOneToOne: false
+            referencedRelation: "profils_publics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evaluations_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "rides"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events_prix: {
         Row: {
           cree_le: string
@@ -400,9 +463,11 @@ export type Database = {
       }
       rides: {
         Row: {
+          annulee_par: string | null
           conducteur_id: string
           demande_id: string
           id: string
+          motif_annulation: string | null
           offre_id: string
           passager_id: string
           prix_convenu_xof: number
@@ -412,9 +477,11 @@ export type Database = {
           verrouillee_le: string
         }
         Insert: {
+          annulee_par?: string | null
           conducteur_id: string
           demande_id: string
           id?: string
+          motif_annulation?: string | null
           offre_id: string
           passager_id: string
           prix_convenu_xof: number
@@ -424,9 +491,11 @@ export type Database = {
           verrouillee_le?: string
         }
         Update: {
+          annulee_par?: string | null
           conducteur_id?: string
           demande_id?: string
           id?: string
+          motif_annulation?: string | null
           offre_id?: string
           passager_id?: string
           prix_convenu_xof?: number
@@ -436,6 +505,20 @@ export type Database = {
           verrouillee_le?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "rides_annulee_par_fkey"
+            columns: ["annulee_par"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rides_annulee_par_fkey"
+            columns: ["annulee_par"]
+            isOneToOne: false
+            referencedRelation: "profils_publics"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "rides_conducteur_id_fkey"
             columns: ["conducteur_id"]
@@ -590,6 +673,53 @@ export type Database = {
           },
         ]
       }
+      evaluations_visibles: {
+        Row: {
+          auteur_id: string | null
+          cible_id: string | null
+          commentaire: string | null
+          course_id: string | null
+          cree_le: string | null
+          note: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evaluations_auteur_id_fkey"
+            columns: ["auteur_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evaluations_auteur_id_fkey"
+            columns: ["auteur_id"]
+            isOneToOne: false
+            referencedRelation: "profils_publics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evaluations_cible_id_fkey"
+            columns: ["cible_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evaluations_cible_id_fkey"
+            columns: ["cible_id"]
+            isOneToOne: false
+            referencedRelation: "profils_publics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evaluations_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "rides"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       offres_recues: {
         Row: {
           conducteur_id: string | null
@@ -721,9 +851,34 @@ export type Database = {
       accept_offer: {
         Args: { p_offre_id: string }
         Returns: {
+          annulee_par: string | null
           conducteur_id: string
           demande_id: string
           id: string
+          motif_annulation: string | null
+          offre_id: string
+          passager_id: string
+          prix_convenu_xof: number
+          statut: Database["public"]["Enums"]["statut_course"]
+          terminee_le: string | null
+          vehicule_id: string
+          verrouillee_le: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "rides"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      annuler_course: {
+        Args: { p_course_id: string; p_motif?: string }
+        Returns: {
+          annulee_par: string | null
+          conducteur_id: string
+          demande_id: string
+          id: string
+          motif_annulation: string | null
           offre_id: string
           passager_id: string
           prix_convenu_xof: number
@@ -740,9 +895,39 @@ export type Database = {
         }
       }
       arrondir_zone: { Args: { coord: number }; Returns: number }
+      avancer_course: {
+        Args: {
+          p_course_id: string
+          p_statut: Database["public"]["Enums"]["statut_course"]
+        }
+        Returns: {
+          annulee_par: string | null
+          conducteur_id: string
+          demande_id: string
+          id: string
+          motif_annulation: string | null
+          offre_id: string
+          passager_id: string
+          prix_convenu_xof: number
+          statut: Database["public"]["Enums"]["statut_course"]
+          terminee_le: string | null
+          vehicule_id: string
+          verrouillee_le: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "rides"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       commune_la_plus_proche: {
         Args: { p_lat: number; p_lon: number; p_rayon_max_m?: number }
         Returns: string
+      }
+      course_active: {
+        Args: { p_statut: Database["public"]["Enums"]["statut_course"] }
+        Returns: boolean
       }
       create_ride_request: {
         Args: {
@@ -782,6 +967,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      delai_double_aveugle: { Args: never; Returns: string }
       demandes_proches: {
         Args: { p_rayon_m?: number }
         Returns: {
@@ -863,6 +1049,23 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      noter_course: {
+        Args: { p_commentaire?: string; p_course_id: string; p_note: number }
+        Returns: {
+          auteur_id: string
+          cible_id: string
+          commentaire: string | null
+          course_id: string
+          cree_le: string
+          note: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "evaluations"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       prix_suggere: {
         Args: {
           p_depart_lat: number
@@ -873,6 +1076,8 @@ export type Database = {
         }
         Returns: number
       }
+      publier_evaluations: { Args: never; Returns: number }
+      recalculer_notes: { Args: { p_course_id: string }; Returns: undefined }
       refuse_offer: {
         Args: { p_offre_id: string }
         Returns: {
@@ -925,7 +1130,14 @@ export type Database = {
     Enums: {
       role_utilisateur: "passager" | "conducteur"
       service_course: "urbain" | "interurbain"
-      statut_course: "verrouillee" | "en_cours" | "terminee" | "annulee"
+      statut_course:
+        | "verrouillee"
+        | "en_route"
+        | "arrive"
+        | "commencee"
+        | "en_cours"
+        | "terminee"
+        | "annulee"
       statut_demande: "ouverte" | "verrouillee" | "expiree" | "annulee"
       statut_offre:
         | "en_attente"
@@ -1066,7 +1278,15 @@ export const Constants = {
     Enums: {
       role_utilisateur: ["passager", "conducteur"],
       service_course: ["urbain", "interurbain"],
-      statut_course: ["verrouillee", "en_cours", "terminee", "annulee"],
+      statut_course: [
+        "verrouillee",
+        "en_route",
+        "arrive",
+        "commencee",
+        "en_cours",
+        "terminee",
+        "annulee",
+      ],
       statut_demande: ["ouverte", "verrouillee", "expiree", "annulee"],
       statut_offre: ["en_attente", "acceptee", "refusee", "expiree", "caduque"],
       type_offre: ["acceptation", "contre_offre"],
