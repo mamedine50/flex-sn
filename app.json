@@ -30,7 +30,8 @@
         {
           "locationWhenInUsePermission": "Flex utilise votre position pour proposer votre point de départ aux conducteurs proches."
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true
