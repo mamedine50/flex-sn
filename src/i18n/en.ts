@@ -62,8 +62,17 @@ export const en: Dictionnaire = {
 
     choisirDepart: 'Choose pickup',
     choisirDestination: 'Choose destination',
-    chercherCommune: 'Search a district',
-    aucuneCommune: 'No district matches.',
+    chercherVille: 'Search a city',
+    aucuneVille: 'No city matches.',
+
+    reperePosition: 'Move the map to place the pin',
+    precisionFacultative: 'Add detail: by the pharmacy, gate of the pitch…',
+    pointSurLaCarte: 'Point on the map',
+    confirmerCePoint: 'Confirm this point',
+
+    prixSuggere: 'Suggested price',
+    saisirPrix: 'Enter your price',
+    prixManquant: 'Enter the price you are offering.',
 
     bornesEnCours: 'Loading the price range…',
     bornesIndisponibles: 'The price range could not be loaded.',
@@ -79,14 +88,32 @@ export const en: Dictionnaire = {
     titre: 'Offers received',
     attente: 'Your offer is out. Answers land here.',
     vide: 'No answer yet.',
+
+    aucuneDemande: 'You have no ride in progress.',
+    proposerUnPrix: 'Offer a price',
+    votrePrix: 'You offered {prix}',
+    encore: '{secondes} s left',
+    encoreMinutes: '{minutes} min left',
+    demandeExpiree: 'This request expired with no answer.',
+    reproposer: 'Offer a new price',
+    nombre: '{n} driver replied',
+    nombrePluriel: '{n} drivers replied',
+
     contreOffre: 'Counter-offer',
-    arriveeDans: 'Arrives in {minutes} min',
-    note: '{note}',
+    votrePrixMention: 'your price',
+    minutes: '{n} min',
+    note: '★ {note}',
+    sansNote: 'New',
+
     accepter: 'Accept',
     refuser: 'Decline',
     acceptee: 'Offer accepted',
     refusee: 'Offer declined',
     expiree: 'This offer has expired.',
+    caduque: 'This driver took another ride.',
+
+    horsLigne: 'Offline. New offers are not coming in.',
+    resynchronisation: 'Updating…',
   },
 
   conducteur: {

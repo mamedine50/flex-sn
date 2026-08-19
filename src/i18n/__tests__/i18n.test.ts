@@ -58,9 +58,7 @@ describe('traduire', () => {
   });
 
   it('interpole les paramètres', () => {
-    expect(traduire('fr', 'offres.arriveeDans', { minutes: 4 })).toBe(
-      'Arrive dans 4 min',
-    );
+    expect(traduire('fr', 'offres.minutes', { n: 4 })).toBe('4 min');
   });
 
   it('rend « ⛔ clé » en développement pour une clé absente', () => {

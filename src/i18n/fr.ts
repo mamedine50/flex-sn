@@ -65,8 +65,18 @@ export const fr = {
 
     choisirDepart: 'Choisir le départ',
     choisirDestination: 'Choisir la destination',
-    chercherCommune: 'Chercher une commune',
-    aucuneCommune: 'Aucune commune ne correspond.',
+    chercherVille: 'Chercher une ville',
+    aucuneVille: 'Aucune ville ne correspond.',
+
+    // Le repère est fixe, c'est la carte qui bouge dessous.
+    reperePosition: 'Déplacez la carte pour placer le repère',
+    precisionFacultative: 'Précisez : devant la pharmacie, entrée du terrain…',
+    pointSurLaCarte: 'Point sur la carte',
+    confirmerCePoint: 'Confirmer ce point',
+
+    prixSuggere: 'Prix suggéré',
+    saisirPrix: 'Entrez votre prix',
+    prixManquant: 'Entrez le prix que vous proposez.',
 
     // Les bornes viennent de la base. Sans elles on n'affiche AUCUN prix :
     // une fourchette inventée ferait proposer un montant que le serveur refuse.
@@ -84,14 +94,32 @@ export const fr = {
     titre: 'Offres reçues',
     attente: 'Votre proposition est partie. Les réponses arrivent ici.',
     vide: 'Aucune réponse pour le moment.',
+
+    aucuneDemande: 'Vous n’avez pas de course en cours.',
+    proposerUnPrix: 'Proposer un prix',
+    votrePrix: 'Vous avez proposé {prix}',
+    encore: 'encore {secondes} s',
+    encoreMinutes: 'encore {minutes} min',
+    demandeExpiree: 'Cette demande a expiré sans réponse.',
+    reproposer: 'Proposer un nouveau prix',
+    nombre: '{n} conducteur vous répond',
+    nombrePluriel: '{n} conducteurs vous répondent',
+
     contreOffre: 'Contre-offre',
-    arriveeDans: 'Arrive dans {minutes} min',
-    note: '{note}',
+    votrePrixMention: 'votre prix',
+    minutes: '{n} min',
+    note: '★ {note}',
+    sansNote: 'Nouveau',
+
     accepter: 'Accepter',
     refuser: 'Refuser',
     acceptee: 'Offre acceptée',
     refusee: 'Offre refusée',
     expiree: 'Cette offre a expiré.',
+    caduque: 'Ce conducteur a pris une autre course.',
+
+    horsLigne: 'Hors ligne. Les nouvelles offres n’arrivent pas.',
+    resynchronisation: 'Mise à jour…',
   },
 
   conducteur: {

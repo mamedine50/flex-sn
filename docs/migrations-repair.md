@@ -63,6 +63,9 @@ supabase migration list   # local et distant doivent afficher les mêmes version
 | 20260819180146 | 20260819090300_appariement.sql |
 | 20260819180203 | 20260819090400_cron_expire_stale.sql |
 | (search_path) | 20260819181000_search_path_fonctions.sql |
+| (profil) | 20260819190000_profil_a_l_inscription.sql |
+| (tarif) | 20260819200000_tarif_de_reference.sql |
+| (offres) | 20260819210000_offres_recues.sql |
 
 ## Tant que ce n'est pas fait
 

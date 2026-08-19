@@ -1,40 +1,35 @@
 import * as Haptics from 'expo-haptics';
 import { useNetworkState } from 'expo-network';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import ChoixCommune from '../src/components/ChoixCommune';
+import ChoixLieu, { type Lieu } from '../src/components/ChoixLieu';
 import PanneauDev, { type EtatForce } from '../src/components/PanneauDev';
 import { useT } from '../src/i18n';
 import { useBornesPrix } from '../src/lib/bornesPrix';
-import type { Commune } from '../src/lib/communes';
 import { cleErreur } from '../src/lib/erreursServeur';
-import { formatXof, PAS_XOF } from '../src/lib/format';
+import { arrondirAuPas, formatXof, PAS_XOF, separerMilliers } from '../src/lib/format';
 import { configurerGabarit, noterMesure } from '../src/lib/gabarit';
+import { useLocalisation } from '../src/lib/localisation';
 import { supabase } from '../src/lib/supabase';
 import { chiffresTabulaires } from '../src/theme/typographie';
 
 /**
  * Fixez votre prix.
  *
- * Le montant est la seule chose qui compte sur cet écran : il est gros, il est
- * en `moneyInk`, et il est en chiffres tabulaires — sans ça il tressaute à
- * chaque appui sur `+` et l'application paraît cassée.
+ * Le montant est la seule chose qui compte ici : il est gros, en `moneyInk`, et
+ * en chiffres tabulaires — sans ça il tressaute à chaque appui sur `+`.
  *
- * Aucun prix n'est proposé tant que les bornes ne sont pas connues. Une
- * fourchette inventée ferait envoyer un montant que le serveur refuse ensuite,
- * et l'utilisateur ne comprendrait pas pourquoi.
+ * Il n'est JAMAIS pré-rempli d'un chiffre inventé. Soit la base rend un prix
+ * suggéré à partir du tarif de référence et de la distance, soit le champ
+ * s'ouvre vide et exige une saisie. Ouvrir sur la borne basse ferait proposer
+ * 500 F pour onze kilomètres, ne recevoir aucune réponse, et la première
+ * expérience de Flex serait le silence.
  */
 
-/** Gabarit, en points. Toute géométrie passe par des classes — voir CLAUDE.md. */
-const GABARIT = {
-  champ: 64,
-  /** Les pas de prix se tapent en série : on prend la taille « au volant ». */
-  pas: 56,
-  envoi: 56,
-};
+const GABARIT = { champ: 64, pas: 56, envoi: 56 };
 
 type EtatEnvoi =
   | { statut: 'repos' }
@@ -47,6 +42,7 @@ export default function FixerPrix() {
   const marges = useSafeAreaInsets();
   const reseau = useNetworkState();
   const parametres = useLocalSearchParams<{ service?: string }>();
+  const { position } = useLocalisation();
 
   const service = parametres.service === 'interurbain' ? 'interurbain' : 'urbain';
 
@@ -54,10 +50,20 @@ export default function FixerPrix() {
   const [panneauOuvert, setPanneauOuvert] = useState(false);
 
   const bornesReelles = useBornesPrix(service);
-  const [depart, setDepart] = useState<Commune | null>(null);
-  const [destination, setDestination] = useState<Commune | null>(null);
+  const [depart, setDepart] = useState<Lieu | null>(null);
+  const [destination, setDestination] = useState<Lieu | null>(null);
   const [choix, setChoix] = useState<'depart' | 'destination' | null>(null);
+
+  /** `null` = rien saisi. On ne confond pas « vide » et « zéro ». */
   const [prix, setPrix] = useState<number | null>(null);
+  /**
+   * La suggestion porte la paire de points qu'elle décrit. Sans ça, changer de
+   * destination laisserait le prix de l'ancienne le temps d'un aller-retour —
+   * et c'est l'instant où l'utilisateur lit le chiffre.
+   */
+  const [suggestion, setSuggestion] = useState<{ cle: string; valeur: number | null } | null>(
+    null,
+  );
   const [envoi, setEnvoi] = useState<EtatEnvoi>({ statut: 'repos' });
 
   configurerGabarit('prix', {
@@ -68,9 +74,8 @@ export default function FixerPrix() {
     envoi: GABARIT.envoi,
   });
 
-  // Les états forcés du panneau de développement recouvrent le comportement réel.
-  // Mémorisé : sans ça l'objet est neuf à chaque rendu et le `useMemo` du prix
-  // se recalcule en boucle.
+  // Mémorisé : sans ça l'objet est neuf à chaque rendu et les `useMemo` en aval
+  // se recalculent en boucle.
   const bornes = useMemo(() => {
     if (etatForce === 'bornes_chargement') {
       return { statut: 'chargement', bornes: null, erreur: null } as const;
@@ -81,6 +86,39 @@ export default function FixerPrix() {
     return bornesReelles;
   }, [etatForce, bornesReelles]);
 
+  // Le prix suggéré vient de la BASE : tarif de référence et distance PostGIS.
+  // S'il rend NULL — tarif non renseigné — le champ reste vide, et c'est voulu.
+  const clePaire =
+    depart && destination
+      ? `${depart.lat},${depart.lon}>${destination.lat},${destination.lon}`
+      : null;
+
+  useEffect(() => {
+    if (!clePaire || !depart || !destination) return undefined;
+    const vivant = { annule: false };
+
+    void (async () => {
+      const { data } = await supabase.rpc('prix_suggere', {
+        p_service: service,
+        p_depart_lat: depart.lat,
+        p_depart_lon: depart.lon,
+        p_destination_lat: destination.lat,
+        p_destination_lon: destination.lon,
+      });
+      if (vivant.annule) return;
+      const valeur = typeof data === 'number' ? data : null;
+      setSuggestion({ cle: clePaire, valeur });
+      // On n'écrase jamais une saisie de l'utilisateur.
+      setPrix((actuel) => (actuel === null && valeur !== null ? valeur : actuel));
+    })();
+
+    return () => {
+      vivant.annule = true;
+    };
+  }, [clePaire, depart, destination, service]);
+
+  const suggere = suggestion?.cle === clePaire ? suggestion.valeur : null;
+
   const horsLigne = etatForce === 'hors_ligne' || reseau.isInternetReachable === false;
   const enEnvoi = etatForce === 'envoi_en_cours' || envoi.statut === 'envoi';
   const echec =
@@ -90,42 +128,41 @@ export default function FixerPrix() {
         ? envoi.cle
         : null;
 
-  // Le prix ne naît qu'avec les bornes. Le plancher plutôt que le milieu : un
-  // milieu serait une suggestion, et c'est le passager qui fixe son prix.
-  const prixAffiche = useMemo(() => {
-    if (bornes.statut !== 'pret') return null;
-    return prix ?? bornes.bornes.min;
-  }, [bornes, prix]);
-
   const horsBornes =
     bornes.statut === 'pret' &&
-    prixAffiche !== null &&
-    (prixAffiche < bornes.bornes.min || prixAffiche > bornes.bornes.max);
+    prix !== null &&
+    (prix < bornes.bornes.min || prix > bornes.bornes.max);
 
   const deplacer = useCallback(
     (sens: 1 | -1) => {
-      if (bornes.statut !== 'pret' || prixAffiche === null) return;
-      const suivant = prixAffiche + sens * PAS_XOF;
-      if (suivant < PAS_XOF) return;
-      setPrix(suivant);
+      setPrix((actuel) => {
+        const base = actuel ?? 0;
+        const suivant = arrondirAuPas(base) + sens * PAS_XOF;
+        return suivant < PAS_XOF ? PAS_XOF : suivant;
+      });
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     },
-    [bornes.statut, prixAffiche],
+    [],
   );
 
+  const saisir = useCallback((texte: string) => {
+    const chiffres = texte.replace(/[^0-9]/g, '');
+    setPrix(chiffres === '' ? null : Number.parseInt(chiffres, 10));
+  }, []);
+
   const envoyer = useCallback(async () => {
-    if (!depart || !destination || prixAffiche === null) return;
+    if (!depart || !destination || prix === null) return;
 
     setEnvoi({ statut: 'envoi' });
     const { error } = await supabase.rpc('create_ride_request', {
       p_service: service,
       p_depart_lat: depart.lat,
       p_depart_lon: depart.lon,
-      p_depart_libelle: depart.nom,
+      p_depart_libelle: depart.libelle,
       p_destination_lat: destination.lat,
       p_destination_lon: destination.lon,
-      p_destination_libelle: destination.nom,
-      p_prix_xof: prixAffiche,
+      p_destination_libelle: destination.libelle,
+      p_prix_xof: prix,
     });
 
     if (error) {
@@ -135,15 +172,15 @@ export default function FixerPrix() {
     }
 
     void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    // L'écran « Offres reçues » n'existe pas encore. En attendant on confirme
-    // sur place plutôt que de revenir en arrière sans rien dire : la demande est
-    // partie, l'utilisateur doit le savoir.
     setEnvoi({ statut: 'envoye' });
-  }, [depart, destination, prixAffiche, service]);
+    router.push('/offres');
+  }, [depart, destination, prix, service]);
 
   const envoiPossible =
     Boolean(depart) &&
     Boolean(destination) &&
+    prix !== null &&
+    prix % PAS_XOF === 0 &&
     bornes.statut === 'pret' &&
     !horsBornes &&
     !horsLigne &&
@@ -171,26 +208,27 @@ export default function FixerPrix() {
         </View>
 
         {horsLigne ? <Bandeau texte={t('prix.horsLigne')} /> : null}
-
         {envoi.statut === 'envoye' ? <Bandeau texte={t('offres.attente')} /> : null}
 
         <Champ
           nom="champDepart"
           libelle={t('prix.depart')}
-          valeur={depart?.nom ?? null}
+          valeur={depart?.libelle ?? null}
           vide={t('prix.choisirDepart')}
           onPress={() => setChoix('depart')}
         />
         <Champ
           nom="champDestination"
           libelle={t('prix.destination')}
-          valeur={destination?.nom ?? null}
+          valeur={destination?.libelle ?? null}
           vide={t('prix.choisirDestination')}
           onPress={() => setChoix('destination')}
         />
 
         <View className="mt-16 rounded-card bg-card p-16">
-          <Text className="text-[12px] font-semibold text-muted">{t('prix.montant')}</Text>
+          <Text className="text-[12px] font-semibold text-muted">
+            {suggere !== null && prix === suggere ? t('prix.prixSuggere') : t('prix.montant')}
+          </Text>
 
           {bornes.statut === 'chargement' ? (
             <SqueletteMontant texte={t('prix.bornesEnCours')} />
@@ -215,13 +253,25 @@ export default function FixerPrix() {
             </View>
           ) : (
             <>
-              <Text
-                className="mt-4 text-[44px] font-extrabold text-moneyInk"
-                style={chiffresTabulaires}
-                accessibilityLabel={formatXof(prixAffiche ?? 0)}
-              >
-                {formatXof(prixAffiche ?? 0)}
-              </Text>
+              <View className="mt-4 flex-row items-baseline">
+                <TextInput
+                  value={prix === null ? '' : separerMilliers(prix)}
+                  onChangeText={saisir}
+                  onBlur={() => setPrix((a) => (a === null ? null : arrondirAuPas(a)))}
+                  keyboardType="number-pad"
+                  placeholder={t('prix.saisirPrix')}
+                  placeholderTextColor={undefined}
+                  accessibilityLabel={t('prix.montant')}
+                  className="min-w-[120px] text-[44px] font-extrabold text-moneyInk"
+                  style={chiffresTabulaires}
+                  maxLength={9}
+                />
+                {prix !== null ? (
+                  <Text className="ml-8 text-[22px] font-extrabold text-moneyInk">
+                    FCFA
+                  </Text>
+                ) : null}
+              </View>
 
               <View className="mt-12 flex-row items-center gap-12">
                 <Pas
@@ -251,9 +301,9 @@ export default function FixerPrix() {
                 })}
               </Text>
 
-              {horsBornes ? (
+              {horsBornes && prix !== null ? (
                 <Text className="mt-8 text-[13px] font-bold text-danger">
-                  {prixAffiche !== null && prixAffiche < bornes.bornes.min
+                  {prix < bornes.bornes.min
                     ? t('prix.tropBas', { min: formatXof(bornes.bornes.min) })
                     : t('prix.tropHaut', { max: formatXof(bornes.bornes.max) })}
                 </Text>
@@ -266,16 +316,17 @@ export default function FixerPrix() {
           <Text className="mt-16 text-[14px] font-bold text-danger">{t(echec)}</Text>
         ) : null}
 
-        {!depart && bornes.statut === 'pret' ? (
-          <Text className="mt-12 text-[13px] font-semibold text-muted">
-            {t('prix.departManquant')}
-          </Text>
-        ) : null}
-        {depart && !destination ? (
-          <Text className="mt-12 text-[13px] font-semibold text-muted">
-            {t('prix.destinationManquante')}
-          </Text>
-        ) : null}
+        <Manque
+          texte={
+            !depart
+              ? t('prix.departManquant')
+              : !destination
+                ? t('prix.destinationManquante')
+                : prix === null && bornes.statut === 'pret'
+                  ? t('prix.prixManquant')
+                  : null
+          }
+        />
       </ScrollView>
 
       <View className="px-16" style={{ paddingBottom: marges.bottom + 16 }}>
@@ -291,8 +342,7 @@ export default function FixerPrix() {
           style={({ pressed }) => ({ opacity: pressed && envoiPossible ? 0.7 : 1 })}
         >
           {/* Une action indisponible change de couleur, pas seulement d'opacité :
-              un aplat clair à 50 % reste lumineux sur fond sombre, et le bouton
-              a l'air actif alors qu'il ne l'est pas. */}
+              un aplat clair à 50 % reste lumineux sur fond sombre. */}
           <Text
             className={`text-[16px] font-extrabold ${
               envoiPossible ? 'text-onAcc' : 'text-muted'
@@ -303,13 +353,17 @@ export default function FixerPrix() {
         </Pressable>
       </View>
 
-      <ChoixCommune
+      <ChoixLieu
         visible={choix !== null}
-        service={service}
         titre={choix === 'depart' ? t('prix.choisirDepart') : t('prix.choisirDestination')}
-        onChoisir={(commune) => {
-          if (choix === 'depart') setDepart(commune);
-          else setDestination(commune);
+        // En ville il faut le point à cinquante mètres près : « Ouakam » ne
+        // permet pas de venir chercher quelqu'un. En interurbain la destination
+        // EST une ville, et le centroïde est la bonne granularité.
+        mode={choix === 'destination' && service === 'interurbain' ? 'villes' : 'carte'}
+        depart={position}
+        onChoisir={(lieu) => {
+          if (choix === 'depart') setDepart(lieu);
+          else setDestination(lieu);
           setChoix(null);
         }}
         onFermer={() => setChoix(null)}
@@ -336,6 +390,11 @@ function Bandeau({ texte }: { texte: string }) {
       <Text className="text-[13px] font-semibold text-ink">{texte}</Text>
     </View>
   );
+}
+
+function Manque({ texte }: { texte: string | null }) {
+  if (!texte) return null;
+  return <Text className="mt-12 text-[13px] font-semibold text-muted">{texte}</Text>;
 }
 
 function Champ({

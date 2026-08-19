@@ -38,16 +38,22 @@ export type Database = {
         Row: {
           max_xof: number
           min_xof: number
+          prix_base_xof: number | null
+          prix_km_xof: number | null
           service: Database["public"]["Enums"]["service_course"]
         }
         Insert: {
           max_xof: number
           min_xof: number
+          prix_base_xof?: number | null
+          prix_km_xof?: number | null
           service: Database["public"]["Enums"]["service_course"]
         }
         Update: {
           max_xof?: number
           min_xof?: number
+          prix_base_xof?: number | null
+          prix_km_xof?: number | null
           service?: Database["public"]["Enums"]["service_course"]
         }
         Relationships: []
@@ -394,6 +400,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "rides_offre_id_fkey"
+            columns: ["offre_id"]
+            isOneToOne: true
+            referencedRelation: "offres_recues"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "rides_passager_id_fkey"
             columns: ["passager_id"]
             isOneToOne: false
@@ -501,6 +514,55 @@ export type Database = {
             columns: ["passager_id"]
             isOneToOne: false
             referencedRelation: "profils_publics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      offres_recues: {
+        Row: {
+          conducteur_id: string | null
+          conducteur_nb_notes: number | null
+          conducteur_note: number | null
+          conducteur_photo: string | null
+          conducteur_prenom: string | null
+          cree_le: string | null
+          delai_arrivee_min: number | null
+          demande_id: string | null
+          expires_at: string | null
+          id: string | null
+          prix_xof: number | null
+          statut: Database["public"]["Enums"]["statut_offre"] | null
+          type: Database["public"]["Enums"]["type_offre"] | null
+          vehicule_couleur: string | null
+          vehicule_modele: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offers_conducteur_id_fkey"
+            columns: ["conducteur_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offers_conducteur_id_fkey"
+            columns: ["conducteur_id"]
+            isOneToOne: false
+            referencedRelation: "profils_publics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offers_demande_id_fkey"
+            columns: ["demande_id"]
+            isOneToOne: false
+            referencedRelation: "demandes_ouvertes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offers_demande_id_fkey"
+            columns: ["demande_id"]
+            isOneToOne: false
+            referencedRelation: "ride_requests"
             referencedColumns: ["id"]
           },
         ]
@@ -710,6 +772,37 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      prix_suggere: {
+        Args: {
+          p_depart_lat: number
+          p_depart_lon: number
+          p_destination_lat: number
+          p_destination_lon: number
+          p_service: Database["public"]["Enums"]["service_course"]
+        }
+        Returns: number
+      }
+      refuse_offer: {
+        Args: { p_offre_id: string }
+        Returns: {
+          conducteur_id: string
+          cree_le: string
+          delai_arrivee_min: number
+          demande_id: string
+          expires_at: string
+          id: string
+          prix_xof: number
+          statut: Database["public"]["Enums"]["statut_offre"]
+          type: Database["public"]["Enums"]["type_offre"]
+          vehicule_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "offers"
           isOneToOne: true
           isSetofReturn: false
         }

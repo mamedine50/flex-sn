@@ -40,10 +40,12 @@ type Props = {
   /** Recentre la carte quand la position arrive, sans reprendre la main ensuite. */
   centrerSur?: { latitude: number; longitude: number } | null;
   onEtat: (etat: Exclude<EtatCarte, 'attente'>) => void;
+  /** Le centre de la carte au relâchement. C'est le sélecteur de lieu. */
+  onCentre?: (centre: { latitude: number; longitude: number }) => void;
   children?: ReactNode;
 };
 
-export default function CarteFond({ region, centrerSur, onEtat, children }: Props) {
+export default function CarteFond({ region, centrerSur, onEtat, onCentre, children }: Props) {
   const { couleurs, theme } = useTheme();
   const carte = useRef<MapView | null>(null);
   const [prete, setPrete] = useState(false);
@@ -79,6 +81,11 @@ export default function CarteFond({ region, centrerSur, onEtat, children }: Prop
         customMapStyle={fournisseurGoogle ? styleCarte(couleurs) : undefined}
         userInterfaceStyle={theme}
         onMapReady={surCartePrete}
+        onRegionChangeComplete={
+          onCentre
+            ? (r) => onCentre({ latitude: r.latitude, longitude: r.longitude })
+            : undefined
+        }
         // Affichage seul : rien qui déclenche un appel facturé.
         showsPointsOfInterests={false}
         showsTraffic={false}
@@ -88,6 +95,7 @@ export default function CarteFond({ region, centrerSur, onEtat, children }: Prop
         toolbarEnabled={false}
         pitchEnabled={false}
         rotateEnabled={false}
+        scrollEnabled
       >
         {children}
       </MapView>

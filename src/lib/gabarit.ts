@@ -31,9 +31,15 @@ export function configurerGabarit(ecran: string, attendu: Minima) {
   if (!__DEV__) return;
   if (ecranCourant === ecran) return;
 
+  // Un écran peut avoir plusieurs variantes — `offres` et `offres+liste` — quand
+  // une partie n'apparaît qu'avec des données. On garde alors les mesures déjà
+  // prises : les blocs communs ne se remesurent pas, et les jeter empêcherait
+  // l'assertion de la variante de jamais aboutir.
+  const memeEcran = ecranCourant?.split('+')[0] === ecran.split('+')[0];
+
   ecranCourant = ecran;
   minima = attendu;
-  mesures = {};
+  if (!memeEcran) mesures = {};
   rendu = false;
 }
 

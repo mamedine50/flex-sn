@@ -110,6 +110,9 @@ Budget non négociable, cible Android d'entrée de gamme en 3G :
 - **Une capture prouve un appareil un jour donné. Une assertion mesurée prouve la règle
   partout.** Tout écran à gabarit contraint porte son assertion, exécutée sous `__DEV__`
   à chaque lancement. Voir `src/lib/gabarit.ts`.
+- **Un état désactivé change de COULEUR, pas seulement d'opacité.** Un aplat clair à
+  50 % reste lumineux sur fond sombre, et le contrôle a l'air actif : on appuie, rien ne
+  se passe, on croit l'application cassée. Fond en `card2`, texte en `muted`.
 - Les états qu'on ne sait pas déclencher se forcent par `src/components/PanneauDev.tsx`,
   appui long, `__DEV__` seulement. Un état qu'on ne sait pas déclencher est un état qu'on
   n'a pas.
