@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { Platform, StyleSheet, View } from 'react-native';
 import MapView, { PROVIDER_GOOGLE, type Region } from 'react-native-maps';
 
@@ -31,7 +32,23 @@ const cleGoogle = Platform.select({
   android: process.env.EXPO_PUBLIC_GOOGLE_MAPS_KEY_ANDROID,
   default: undefined,
 });
-export const fournisseurGoogle = Boolean(cleGoogle && cleGoogle.length > 0);
+
+/**
+ * Expo Go n'embarque pas le SDK natif Google Maps sur iOS. Y demander
+ * `PROVIDER_GOOGLE` ne rend RIEN : `onMapReady` ne part jamais, le chien de
+ * garde conclut « carte indisponible », et on passe le développement sans carte
+ * alors que la clé est bonne.
+ *
+ * On retombe donc sur le fournisseur du système dans Expo Go. Conséquence à
+ * connaître : `customMapStyle` ne s'applique qu'à Google, donc les jetons de
+ * thème ne colorent pas la carte tant qu'on développe dans Expo Go. Un build de
+ * développement ou de production affiche bien Google, et la palette avec.
+ */
+const dansExpoGo =
+  Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
+
+export const fournisseurGoogle =
+  Boolean(cleGoogle && cleGoogle.length > 0) && !dansExpoGo;
 
 export type EtatCarte = 'attente' | 'prete' | 'indisponible';
 

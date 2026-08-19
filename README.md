@@ -131,6 +131,13 @@ Toute autre remontée est un vrai défaut et se corrige.
   fournisseur configuré (Twilio) dans Auth → Providers → Phone. Tant qu'il n'y en a pas,
   personne ne peut ouvrir de session en production. En développement, le panneau de dev
   ouvre une session de test sans OTP — voir `src/components/PanneauDev.tsx`.
+- **Google Maps ne s'affiche pas dans Expo Go sur iOS.** Expo Go n'embarque pas le SDK
+  natif Google Maps : y demander `PROVIDER_GOOGLE` ne rend rien du tout. L'application
+  retombe donc sur le fournisseur du système quand elle tourne dans Expo Go — la carte
+  fonctionne, mais `customMapStyle` ne s'applique qu'à Google, donc **les jetons de thème
+  ne colorent pas la carte tant qu'on développe dans Expo Go**. Un build de développement
+  (`npx expo run:ios` ou un profil EAS `development`) affiche Google et la palette avec.
+  C'est le seul endroit où développement et production diffèrent volontairement.
 - **Empreinte SHA-1 de développement pour Google Maps.** La clé Android est restreinte
   au SHA-1 du keystore de **production** stocké chez EAS. En développement, Expo signe
   avec un keystore de debug différent : la carte restera grise sur un Android en dev
