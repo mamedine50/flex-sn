@@ -1,0 +1,12 @@
+allowBuilds:
+  esbuild: true
+  unrs-resolver: true
+
+# Expo et React Native exigent un arbre de modules aplati : la disposition
+# symbolique par défaut de pnpm casse la résolution de Metro sur les modules natifs.
+nodeLinker: hoisted
+
+# Seules ces dépendances ont le droit d'exécuter un script d'installation.
+onlyBuiltDependencies:
+  - esbuild
+  - unrs-resolver

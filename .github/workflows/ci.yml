@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  gardes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Le contraste d'abord : c'est la garde la plus rapide à casser et la plus
+      # coûteuse à découvrir en production.
+      - run: pnpm tokens:check
+
+      - run: pnpm typecheck
+
+      - run: pnpm lint
+
+      - run: pnpm test
+
+  base:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      # Postgres local jetable : les tests de concurrence et d'horloge ont
+      # besoin d'une vraie base, pas d'un double.
+      - run: supabase db start
+
+      - run: supabase db lint --level warning
+
+      - run: supabase test db supabase/tests

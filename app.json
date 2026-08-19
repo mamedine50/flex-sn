@@ -1,0 +1,23 @@
+{
+  "expo": {
+    "name": "Flex",
+    "slug": "flex",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "flex",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "sn.flex.app"
+    },
+    "android": {
+      "package": "sn.flex.app",
+      "edgeToEdgeEnabled": true
+    },
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

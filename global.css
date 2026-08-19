@@ -1,0 +1,8 @@
+/*
+ * Les variables de couleur ne sont pas écrites ici : elles sont injectées par
+ * `tailwind.config.js`, qui les lit dans `src/theme/tokens.ts`. Un seul endroit
+ * déclare une couleur, et c'est tokens.ts.
+ */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

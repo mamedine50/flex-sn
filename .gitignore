@@ -1,0 +1,15 @@
+node_modules/
+.expo/
+dist/
+web-build/
+*.log
+.env
+.env.local
+ios/
+android/
+.DS_Store
+expo-env.d.ts
+
+# Supabase — état local des conteneurs, jamais versionné
+supabase/.temp/
+supabase/.branches/
