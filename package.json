@@ -16,7 +16,9 @@
     "db:test": "supabase test db supabase/tests",
     "db:lint": "supabase db lint --level warning --schema public",
     "db:types": "supabase gen types typescript --local > src/lib/database.types.ts",
-    "db:verif-policies": "node scripts/verif-policies.mjs"
+    "db:verif-policies": "node scripts/verif-policies.mjs",
+    "garde:compte-dev": "node scripts/garde-compte-dev.mjs",
+    "eas-build-pre-install": "node scripts/garde-compte-dev.mjs"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.2.0",

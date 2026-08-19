@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
 
@@ -96,6 +97,22 @@ export default function PanneauDev({ visible, actuel, onChoisir, onFermer }: Pro
               </Text>
             </Pressable>
           </View>
+
+          {/* L'entrée produit du mode conducteur ira dans l'onglet Profil, qui
+              n'existe pas encore. En attendant, elle est ici. */}
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => {
+              onFermer();
+              router.push('/conducteur');
+            }}
+            className="mb-16 min-h-touch justify-center rounded-field bg-card2 px-16"
+            style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+          >
+            <Text className="text-[13px] font-bold text-accInk">
+              Ouvrir le mode conducteur
+            </Text>
+          </Pressable>
 
           <ScrollView>
             {ETATS_FORCABLES.map(({ cle, libelle }) => {

@@ -128,14 +128,36 @@ export const fr = {
     // centroïdes approximatifs : le mot de couverture coûte zéro et évite de
     // présenter une approximation comme un fait.
     versCommune: 'vers {commune}',
-    demandeEntrante: 'Nouvelle demande',
+
+    enLigne: 'En ligne',
+    horsLigne: 'Hors ligne',
+    passerEnLigne: 'Passer en ligne',
+    passerHorsLigne: 'Passer hors ligne',
+    horsLigneInvite: 'Vous êtes hors ligne. Aucune demande ne vous parvient.',
+    aucuneDemande: 'Aucune demande à proximité. Restez en ligne.',
+    positionRequise: 'Activez la localisation pour recevoir les demandes proches.',
+
+    pasConducteur: 'Vous n’êtes pas encore conducteur.',
+    pasConducteurAide:
+      'Il faut des documents validés et un véhicule actif. Contactez le support.',
+
     prixPropose: 'Prix proposé',
-    accepter: 'Accepter',
+    depuis: 'Départ {commune}',
+    versDestination: 'Vers {commune}',
+    arriveeEstimee: 'à {minutes} min de vous',
+
+    accepterA: 'Accepter à {prix}',
     contreProposer: 'Contre-proposer',
     refuser: 'Refuser',
+
     votreContreOffre: 'Votre contre-offre',
+    votreDelai: 'Vous arrivez dans',
     envoyerContreOffre: 'Envoyer ma contre-offre',
-    aucuneDemande: 'Aucune demande pour le moment. Restez en ligne.',
+    envoiEnCours: 'Envoi…',
+    minutes: '{n} min',
+
+    expiree: 'Cette demande a expiré.',
+    reseauCoupe: 'Hors ligne. Les demandes n’arrivent plus.',
   },
 
   enRoute: {
@@ -159,5 +181,12 @@ export const fr = {
     prixHorsBornes: 'Ce prix est hors de la fourchette acceptée.',
     prixNonMultipleDe100: 'Le prix se règle par pas de 100 FCFA.',
     demandeDejaOuverte: 'Vous avez déjà une demande en cours.',
+    documentsNonValides: 'Vos documents conducteur ne sont pas encore validés.',
+    vehiculeAbsent: 'Aucun véhicule actif sur votre compte.',
+    demandeASoi: 'C’est votre propre demande.',
+    offreDejaSoumise: 'Vous avez déjà répondu à cette demande.',
+    conducteurIndisponible: 'Vous avez déjà une course en cours.',
+    prixIncoherent: 'Ce prix ne correspond pas à la demande.',
+    contreOffreIdentique: 'Proposez un prix différent de celui du passager.',
   },
 } as const;

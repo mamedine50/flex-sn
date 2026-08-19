@@ -62,6 +62,14 @@ Règles permanentes de ce dépôt. À lire avant toute modification.
 - Toute fonction porte `set search_path = ''` et qualifie ses noms. Sans ça, sa
   résolution dépend de l'appelant — et une fonction appelée depuis une colonne générée
   ou depuis une vue qui contourne la RLS est le pire endroit pour ça.
+- **Realtime déclenche, il ne fait pas foi.** Un événement provoque une RELECTURE, jamais
+  une mise à jour de l'état local à partir de la charge utile. Trois raisons : la charge
+  utile porte la ligne d'`offers`, pas le prénom du conducteur ni son véhicule — il faut
+  aller les chercher de toute façon ; le canal se ferme quand l'application passe en
+  arrière-plan et les événements de l'intervalle ne sont jamais rejoués ; et un état
+  reconstruit par accumulation diverge du serveur dès qu'un seul événement manque, sans
+  que rien ne le signale. On relit donc aussi au retour au premier plan ET à l'ouverture
+  de session — une session qui s'ouvre change ce que la RLS laisse voir.
 - **Les advisors Supabase font partie des gardes.** On les relit après chaque série de
   migrations appliquées sur le distant, et on note ce qui reste comme délibéré. Ce qui
   est délibéré aujourd'hui est listé dans le README — on ne le « répare » pas.

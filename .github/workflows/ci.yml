@@ -32,6 +32,13 @@ jobs:
 
       - run: pnpm test
 
+      # Le compte de développement ne doit pas survivre à la mise en ligne.
+      # La garde échoue seulement sur un build de production ; ici elle informe.
+      - run: pnpm garde:compte-dev
+        env:
+          EXPO_PUBLIC_SUPABASE_URL: ${{ secrets.EXPO_PUBLIC_SUPABASE_URL }}
+          EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.EXPO_PUBLIC_SUPABASE_ANON_KEY }}
+
   base:
     runs-on: ubuntu-latest
     steps:

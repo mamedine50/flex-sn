@@ -119,14 +119,35 @@ export const en: Dictionnaire = {
   conducteur: {
     titre: 'Driver mode',
     versCommune: 'towards {commune}',
-    demandeEntrante: 'New request',
+
+    enLigne: 'Online',
+    horsLigne: 'Offline',
+    passerEnLigne: 'Go online',
+    passerHorsLigne: 'Go offline',
+    horsLigneInvite: 'You are offline. No request reaches you.',
+    aucuneDemande: 'No request nearby. Stay online.',
+    positionRequise: 'Turn on location to receive nearby requests.',
+
+    pasConducteur: 'You are not a driver yet.',
+    pasConducteurAide: 'You need validated documents and an active vehicle. Contact support.',
+
     prixPropose: 'Offered price',
-    accepter: 'Accept',
+    depuis: 'From {commune}',
+    versDestination: 'To {commune}',
+    arriveeEstimee: '{minutes} min from you',
+
+    accepterA: 'Accept at {prix}',
     contreProposer: 'Counter',
     refuser: 'Decline',
+
     votreContreOffre: 'Your counter-offer',
+    votreDelai: 'You arrive in',
     envoyerContreOffre: 'Send my counter-offer',
-    aucuneDemande: 'No request right now. Stay online.',
+    envoiEnCours: 'Sending…',
+    minutes: '{n} min',
+
+    expiree: 'This request has expired.',
+    reseauCoupe: 'Offline. Requests are not coming in.',
   },
 
   enRoute: {
@@ -148,5 +169,12 @@ export const en: Dictionnaire = {
     prixHorsBornes: 'This price is outside the accepted range.',
     prixNonMultipleDe100: 'Price moves in steps of 100 FCFA.',
     demandeDejaOuverte: 'You already have a request in progress.',
+    documentsNonValides: 'Your driver documents are not validated yet.',
+    vehiculeAbsent: 'No active vehicle on your account.',
+    demandeASoi: 'This is your own request.',
+    offreDejaSoumise: 'You already answered this request.',
+    conducteurIndisponible: 'You already have a ride in progress.',
+    prixIncoherent: 'This price does not match the request.',
+    contreOffreIdentique: 'Offer a price different from the passenger’s.',
   },
 };

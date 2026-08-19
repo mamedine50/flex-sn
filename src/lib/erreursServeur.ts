@@ -19,7 +19,15 @@ const CORRESPONDANCE: Record<string, CleTraduction> = {
   demande_deja_ouverte: 'erreurs.demandeDejaOuverte',
   demande_expiree: 'erreurs.demandeExpiree',
   demande_verrouillee: 'erreurs.dejaVerrouillee',
-  conducteur_indisponible: 'erreurs.dejaVerrouillee',
+  conducteur_indisponible: 'erreurs.conducteurIndisponible',
+  documents_non_valides: 'erreurs.documentsNonValides',
+  vehicule_absent: 'erreurs.vehiculeAbsent',
+  demande_a_soi: 'erreurs.demandeASoi',
+  offre_deja_soumise: 'erreurs.offreDejaSoumise',
+  prix_incoherent: 'erreurs.prixIncoherent',
+  contre_offre_identique: 'erreurs.contreOffreIdentique',
+  offre_indisponible: 'erreurs.dejaVerrouillee',
+  demande_introuvable: 'erreurs.demandeExpiree',
 };
 
 export function cleErreur(erreur: PostgrestError | Error | null): CleTraduction {
