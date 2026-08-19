@@ -1,4 +1,5 @@
 import { useNetworkState } from 'expo-network';
+import { router } from 'expo-router';
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import {
   AccessibilityInfo,
@@ -91,9 +92,10 @@ export default function Accueil() {
 
   // La carte n'est montée qu'une fois le premier rendu peint et le fil libre.
   // `requestIdleCallback` plutôt qu'`InteractionManager`, déprécié depuis SDK 57.
-  configurerGabarit({
-    feuilleMinimum: HAUTEUR_FEUILLE_HORS_MARGE + marges.bottom,
-    tuileMinimum: FEUILLE.tuile,
+  configurerGabarit('accueil', {
+    feuille: HAUTEUR_FEUILLE_HORS_MARGE + marges.bottom,
+    tuile0: FEUILLE.tuile,
+    tuile1: FEUILLE.tuile,
   });
 
   useEffect(() => {
@@ -246,12 +248,14 @@ export default function Accueil() {
             titre={t('accueil.urbain')}
             sous={t('accueil.urbainSous')}
             illustration={<VoitureUrbaine />}
+            onPress={() => router.push('/prix?service=urbain')}
           />
           <Tuile
             nom="tuile1"
             titre={t('accueil.interurbain')}
             sous={t('accueil.interurbainSous')}
             illustration={<VoitureInterurbaine />}
+            onPress={() => router.push('/prix?service=interurbain')}
           />
         </View>
 
@@ -291,16 +295,19 @@ function Tuile({
   titre,
   sous,
   illustration,
+  onPress,
 }: {
   nom: string;
   titre: string;
   sous: string;
   illustration: React.ReactNode;
+  onPress: () => void;
 }) {
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={`${titre}. ${sous}`}
+      onPress={onPress}
       onLayout={(e) => noterMesure(nom, e.nativeEvent.layout.height)}
       className="min-h-[152px] flex-1 overflow-hidden rounded-card bg-card2 p-16"
       style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}

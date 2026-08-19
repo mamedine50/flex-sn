@@ -62,6 +62,22 @@ export const fr = {
     envoyer: 'Envoyer ma proposition',
     tropBas: 'Ce prix est en dessous de {min}. Peu de conducteurs répondront.',
     tropHaut: 'Ce prix dépasse {max}.',
+
+    choisirDepart: 'Choisir le départ',
+    choisirDestination: 'Choisir la destination',
+    chercherCommune: 'Chercher une commune',
+    aucuneCommune: 'Aucune commune ne correspond.',
+
+    // Les bornes viennent de la base. Sans elles on n'affiche AUCUN prix :
+    // une fourchette inventée ferait proposer un montant que le serveur refuse.
+    bornesEnCours: 'Chargement de la fourchette…',
+    bornesIndisponibles: 'Impossible de charger la fourchette de prix.',
+    bornesIndisponiblesAide: 'Sans elle, un prix proposé serait refusé. Réessayez.',
+
+    envoiEnCours: 'Envoi…',
+    horsLigne: 'Hors ligne. Votre proposition partira au retour du réseau.',
+    departManquant: 'Indiquez votre point de départ.',
+    destinationManquante: 'Indiquez où vous allez.',
   },
 
   offres: {
@@ -107,5 +123,13 @@ export const fr = {
     demandeExpiree: 'Cette demande a expiré. Proposez un nouveau prix.',
     dejaVerrouillee: 'Cette course vient d’être prise par un autre conducteur.',
     inconnue: 'Quelque chose a échoué. Réessayez.',
+
+    // Messages d'erreur du serveur, traduits par leur code stable. Le serveur
+    // renvoie `prix_hors_bornes`, jamais une phrase : la phrase est ici.
+    nonAuthentifie: 'Votre session a expiré. Reconnectez-vous.',
+    profilAbsent: 'Votre profil est incomplet.',
+    prixHorsBornes: 'Ce prix est hors de la fourchette acceptée.',
+    prixNonMultipleDe100: 'Le prix se règle par pas de 100 FCFA.',
+    demandeDejaOuverte: 'Vous avez déjà une demande en cours.',
   },
 } as const;

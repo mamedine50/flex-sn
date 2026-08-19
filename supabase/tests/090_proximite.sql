@@ -16,9 +16,11 @@ declare v_id uuid := gen_random_uuid();
 begin
   insert into auth.users (id, email)
   values (v_id, 'u' || replace(v_id::text, '-', '') || '@flex.test');
-  insert into public.profiles (id, role, prenom, documents_valides_le)
-  values (v_id, p_role, p_prenom,
-          case when p_role = 'conducteur' then now() end);
+  update public.profiles
+  set role = p_role,
+      prenom = p_prenom,
+      documents_valides_le = case when p_role = 'conducteur' then now() end
+  where id = v_id;
   return v_id;
 end; $$;
 

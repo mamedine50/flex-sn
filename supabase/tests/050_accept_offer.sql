@@ -13,10 +13,16 @@ declare v_id uuid := gen_random_uuid();
 begin
   insert into auth.users (id, email)
   values (v_id, 'u' || replace(v_id::text, '-', '') || '@flex.test');
-  insert into public.profiles (id, role, prenom, nom_complet, telephone, documents_valides_le)
-  values (v_id, p_role, p_prenom, p_nom, p_tel,
-          -- Conduire est une capacité : sans documents validés, pas d'offre.
-          case when p_role = 'conducteur' then now() end);
+  -- Le déclencheur `creer_profil_apres_inscription` a DÉJÀ posé la ligne : on la
+  -- complète, on ne la recrée pas.
+  update public.profiles
+  set role = p_role,
+      prenom = p_prenom,
+      nom_complet = p_nom,
+      telephone = p_tel,
+      -- Conduire est une capacité : sans documents validés, pas d'offre.
+      documents_valides_le = case when p_role = 'conducteur' then now() end
+  where id = v_id;
   return v_id;
 end; $$;
 

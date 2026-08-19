@@ -59,6 +59,20 @@ export const en: Dictionnaire = {
     envoyer: 'Send my offer',
     tropBas: 'This price is below {min}. Few drivers will answer.',
     tropHaut: 'This price is above {max}.',
+
+    choisirDepart: 'Choose pickup',
+    choisirDestination: 'Choose destination',
+    chercherCommune: 'Search a district',
+    aucuneCommune: 'No district matches.',
+
+    bornesEnCours: 'Loading the price range…',
+    bornesIndisponibles: 'The price range could not be loaded.',
+    bornesIndisponiblesAide: 'Without it, any price would be rejected. Try again.',
+
+    envoiEnCours: 'Sending…',
+    horsLigne: 'Offline. Your offer will go out when the network returns.',
+    departManquant: 'Set your pickup point.',
+    destinationManquante: 'Set where you are going.',
   },
 
   offres: {
@@ -101,5 +115,11 @@ export const en: Dictionnaire = {
     demandeExpiree: 'This request has expired. Set a new price.',
     dejaVerrouillee: 'Another driver just took this ride.',
     inconnue: 'Something failed. Try again.',
+
+    nonAuthentifie: 'Your session expired. Sign in again.',
+    profilAbsent: 'Your profile is incomplete.',
+    prixHorsBornes: 'This price is outside the accepted range.',
+    prixNonMultipleDe100: 'Price moves in steps of 100 FCFA.',
+    demandeDejaOuverte: 'You already have a request in progress.',
   },
 };

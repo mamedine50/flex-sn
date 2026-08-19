@@ -1,35 +1,48 @@
 /**
  * Vérification de gabarit — développement seulement.
  *
- * Une capture d'écran prouve qu'un appareil va bien un jour donné. Une mesure
- * prouve la règle sur TOUS les appareils, à chaque lancement : une tuile a le
- * droit de rogner son propre dessin, la feuille n'a jamais le droit de rogner
- * une tuile.
+ * Une capture prouve un appareil un jour donné. Une assertion mesurée prouve la
+ * règle partout, à chaque lancement. Tout écran à gabarit contraint porte la
+ * sienne : on déclare les hauteurs minimales attendues, chaque bloc se mesure
+ * par `onLayout`, et l'écart sort dans la console.
  *
- * Les messages ne passent pas par `src/i18n` : ils s'adressent au développeur,
- * jamais à l'utilisateur, et ne sortent pas de `__DEV__`.
+ * Le défaut qui a motivé cet outil : NativeWind ignore, sans avertissement, une
+ * géométrie passée en `style` inline à côté d'un `className`. Les tuiles de
+ * l'accueil faisaient 88 pt au lieu de 152 et rien ne le disait.
+ *
+ * Les messages ne passent pas par `src/i18n` : ils s'adressent au développeur.
  */
 import { Dimensions } from 'react-native';
 
-type Attendu = { feuilleMinimum: number; tuileMinimum: number };
+type Minima = Record<string, number>;
 
-const mesures: Record<string, number> = {};
-let attendu: Attendu | null = null;
+let ecranCourant: string | null = null;
+let minima: Minima = {};
+let mesures: Record<string, number> = {};
 let planifie = false;
-let deja = false;
+let rendu = false;
 
-export function configurerGabarit(valeur: Attendu) {
+/**
+ * Déclare ce qu'on attend. Rappelée à chaque rendu — changer d'écran remet le
+ * compteur à zéro, sinon la seconde assertion se ferait avec les mesures de la
+ * première.
+ */
+export function configurerGabarit(ecran: string, attendu: Minima) {
   if (!__DEV__) return;
-  attendu = valeur;
+  if (ecranCourant === ecran) return;
+
+  ecranCourant = ecran;
+  minima = attendu;
+  mesures = {};
+  rendu = false;
 }
 
 /**
- * Les `onLayout` ne remontent pas dans un ordre garanti — le parent peut mesurer
- * avant ses enfants. On accumule donc, et on vérifie au tour suivant, quand tout
- * est arrivé.
+ * Les `onLayout` ne remontent pas dans un ordre garanti — un parent peut
+ * mesurer avant ses enfants. On accumule, et on vérifie au tour suivant.
  */
 export function noterMesure(nom: string, hauteur: number) {
-  if (!__DEV__ || deja) return;
+  if (!__DEV__ || rendu) return;
   mesures[nom] = hauteur;
 
   if (planifie) return;
@@ -41,41 +54,32 @@ export function noterMesure(nom: string, hauteur: number) {
 }
 
 function verifier() {
-  if (!attendu || deja) return;
+  if (!__DEV__ || rendu || !ecranCourant) return;
 
-  const feuille = mesures.feuille;
-  const tuiles = [mesures.tuile0, mesures.tuile1];
-  if (feuille === undefined || tuiles.some((t) => t === undefined)) return;
+  const attendus = Object.keys(minima);
+  if (attendus.some((nom) => mesures[nom] === undefined)) return;
 
-  deja = true;
+  rendu = true;
 
   const { width, height } = Dimensions.get('window');
-  const ecran = `${Math.round(width)}×${Math.round(height)}`;
-  const echecs: string[] = [];
+  const taille = `${Math.round(width)}×${Math.round(height)}`;
 
-  if (feuille < attendu.feuilleMinimum - 0.5) {
-    echecs.push(
-      `feuille comprimée : ${feuille.toFixed(0)} pt pour ${attendu.feuilleMinimum} attendus`,
+  const echecs = attendus
+    .filter((nom) => (mesures[nom] as number) < (minima[nom] as number) - 0.5)
+    .map(
+      (nom) =>
+        `${nom} ${(mesures[nom] as number).toFixed(0)} pt pour ${minima[nom]} attendus`,
     );
-  }
-
-  tuiles.forEach((t, i) => {
-    if (t !== undefined && t < attendu!.tuileMinimum - 0.5) {
-      echecs.push(
-        `tuile ${i} rognée : ${t.toFixed(0)} pt pour ${attendu!.tuileMinimum} attendus`,
-      );
-    }
-  });
 
   // `console.warn` et non `console.log` : Metro ne remonte pas les `log` dans le
   // terminal, et une assertion qu'on ne voit pas ne sert à rien.
   if (echecs.length > 0) {
-    console.warn(`GABARIT ✗ ${ecran} — ${echecs.join(' ; ')}`);
+    console.warn(`GABARIT ✗ ${ecranCourant} ${taille} — ${echecs.join(' ; ')}`);
     return;
   }
 
-  console.warn(
-    `GABARIT ✓ ${ecran} — feuille ${feuille.toFixed(0)} pt, ` +
-      `tuiles ${tuiles.map((t) => t?.toFixed(0)).join(' / ')} pt, aucune rognée`,
-  );
+  const detail = attendus
+    .map((nom) => `${nom} ${(mesures[nom] as number).toFixed(0)}`)
+    .join(', ');
+  console.warn(`GABARIT ✓ ${ecranCourant} ${taille} — ${detail} pt, rien de rogné`);
 }

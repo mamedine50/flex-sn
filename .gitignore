@@ -13,3 +13,13 @@ expo-env.d.ts
 # Supabase — état local des conteneurs, jamais versionné
 supabase/.temp/
 supabase/.branches/
+
+# Signature Android — JAMAIS dans le dépôt.
+#
+# `eas credentials` dépose le keystore de production à la racine
+# (`@compte__slug.jks`). Qui le possède peut signer un APK qu'Android acceptera
+# comme une mise à jour de Flex. EAS en garde l'exemplaire de référence ; celui-ci
+# est une copie locale, et il n'a rien à faire dans un dépôt.
+*.jks
+*.keystore
+credentials.json

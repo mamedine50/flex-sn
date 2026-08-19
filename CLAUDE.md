@@ -54,6 +54,17 @@ Règles permanentes de ce dépôt. À lire avant toute modification.
 - Changer le type de retour d'une fonction = `drop` + `create` = **re-grant obligatoire**, plus
   une assertion d'appel par un rôle non-propriétaire. Invisible en local, casse en staging.
 - Tests pgTAP sur chaque fonction, y compris les cas de concurrence.
+- **Changer le RÉGLAGE d'une fonction se fait par `alter function ... set`, jamais par
+  `create or replace`.** Une colonne générée stockée dépend du CORPS de la fonction
+  qu'elle appelle : la remplacer est une opération qu'on ne fait pas pour poser un
+  `search_path`. `alter function` ne touche qu'au réglage et laisse le corps — et donc
+  la colonne — intacts. Le piège ne se voit qu'une fois qu'il a cassé quelque chose.
+- Toute fonction porte `set search_path = ''` et qualifie ses noms. Sans ça, sa
+  résolution dépend de l'appelant — et une fonction appelée depuis une colonne générée
+  ou depuis une vue qui contourne la RLS est le pire endroit pour ça.
+- **Les advisors Supabase font partie des gardes.** On les relit après chaque série de
+  migrations appliquées sur le distant, et on note ce qui reste comme délibéré. Ce qui
+  est délibéré aujourd'hui est listé dans le README — on ne le « répare » pas.
 
 ## Négociation — les règles qui comptent
 

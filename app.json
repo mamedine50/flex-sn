@@ -21,7 +21,11 @@
         "googleMaps": {
           "apiKey": "$EXPO_PUBLIC_GOOGLE_MAPS_KEY_ANDROID"
         }
-      }
+      },
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ]
     },
     "plugins": [
       "expo-router",
@@ -35,6 +39,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "afa3a344-8ed0-47f7-b3a5-65806e9f71a2"
+      }
     }
   }
 }

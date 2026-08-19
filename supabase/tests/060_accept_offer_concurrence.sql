@@ -57,10 +57,14 @@ select public.dblink_exec('svc', $svc$
     ('10000000-0000-4000-8000-000000000002', 'fatou-conc@flex.test'),
     ('10000000-0000-4000-8000-000000000003', 'modou-conc@flex.test');
 
-  insert into public.profiles (id, role, prenom, documents_valides_le) values
-    ('10000000-0000-4000-8000-000000000001', 'passager', 'Awa', null),
-    ('10000000-0000-4000-8000-000000000002', 'passager', 'Fatou', null),
-    ('10000000-0000-4000-8000-000000000003', 'conducteur', 'Modou', now());
+  -- Le déclencheur les a déjà créées à l'insertion dans auth.users.
+  update public.profiles set prenom = 'Awa'
+   where id = '10000000-0000-4000-8000-000000000001';
+  update public.profiles set prenom = 'Fatou'
+   where id = '10000000-0000-4000-8000-000000000002';
+  update public.profiles set prenom = 'Modou', role = 'conducteur',
+         documents_valides_le = now()
+   where id = '10000000-0000-4000-8000-000000000003';
 
   insert into public.vehicles (id, conducteur_id, plaque, modele, couleur) values
     ('20000000-0000-4000-8000-000000000001',

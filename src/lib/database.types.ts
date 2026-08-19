@@ -692,6 +692,28 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      maj_profil: {
+        Args: { p_langue?: string; p_nom_complet?: string; p_prenom?: string }
+        Returns: {
+          cree_le: string
+          documents_valides_le: string | null
+          id: string
+          langue: string
+          nb_notes: number
+          nom_complet: string | null
+          note_moyenne: number | null
+          photo_url: string | null
+          prenom: string
+          role: Database["public"]["Enums"]["role_utilisateur"]
+          telephone: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       submit_offer: {
         Args: {
           p_delai_arrivee_min: number

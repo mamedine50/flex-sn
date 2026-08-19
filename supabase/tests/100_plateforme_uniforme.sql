@@ -21,7 +21,7 @@ declare v_id uuid := gen_random_uuid();
 begin
   insert into auth.users (id, email)
   values (v_id, 'u' || replace(v_id::text, '-', '') || '@flex.test');
-  insert into public.profiles (id, prenom) values (v_id, p_prenom);
+  update public.profiles set prenom = p_prenom where id = v_id;
   return v_id;
 end; $$;
 
