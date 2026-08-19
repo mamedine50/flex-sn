@@ -66,6 +66,7 @@ export const en: Dictionnaire = {
 
   conducteur: {
     titre: 'Driver mode',
+    versCommune: 'towards {commune}',
     demandeEntrante: 'New request',
     prixPropose: 'Offered price',
     accepter: 'Accept',

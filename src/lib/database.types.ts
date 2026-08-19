@@ -52,6 +52,33 @@ export type Database = {
         }
         Relationships: []
       }
+      communes: {
+        Row: {
+          code: string
+          geo: unknown
+          lat: number
+          lon: number
+          nom: string
+          region: string
+        }
+        Insert: {
+          code: string
+          geo?: unknown
+          lat: number
+          lon: number
+          nom: string
+          region: string
+        }
+        Update: {
+          code?: string
+          geo?: unknown
+          lat?: number
+          lon?: number
+          nom?: string
+          region?: string
+        }
+        Relationships: []
+      }
       offers: {
         Row: {
           conducteur_id: string
@@ -134,9 +161,52 @@ export type Database = {
           },
         ]
       }
+      positions_conducteurs: {
+        Row: {
+          conducteur_id: string
+          en_ligne: boolean
+          geo: unknown
+          lat: number
+          lon: number
+          maj_le: string
+        }
+        Insert: {
+          conducteur_id: string
+          en_ligne?: boolean
+          geo?: unknown
+          lat: number
+          lon: number
+          maj_le?: string
+        }
+        Update: {
+          conducteur_id?: string
+          en_ligne?: boolean
+          geo?: unknown
+          lat?: number
+          lon?: number
+          maj_le?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "positions_conducteurs_conducteur_id_fkey"
+            columns: ["conducteur_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "positions_conducteurs_conducteur_id_fkey"
+            columns: ["conducteur_id"]
+            isOneToOne: true
+            referencedRelation: "profils_publics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           cree_le: string
+          documents_valides_le: string | null
           id: string
           langue: string
           nb_notes: number
@@ -149,6 +219,7 @@ export type Database = {
         }
         Insert: {
           cree_le?: string
+          documents_valides_le?: string | null
           id: string
           langue?: string
           nb_notes?: number
@@ -161,6 +232,7 @@ export type Database = {
         }
         Update: {
           cree_le?: string
+          documents_valides_le?: string | null
           id?: string
           langue?: string
           nb_notes?: number
@@ -176,9 +248,11 @@ export type Database = {
       ride_requests: {
         Row: {
           cree_le: string
+          depart_geo: unknown
           depart_lat: number
           depart_libelle: string
           depart_lon: number
+          destination_geo: unknown
           destination_lat: number
           destination_libelle: string
           destination_lon: number
@@ -189,12 +263,15 @@ export type Database = {
           service: Database["public"]["Enums"]["service_course"]
           statut: Database["public"]["Enums"]["statut_demande"]
           verrouillee_le: string | null
+          zone_depart_geo: unknown
         }
         Insert: {
           cree_le?: string
+          depart_geo?: unknown
           depart_lat: number
           depart_libelle: string
           depart_lon: number
+          destination_geo?: unknown
           destination_lat: number
           destination_libelle: string
           destination_lon: number
@@ -205,12 +282,15 @@ export type Database = {
           service: Database["public"]["Enums"]["service_course"]
           statut?: Database["public"]["Enums"]["statut_demande"]
           verrouillee_le?: string | null
+          zone_depart_geo?: unknown
         }
         Update: {
           cree_le?: string
+          depart_geo?: unknown
           depart_lat?: number
           depart_libelle?: string
           depart_lon?: number
+          destination_geo?: unknown
           destination_lat?: number
           destination_libelle?: string
           destination_lon?: number
@@ -221,6 +301,7 @@ export type Database = {
           service?: Database["public"]["Enums"]["service_course"]
           statut?: Database["public"]["Enums"]["statut_demande"]
           verrouillee_le?: string | null
+          zone_depart_geo?: unknown
         }
         Relationships: [
           {
@@ -392,6 +473,8 @@ export type Database = {
       demandes_ouvertes: {
         Row: {
           cree_le: string | null
+          depart_commune: string | null
+          destination_commune: string | null
           destination_libelle: string | null
           expires_at: string | null
           id: string | null
@@ -509,6 +592,10 @@ export type Database = {
         }
       }
       arrondir_zone: { Args: { coord: number }; Returns: number }
+      commune_la_plus_proche: {
+        Args: { p_lat: number; p_lon: number; p_rayon_max_m?: number }
+        Returns: string
+      }
       create_ride_request: {
         Args: {
           p_depart_lat: number
@@ -522,9 +609,11 @@ export type Database = {
         }
         Returns: {
           cree_le: string
+          depart_geo: unknown
           depart_lat: number
           depart_libelle: string
           depart_lon: number
+          destination_geo: unknown
           destination_lat: number
           destination_libelle: string
           destination_lon: number
@@ -535,12 +624,39 @@ export type Database = {
           service: Database["public"]["Enums"]["service_course"]
           statut: Database["public"]["Enums"]["statut_demande"]
           verrouillee_le: string | null
+          zone_depart_geo: unknown
         }
         SetofOptions: {
           from: "*"
           to: "ride_requests"
           isOneToOne: true
           isSetofReturn: false
+        }
+      }
+      demandes_proches: {
+        Args: { p_rayon_m?: number }
+        Returns: {
+          cree_le: string | null
+          depart_commune: string | null
+          destination_commune: string | null
+          destination_libelle: string | null
+          expires_at: string | null
+          id: string | null
+          passager_id: string | null
+          passager_note: number | null
+          passager_prenom: string | null
+          prix_xof: number | null
+          service: Database["public"]["Enums"]["service_course"] | null
+          zone_depart_lat: number | null
+          zone_depart_lon: number | null
+          zone_destination_lat: number | null
+          zone_destination_lon: number | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "demandes_ouvertes"
+          isOneToOne: false
+          isSetofReturn: true
         }
       }
       duree_demande: {
@@ -551,12 +667,30 @@ export type Database = {
         Args: { p_service: Database["public"]["Enums"]["service_course"] }
         Returns: string
       }
+      est_conducteur: { Args: { p_profil: string }; Returns: boolean }
       expire_stale: {
         Args: never
         Returns: {
           demandes_expirees: number
           offres_expirees: number
         }[]
+      }
+      maj_position: {
+        Args: { p_en_ligne?: boolean; p_lat: number; p_lon: number }
+        Returns: {
+          conducteur_id: string
+          en_ligne: boolean
+          geo: unknown
+          lat: number
+          lon: number
+          maj_le: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "positions_conducteurs"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       submit_offer: {
         Args: {

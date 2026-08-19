@@ -67,6 +67,10 @@ export const fr = {
 
   conducteur: {
     titre: 'Mode conducteur',
+    // « vers Plateau », jamais « Plateau ». La commune vient d'une table de
+    // centroïdes approximatifs : le mot de couverture coûte zéro et évite de
+    // présenter une approximation comme un fait.
+    versCommune: 'vers {commune}',
     demandeEntrante: 'Nouvelle demande',
     prixPropose: 'Prix proposé',
     accepter: 'Accepter',

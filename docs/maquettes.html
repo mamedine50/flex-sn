@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flex — Design final</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root[data-theme="dark"]{
+  --bg:#0E1C2C; --card:#12253A; --card2:#1A3049; --line:#1E3752;
+  --ink:#F1F6FA; --muted:#8CA3B8;
+  --accFill:#D6F9EB; --onAcc:#0E1C2C; --accInk:#9FE8CE;
+  --moneyFill:#F5A524; --moneyInk:#FBBF24; --onMoney:#2A1A02;
+  --ok:#34D399; --onOk:#04241A; --danger:#FF7A7A;
+  --map:#132A40; --road:#1E4160; --water:#0D2136; --block:#183751;
+}
+:root[data-theme="light"]{
+  --bg:#F8FAFC; --card:#FFFFFF; --card2:#EEF3F7; --line:#E2E9F0;
+  --ink:#0E1C2C; --muted:#5B7186;
+  --accFill:#0FA37F; --onAcc:#FFFFFF; --accInk:#0B7A5F;
+  --moneyFill:#F5A524; --moneyInk:#8A5A05; --onMoney:#2A1A02;
+  --ok:#0B7A55; --onOk:#FFFFFF; --danger:#C2352B;
+  --map:#E3EAF1; --road:#FFFFFF; --water:#CFDCE9; --block:#D6E0EA;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Inter",-apple-system,sans-serif;background:var(--bg);color:var(--ink);padding:22px 16px 64px;-webkit-font-smoothing:antialiased;transition:background .2s}
+.tab-num{font-variant-numeric:tabular-nums}
+
+.hd{max-width:1200px;margin:0 auto 16px;text-align:center}
+.hd h1{font-size:38px;font-weight:800;letter-spacing:-.04em}
+.hd h1 em{font-style:normal;color:var(--accInk)}
+.hd p{color:var(--muted);font-size:14px;font-weight:500;margin-top:8px}
+.bar{max-width:1200px;margin:0 auto 26px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.seg{display:flex;background:var(--card);border-radius:14px;padding:4px}
+.seg button{border:0;background:none;color:var(--muted);font:700 13px/1 "Inter";padding:9px 18px;border-radius:10px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accFill);color:var(--onAcc)}
+
+.grid{max-width:1200px;margin:0 auto;display:flex;flex-wrap:wrap;gap:30px;justify-content:center}
+.cell{width:300px}
+.cap{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:10px}
+.phone{width:300px;height:646px;border-radius:34px;background:var(--bg);overflow:hidden;display:flex;flex-direction:column;position:relative;box-shadow:0 0 0 1px var(--line)}
+.st{height:36px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;font-size:11px;font-weight:700;flex:0 0 auto}
+.st .r{color:var(--muted);font-weight:600}
+.body{flex:1;display:flex;flex-direction:column;padding:6px 14px 16px;overflow:hidden}
+.spacer{flex:1}
+
+/* carte */
+.mapwrap{position:relative;flex:0 0 auto}
+.mapwrap svg{display:block;width:100%}
+.chipTop{position:absolute;left:50%;top:46%;transform:translate(-50%,-100%);background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px 12px;font-size:12.5px;font-weight:700;white-space:nowrap}
+.chipTop span{display:block;font-size:10px;font-weight:600;color:var(--muted);margin-bottom:1px}
+.fab{position:absolute;left:14px;top:14px;width:38px;height:38px;border-radius:12px;background:var(--card);border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+.fab i{width:15px;height:2px;background:var(--ink);border-radius:2px;display:block}
+.roleTop{position:absolute;right:14px;top:14px;display:flex;gap:6px}
+.roleTop b{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:9px 11px;font-size:11px;font-weight:700;color:var(--muted)}
+.roleTop b.on{background:var(--accFill);color:var(--onAcc);border-color:var(--accFill)}
+
+/* feuille */
+.sheet{background:var(--card);border-radius:24px 24px 0 0;margin-top:-20px;padding:9px 12px 14px;flex:1;display:flex;flex-direction:column;gap:10px;position:relative;z-index:2;overflow:hidden}
+.grab{width:36px;height:4px;border-radius:99px;background:var(--line);margin:2px auto 6px}
+.tiles{display:flex;gap:10px}
+.tile{flex:1;background:var(--card2);border-radius:20px;padding:14px;min-height:144px;position:relative;overflow:hidden}
+.tile h3{font-size:15.5px;font-weight:800;letter-spacing:-.02em;position:relative;z-index:2;line-height:19px}
+.tile p{font-size:11.5px;font-weight:600;color:var(--muted);margin-top:3px;position:relative;z-index:2}
+.tile svg{position:absolute;right:-14px;bottom:-10px;width:132px;height:96px;z-index:1}
+.searchbar{background:var(--card2);border-radius:16px;padding:15px 16px;display:flex;align-items:center;gap:11px}
+.mag{width:16px;height:16px;border:2px solid var(--muted);border-radius:99px;position:relative;flex:0 0 auto}
+.mag:after{content:"";position:absolute;right:-5px;bottom:-4px;width:7px;height:2px;background:var(--muted);transform:rotate(45deg)}
+.searchbar span{font-size:15px;font-weight:700;letter-spacing:-.02em}
+
+/* champs */
+.field{background:var(--card);border-radius:16px;padding:13px 15px;display:flex;align-items:center;gap:12px}
+.field+.field{margin-top:8px}
+.pt{width:9px;height:9px;border-radius:99px;flex:0 0 auto}
+.pt.a{background:var(--accFill)}.pt.b{background:var(--moneyFill)}
+.field .lb{font-size:10.5px;font-weight:600;color:var(--muted)}
+.field .vl{font-size:14.5px;font-weight:700;letter-spacing:-.02em;margin-top:1px}
+
+/* prix */
+.priceBox{background:var(--card);border-radius:20px;padding:22px 16px;display:flex;flex-direction:column;align-items:center;gap:15px;margin-top:10px}
+.plab{font-size:11px;font-weight:700;color:var(--muted)}
+.amt{display:flex;align-items:baseline;gap:7px;color:var(--moneyInk)}
+.amt .v{font-size:52px;font-weight:800;letter-spacing:-.05em;line-height:50px}
+.amt .c{font-size:14px;font-weight:700}
+.step{display:flex;align-items:center;gap:16px}
+.step button{width:52px;height:52px;border-radius:16px;border:0;background:var(--card2);color:var(--ink);font:700 24px/1 "Inter";cursor:pointer}
+.step .p{font-size:11.5px;font-weight:700;color:var(--muted);width:52px;text-align:center}
+.hintline{font-size:12px;font-weight:500;color:var(--muted);text-align:center;line-height:17px}
+
+/* boutons */
+.btn{width:100%;height:56px;border:0;border-radius:16px;background:var(--accFill);color:var(--onAcc);font:800 16px/1 "Inter";letter-spacing:-.02em;cursor:pointer}
+.btn.sec{background:var(--card);color:var(--ink);font-weight:700}
+.btn.ok{background:var(--ok);color:var(--onOk)}
+.btn.gh{background:transparent;color:var(--muted);font-weight:700;height:44px}
+.two{display:flex;gap:9px}
+
+/* offres */
+.h2{font-size:23px;font-weight:800;letter-spacing:-.035em;line-height:28px}
+.sub{font-size:13px;font-weight:500;color:var(--muted);margin-top:6px}
+.offers{flex:1;display:flex;flex-direction:column;gap:9px;overflow:hidden;margin-top:13px}
+.off{background:var(--card);border-radius:20px;padding:12px 13px;animation:up .18s ease-out both}
+.off:nth-child(2){animation-delay:.07s}.off:nth-child(3){animation-delay:.14s}
+@keyframes up{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.off{animation:none}}
+.offTop{display:flex;align-items:center;gap:11px}
+.av{border-radius:99px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;color:#0E1C2C}
+.a42{width:42px;height:42px}
+.av.g{background:#D6F9EB}.av.y{background:#F5A524}.av.b{background:#9EC5F5}.av.p{background:#D9B6F0}
+.offTop .w{flex:1;min-width:0}
+.offTop .n{font-size:14.5px;font-weight:700;letter-spacing:-.02em}
+.offTop .m{font-size:11.5px;font-weight:500;color:var(--muted);margin-top:2px}
+.offTop .pz{text-align:right}
+.offTop .pz .v{font-size:22px;font-weight:800;color:var(--moneyInk);letter-spacing:-.03em}
+.offTop .pz .d{font-size:10.5px;font-weight:600;color:var(--accInk);margin-top:2px}
+.offAct{display:flex;gap:8px;margin-top:11px}
+.offAct button{flex:1;height:40px;border:0;border-radius:12px;font:700 13px/1 "Inter";cursor:pointer}
+.offAct .y{background:var(--accFill);color:var(--onAcc);flex:1.7}
+.offAct .n{background:var(--card2);color:var(--muted)}
+
+/* course */
+.etaBar{background:var(--accFill);color:var(--onAcc);border-radius:20px;padding:15px;text-align:center}
+.etaBar .v{font-size:26px;font-weight:800;letter-spacing:-.03em}
+.etaBar .k{font-size:12.5px;font-weight:700;margin-top:3px}
+.drvcard{background:var(--card2);border-radius:20px;padding:14px;display:flex;align-items:center;gap:12px;margin-top:10px}
+.drvcard .n{font-size:15.5px;font-weight:700;letter-spacing:-.02em}
+.drvcard .m{font-size:12px;color:var(--muted);font-weight:500;margin-top:2px}
+.drvcard .pz{margin-left:auto;text-align:right}
+.drvcard .pz .v{font-size:20px;font-weight:800;color:var(--moneyInk)}
+.drvcard .pz .k{font-size:10px;color:var(--muted);font-weight:600;margin-top:2px}
+
+/* interurbain */
+.city{background:var(--card);border-radius:20px;padding:13px 14px;display:flex;align-items:center;gap:12px}
+.city+.city{margin-top:9px}
+.city .img{width:56px;height:56px;border-radius:14px;overflow:hidden;flex:0 0 auto}
+.city .w{flex:1;min-width:0}
+.city .n{font-size:15px;font-weight:700;letter-spacing:-.02em}
+.city .m{font-size:11.5px;color:var(--muted);font-weight:500;margin-top:2px}
+.city .pz{text-align:right}
+.city .pz .k{font-size:10px;color:var(--muted);font-weight:600}
+.city .pz .v{font-size:17px;font-weight:800;color:var(--moneyInk);margin-top:1px}
+
+/* statut chauffeur */
+.dispo{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--ok)}
+.dispo i{width:7px;height:7px;border-radius:99px;background:var(--ok);display:block}
+.ctr{background:var(--card);border-radius:20px;padding:16px;margin-top:10px;display:flex;flex-direction:column;align-items:center;gap:12px}
+.ctr .lab{font-size:11px;font-weight:700;color:var(--muted)}
+
+.tabs{display:flex;justify-content:space-around;padding:11px 14px 6px;background:var(--card);flex:0 0 auto}
+.tb{font-size:10px;font-weight:700;color:var(--muted);text-align:center}
+.tb.on{color:var(--accInk)}
+.tb i{display:block;width:22px;height:22px;border-radius:8px;background:var(--card2);margin:0 auto 5px}
+.tb.on i{background:var(--accFill)}
+
+/* jetons */
+.tok{width:300px;height:646px;border-radius:34px;background:var(--card);padding:20px 18px;overflow:hidden;box-shadow:0 0 0 1px var(--line)}
+.tok h4{font-size:17px;font-weight:800;letter-spacing:-.02em;margin-bottom:4px}
+.tok .d{font-size:11.5px;color:var(--muted);font-weight:500;line-height:16px;margin-bottom:14px}
+.pair{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+.pair .sw{width:38px;height:38px;border-radius:11px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800}
+.pair .tx{font-size:11.5px;font-weight:600;line-height:15px}
+.pair .tx b{display:block;font-size:12.5px;font-weight:700}
+.pair .tx span{color:var(--muted);font-weight:500}
+.rule{font-size:11.5px;font-weight:600;line-height:17px;padding:10px 12px;background:var(--card2);border-radius:12px;margin-top:9px}
+</style>
+</head>
+<body>
+
+<div class="hd">
+  <h1>Fle<em>x</em></h1>
+  <p data-fr="Bleu nuit + menthe, corrigé pour le contraste. Chaque accent a un remplissage et une encre."
+     data-en="Navy + mint, contrast-corrected. Every accent has a fill and an ink.">Bleu nuit + menthe, corrigé pour le contraste. Chaque accent a un remplissage et une encre.</p>
+</div>
+
+<div class="bar">
+  <div class="seg" id="theme">
+    <button aria-pressed="true" data-t="dark" data-fr="Sombre" data-en="Dark">Sombre</button>
+    <button aria-pressed="false" data-t="light" data-fr="Clair" data-en="Light">Clair</button>
+  </div>
+  <div class="seg" id="lang">
+    <button aria-pressed="true" data-l="fr">FR</button>
+    <button aria-pressed="false" data-l="en">EN</button>
+  </div>
+</div>
+
+<div class="grid">
+
+  <!-- 1 ACCUEIL -->
+  <div class="cell">
+    <div class="cap" data-fr="1 · Accueil" data-en="1 · Home">1 · Accueil</div>
+    <div class="phone">
+      <div class="st"><span>9:41</span><span class="r">4G ▮</span></div>
+      <div class="mapwrap">
+        <svg viewBox="0 0 300 236" preserveAspectRatio="xMidYMid slice" style="height:236px">
+          <rect width="300" height="236" fill="var(--map)"/>
+          <path d="M0 0 H300 V36 C232 52 190 34 130 54 C86 68 44 56 0 74 Z" fill="var(--water)"/>
+          <g fill="var(--block)">
+            <rect x="24" y="100" width="32" height="26" rx="4"/><rect x="70" y="96" width="26" height="30" rx="4"/>
+            <rect x="24" y="148" width="30" height="32" rx="4"/><rect x="200" y="98" width="32" height="28" rx="4"/>
+            <rect x="244" y="112" width="28" height="32" rx="4"/><rect x="206" y="162" width="34" height="26" rx="4"/>
+          </g>
+          <g stroke="var(--road)" stroke-width="10" fill="none" stroke-linecap="round">
+            <path d="M-6 136 C70 128 190 144 306 132"/><path d="M-6 190 H306"/>
+            <path d="M116 80 C110 126 122 176 118 242"/><path d="M186 76 C192 126 180 176 186 242"/>
+          </g>
+        </svg>
+        <div class="fab"><i></i><i></i><i></i></div>
+        <div class="roleTop">
+          <b class="on" data-fr="Passager" data-en="Rider">Passager</b>
+          <b data-fr="Chauffeur" data-en="Driver">Chauffeur</b>
+        </div>
+        <div class="chipTop"><span data-fr="Point de départ" data-en="Pickup point">Point de départ</span>Cité Avion, Ouakam</div>
+      </div>
+
+      <div class="sheet">
+        <div class="grab"></div>
+        <div class="tiles">
+          <div class="tile">
+            <svg viewBox="0 0 132 96">
+              <path d="M74 4 L124 16 L100 44 L130 56 L74 92 L88 54 L58 44 Z" fill="var(--accFill)" opacity=".9"/>
+              <g fill="var(--card2)" stroke="var(--ink)" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round">
+                <path d="M10 74 L14 58 C15.5 53 20 50 25 50 L62 50 C66 50 69 51.5 72 54 L82 64 L94 67 C98 68 101 71 101 75 L101 80 L10 80 Z"/>
+                <circle cx="30" cy="80" r="7.5"/><circle cx="82" cy="80" r="7.5"/>
+                <path d="M28 50 L32 39 C33.5 35 36.5 33 40 33 L60 33 C63.5 33 66 35 67.5 39 L71 50"/>
+              </g>
+            </svg>
+            <h3 data-fr="Trajet urbain" data-en="City ride">Trajet urbain</h3>
+            <p data-fr="Fixez votre prix" data-en="Set your price">Fixez votre prix</p>
+          </div>
+          <div class="tile">
+            <svg viewBox="0 0 132 96">
+              <path d="M80 6 L126 20 L104 44 L130 58 L78 92 L90 56 L62 46 Z" fill="var(--accFill)" opacity=".9"/>
+              <g fill="var(--card2)" stroke="var(--ink)" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round">
+                <path d="M8 76 L12 60 C13.5 55 18 52 23 52 L56 52 C60 52 63 53.5 66 56 L76 66 L88 69 C92 70 95 73 95 77 L95 82 L8 82 Z"/>
+                <circle cx="28" cy="82" r="7.5"/><circle cx="78" cy="82" r="7.5"/>
+                <rect x="96" y="56" width="22" height="26" rx="3"/><path d="M96 66 H118"/>
+              </g>
+            </svg>
+            <h3 data-fr="D'une ville à l'autre" data-en="City to city">D'une ville à l'autre</h3>
+            <p data-fr="Trajets interurbains" data-en="Intercity trips">Trajets interurbains</p>
+          </div>
+        </div>
+
+        <div class="searchbar">
+          <span class="mag"></span>
+          <span data-fr="Où allez-vous ?" data-en="Where to?">Où allez-vous ?</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2 PRIX -->
+  <div class="cell">
+    <div class="cap" data-fr="2 · Fixez votre prix" data-en="2 · Set your price">2 · Fixez votre prix</div>
+    <div class="phone">
+      <div class="st"><span>9:41</span><span class="r">4G ▮</span></div>
+      <div class="body">
+        <div class="field" style="margin-top:6px">
+          <span class="pt a"></span>
+          <div><div class="lb" data-fr="Départ" data-en="From">Départ</div><div class="vl">Cité Avion, Ouakam</div></div>
+        </div>
+        <div class="field">
+          <span class="pt b"></span>
+          <div><div class="lb" data-fr="Destination" data-en="To">Destination</div><div class="vl">Place de l'Indépendance</div></div>
+        </div>
+
+        <div class="priceBox">
+          <div class="plab" data-fr="Votre prix" data-en="Your price">Votre prix</div>
+          <div class="amt"><span class="v tab-num">2 500</span><span class="c">FCFA</span></div>
+          <div class="step"><button>−</button><span class="p">100 F</span><button>+</button></div>
+          <div class="hintline" data-fr="La plupart paient entre 2 300 et 2 800 FCFA" data-en="Most people pay 2 300 – 2 800 FCFA">La plupart paient entre 2 300 et 2 800 FCFA</div>
+        </div>
+
+        <div class="spacer"></div>
+        <button class="btn" data-fr="Envoyer ma proposition" data-en="Send my offer">Envoyer ma proposition</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3 OFFRES -->
+  <div class="cell">
+    <div class="cap" data-fr="3 · Offres reçues" data-en="3 · Offers in">3 · Offres reçues</div>
+    <div class="phone">
+      <div class="st"><span>9:41</span><span class="r">4G ▮</span></div>
+      <div class="body">
+        <div class="h2" style="margin-top:8px" data-fr="3 chauffeurs vous répondent" data-en="3 drivers replied">3 chauffeurs vous répondent</div>
+        <div class="sub" data-fr="Vous aviez proposé 2 500 FCFA · encore 45 s" data-en="You offered 2 500 FCFA · 45 s left">Vous aviez proposé 2 500 FCFA · encore 45 s</div>
+
+        <div class="offers">
+          <div class="off">
+            <div class="offTop">
+              <span class="av g a42">O</span>
+              <div class="w"><div class="n">Ousmane</div><div class="m" data-fr="3 min · Picanto grise · ★ 4,8" data-en="3 min · grey Picanto · ★ 4.8">3 min · Picanto grise · ★ 4,8</div></div>
+              <div class="pz"><div class="v tab-num">2 700</div><div class="d" data-fr="contre-offre" data-en="counter-offer">contre-offre</div></div>
+            </div>
+            <div class="offAct">
+              <button class="y" data-fr="Accepter" data-en="Accept">Accepter</button>
+              <button class="n" data-fr="Refuser" data-en="Decline">Refuser</button>
+            </div>
+          </div>
+          <div class="off">
+            <div class="offTop">
+              <span class="av y a42">F</span>
+              <div class="w"><div class="n">Fatou</div><div class="m" data-fr="6 min · Yaris blanche · ★ 4,9" data-en="6 min · white Yaris · ★ 4.9">6 min · Yaris blanche · ★ 4,9</div></div>
+              <div class="pz"><div class="v tab-num">2 500</div><div class="d" data-fr="votre prix" data-en="your price">votre prix</div></div>
+            </div>
+            <div class="offAct">
+              <button class="y" data-fr="Accepter" data-en="Accept">Accepter</button>
+              <button class="n" data-fr="Refuser" data-en="Decline">Refuser</button>
+            </div>
+          </div>
+          <div class="off">
+            <div class="offTop">
+              <span class="av b a42">M</span>
+              <div class="w"><div class="n">Modou</div><div class="m" data-fr="2 min · Symbol bleue · ★ 4,6" data-en="2 min · blue Symbol · ★ 4.6">2 min · Symbol bleue · ★ 4,6</div></div>
+              <div class="pz"><div class="v tab-num">3 000</div><div class="d" data-fr="contre-offre" data-en="counter-offer">contre-offre</div></div>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn sec" style="margin-top:10px;height:48px" data-fr="Changer mon prix" data-en="Change my price">Changer mon prix</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4 CHAUFFEUR -->
+  <div class="cell">
+    <div class="cap" data-fr="4 · Mode chauffeur" data-en="4 · Driver mode">4 · Mode chauffeur</div>
+    <div class="phone">
+      <div class="st"><span>9:41</span><span class="dispo"><i></i><span data-fr="Disponible" data-en="Available">Disponible</span></span></div>
+      <div class="body">
+        <div class="h2" style="margin-top:8px" data-fr="Nouvelle demande à 1,4 km" data-en="New request 1.4 km away">Nouvelle demande à 1,4 km</div>
+
+        <div class="priceBox" style="padding:20px 16px;margin-top:12px">
+          <div class="plab" data-fr="Elle propose" data-en="She's offering">Elle propose</div>
+          <div class="amt"><span class="v tab-num">2 500</span><span class="c">FCFA</span></div>
+          <div class="hintline">11 km · 25 min</div>
+        </div>
+
+        <div class="field" style="margin-top:10px"><span class="pt a"></span><div><div class="vl">Cité Avion, Ouakam</div></div></div>
+        <div class="field"><span class="pt b"></span><div><div class="vl">Place de l'Indépendance</div></div></div>
+
+        <div style="display:flex;align-items:center;gap:10px;margin-top:13px">
+          <span class="av p" style="width:30px;height:30px;font-size:12px">A</span>
+          <span style="font-size:12px;font-weight:600;color:var(--muted)" data-fr="Awa · 23 courses · ★ 4,9" data-en="Awa · 23 rides · ★ 4.9">Awa · 23 courses · ★ 4,9</span>
+        </div>
+
+        <div class="spacer"></div>
+        <button class="btn ok" data-fr="Accepter à 2 500" data-en="Accept at 2 500">Accepter à 2 500</button>
+        <button class="btn sec" style="margin-top:9px" data-fr="Contre-proposer 2 800" data-en="Counter at 2 800">Contre-proposer 2 800</button>
+        <button class="btn gh" style="margin-top:2px" data-fr="Refuser" data-en="Decline">Refuser</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5 INTERURBAIN -->
+  <div class="cell">
+    <div class="cap" data-fr="5 · D'une ville à l'autre" data-en="5 · City to city">5 · D'une ville à l'autre</div>
+    <div class="phone">
+      <div class="st"><span>9:41</span><span class="r">4G ▮</span></div>
+      <div class="body">
+        <div class="h2" style="margin-top:8px" data-fr="Au départ de Dakar" data-en="Leaving from Dakar">Au départ de Dakar</div>
+        <div class="sub" data-fr="Proposez votre prix, un chauffeur vous répond" data-en="Name your price, a driver replies">Proposez votre prix, un chauffeur vous répond</div>
+
+        <div style="margin-top:14px;overflow:hidden">
+          <div class="city">
+            <div class="img"><svg viewBox="0 0 56 56"><rect width="56" height="56" fill="#6E8FB8"/><rect y="34" width="56" height="22" fill="#B99268"/><path d="M0 34 L16 22 L32 34 Z" fill="#8FA9C6"/><circle cx="44" cy="14" r="7" fill="#F2D98B"/></svg></div>
+            <div class="w"><div class="n">Thiès</div><div class="m">70 km · 1 h 15</div></div>
+            <div class="pz"><div class="k" data-fr="dès" data-en="from">dès</div><div class="v tab-num">2 000</div></div>
+          </div>
+          <div class="city">
+            <div class="img"><svg viewBox="0 0 56 56"><rect width="56" height="56" fill="#8CA98C"/><rect y="38" width="56" height="18" fill="#C08A54"/><path d="M8 38 C8 22 18 16 22 16 C26 16 36 22 36 38 Z" fill="#4E6B48"/><rect x="20" y="32" width="4" height="12" fill="#5C4632"/></svg></div>
+            <div class="w"><div class="n">Mbour / Saly</div><div class="m">80 km · 1 h 30</div></div>
+            <div class="pz"><div class="k" data-fr="dès" data-en="from">dès</div><div class="v tab-num">2 500</div></div>
+          </div>
+          <div class="city">
+            <div class="img"><svg viewBox="0 0 56 56"><rect width="56" height="56" fill="#D8C39A"/><rect y="36" width="56" height="20" fill="#BFA070"/><rect x="16" y="14" width="24" height="22" fill="#F0E4CC"/><path d="M16 14 L28 4 L40 14 Z" fill="#E2D2B2"/><rect x="26" y="24" width="5" height="12" fill="#9C8358"/></svg></div>
+            <div class="w"><div class="n">Touba</div><div class="m">190 km · 3 h</div></div>
+            <div class="pz"><div class="k" data-fr="dès" data-en="from">dès</div><div class="v tab-num">5 000</div></div>
+          </div>
+          <div class="city">
+            <div class="img"><svg viewBox="0 0 56 56"><rect width="56" height="56" fill="#7FA8C4"/><rect y="32" width="56" height="24" fill="#C4A882"/><rect x="4" y="26" width="48" height="6" fill="#D95F4A"/><rect x="14" y="14" width="10" height="12" fill="#F2E8D8"/><rect x="32" y="16" width="10" height="10" fill="#F2E8D8"/></svg></div>
+            <div class="w"><div class="n">Saint-Louis</div><div class="m">260 km · 4 h</div></div>
+            <div class="pz"><div class="k" data-fr="dès" data-en="from">dès</div><div class="v tab-num">6 500</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="tabs">
+        <div class="tb on"><i></i><span data-fr="Partir" data-en="Go">Partir</span></div>
+        <div class="tb"><i></i><span data-fr="Trajets" data-en="Trips">Trajets</span></div>
+        <div class="tb"><i></i><span data-fr="Messages" data-en="Messages">Messages</span></div>
+        <div class="tb"><i></i><span data-fr="Profil" data-en="Profile">Profil</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6 EN ROUTE -->
+  <div class="cell">
+    <div class="cap" data-fr="6 · En route" data-en="6 · On the way">6 · En route</div>
+    <div class="phone">
+      <div class="st"><span>9:44</span><span class="r">4G ▮</span></div>
+      <div class="mapwrap">
+        <svg viewBox="0 0 300 250" preserveAspectRatio="xMidYMid slice" style="height:250px">
+          <rect width="300" height="250" fill="var(--map)"/>
+          <path d="M0 0 H300 V32 C232 48 190 30 130 50 C86 64 44 52 0 70 Z" fill="var(--water)"/>
+          <g fill="var(--block)">
+            <rect x="26" y="96" width="30" height="26" rx="4"/><rect x="72" y="92" width="26" height="30" rx="4"/>
+            <rect x="206" y="94" width="32" height="28" rx="4"/><rect x="212" y="160" width="34" height="28" rx="4"/>
+          </g>
+          <g stroke="var(--road)" stroke-width="10" fill="none" stroke-linecap="round">
+            <path d="M-6 134 C70 126 190 142 306 130"/><path d="M-6 190 H306"/>
+            <path d="M116 78 V256"/><path d="M190 74 V256"/>
+          </g>
+          <path d="M64 204 C64 172 90 164 116 162 C144 160 152 126 178 122 C188 120 192 116 194 110"
+                stroke="var(--accFill)" stroke-width="6" fill="none" stroke-linecap="round"/>
+          <circle cx="64" cy="204" r="9" fill="var(--accFill)" stroke="var(--map)" stroke-width="4"/>
+          <circle cx="194" cy="110" r="9" fill="var(--moneyFill)" stroke="var(--map)" stroke-width="4"/>
+        </svg>
+      </div>
+      <div class="sheet" style="padding:9px 14px 14px">
+        <div class="grab"></div>
+        <div class="etaBar">
+          <div class="v">3 min</div>
+          <div class="k" data-fr="Ousmane arrive vers vous" data-en="Ousmane is on the way">Ousmane arrive vers vous</div>
+        </div>
+        <div class="drvcard">
+          <span class="av g a42">O</span>
+          <div><div class="n">Ousmane</div><div class="m">Picanto grise · DK 4821 A</div></div>
+          <div class="pz"><div class="v tab-num">2 700</div><div class="k" data-fr="convenu" data-en="agreed">convenu</div></div>
+        </div>
+        <div class="two" style="margin-top:10px">
+          <button class="btn" style="height:50px" data-fr="Appeler" data-en="Call">Appeler</button>
+          <button class="btn sec" style="height:50px;background:var(--card2)" data-fr="Écrire" data-en="Message">Écrire</button>
+        </div>
+        <button class="btn gh" style="color:var(--danger)" data-fr="Annuler la course" data-en="Cancel the ride">Annuler la course</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JETONS -->
+  <div class="cell">
+    <div class="cap" data-fr="Jetons — remplissage / encre" data-en="Tokens — fill / ink">Jetons — remplissage / encre</div>
+    <div class="tok">
+      <h4 data-fr="Chaque accent a deux jetons" data-en="Every accent has two tokens">Chaque accent a deux jetons</h4>
+      <div class="d" data-fr="Un pour remplir une surface, un pour écrire du texte. Ne jamais confondre les deux — c'est l'erreur qui rend un mode clair illisible."
+          data-en="One to fill a surface, one to write text. Never mix them — that's the mistake that makes a light theme unreadable.">Un pour remplir une surface, un pour écrire du texte. Ne jamais confondre les deux — c'est l'erreur qui rend un mode clair illisible.</div>
+
+      <div class="pair"><span class="sw" style="background:var(--accFill);color:var(--onAcc)">Aa</span>
+        <span class="tx"><b>accFill</b><span data-fr="fond de bouton, pastille, tracé de carte" data-en="button fill, chip, map route">fond de bouton, pastille, tracé de carte</span></span></div>
+      <div class="pair"><span class="sw" style="background:var(--card2);color:var(--accInk)">Aa</span>
+        <span class="tx"><b>accInk</b><span data-fr="texte et icônes accent" data-en="accent text and icons">texte et icônes accent</span></span></div>
+      <div class="pair"><span class="sw" style="background:var(--moneyFill);color:var(--onMoney)">Aa</span>
+        <span class="tx"><b>moneyFill</b><span data-fr="point d'arrivée, badge — jamais de texte" data-en="drop pin, badge — never text">point d'arrivée, badge — jamais de texte</span></span></div>
+      <div class="pair"><span class="sw" style="background:var(--card2);color:var(--moneyInk)">Aa</span>
+        <span class="tx"><b>moneyInk</b><span data-fr="tous les montants, partout" data-en="every amount, everywhere">tous les montants, partout</span></span></div>
+      <div class="pair"><span class="sw" style="background:var(--ok);color:var(--onOk)">Aa</span>
+        <span class="tx"><b>ok</b><span data-fr="accepter — action du chauffeur" data-en="accept — driver action">accepter — action du chauffeur</span></span></div>
+
+      <div class="rule" data-fr="L'ambre appartient aux montants. Une contre-offre est un statut : elle s'écrit en accInk, pas en ambre — sinon on ne distingue plus un prix d'un état."
+          data-en="Amber belongs to amounts. A counter-offer is a status: write it in accInk, not amber — otherwise a price and a state look the same.">L'ambre appartient aux montants. Une contre-offre est un statut : elle s'écrit en accInk, pas en ambre — sinon on ne distingue plus un prix d'un état.</div>
+      <div class="rule" data-fr="Chiffres tabulaires sur tout montant qui peut changer, sinon le prix tressaute à chaque appui sur +."
+          data-en="Tabular figures on any amount that can change, otherwise the price jitters on every tap of +.">Chiffres tabulaires sur tout montant qui peut changer, sinon le prix tressaute à chaque appui sur +.</div>
+      <div class="rule" data-fr="Une garde en CI échoue si une paire texte/fond passe sous 4,5:1 — dans les deux thèmes."
+          data-en="A CI guard fails if any text/background pair drops below 4.5:1 — in both themes.">Une garde en CI échoue si une paire texte/fond passe sous 4,5:1 — dans les deux thèmes.</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  var lang='fr';
+  function applyLang(){
+    document.querySelectorAll('[data-fr]').forEach(function(el){el.textContent=el.getAttribute('data-'+lang);});
+    document.documentElement.lang=lang;
+  }
+  document.getElementById('lang').addEventListener('click',function(e){
+    var b=e.target.closest('button'); if(!b)return;
+    lang=b.dataset.l;
+    this.querySelectorAll('button').forEach(function(x){x.setAttribute('aria-pressed',x===b);});
+    applyLang();
+  });
+  document.getElementById('theme').addEventListener('click',function(e){
+    var b=e.target.closest('button'); if(!b)return;
+    document.documentElement.setAttribute('data-theme',b.dataset.t);
+    this.querySelectorAll('button').forEach(function(x){x.setAttribute('aria-pressed',x===b);});
+  });
+</script>
+</body>
+</html>

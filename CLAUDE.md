@@ -81,6 +81,15 @@ Budget non négociable, cible Android d'entrée de gamme en 3G :
 - Clés restreintes : iOS par bundle, Android par SHA-1. Une clé mal restreinte affiche une carte
   grise sans message d'erreur.
 
+## Lieux
+
+- Un nom de commune vient d'une table locale de centroïdes **approximatifs**, jamais d'un
+  reverse geocoding. L'interface ne l'annonce donc jamais sèchement : elle écrit
+  **« vers Plateau »**, pas « Plateau ». Le mot de couverture coûte zéro et évite de
+  présenter une approximation comme un fait. Clé `conducteur.versCommune`.
+- La règle tombe le jour où les polygones réels des communes remplacent les centroïdes —
+  le test `todo` de `supabase/tests/110_communes.sql` passera au vert ce jour-là.
+
 ## Écriture d'interface
 
 - Voix active. Un bouton dit ce qui se passe : « Envoyer ma proposition », pas « Soumettre ».

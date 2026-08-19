@@ -84,6 +84,32 @@ cp .env.example .env      # renseigner Supabase et la clé Google Maps
 pnpm start
 ```
 
+## Base de données
+
+Tout se joue en local tant que le schéma n'est pas stable. Rien n'est poussé sur le projet
+distant.
+
+```bash
+pnpm db:start   # Postgres + Auth + Realtime en conteneurs (ports 546xx)
+pnpm db:reset   # rejoue toutes les migrations à neuf
+pnpm db:test    # pgTAP
+pnpm db:lint
+pnpm db:types   # régénère src/lib/database.types.ts
+```
+
+Migrations en ajout seul. Aucune table n'accorde `insert`, `update` ni `delete` au client :
+tout passe par les fonctions RPC. Trois vues en projection de colonnes servent ce qu'un
+conducteur a le droit de voir avant acceptation — la RLS filtre des lignes, pas des colonnes.
+
+**`expire_stale()` est planifiée par `pg_cron`, toutes les minutes.** La migration
+`20260819090400_cron_expire_stale.sql` pose la tâche là où l'extension existe — c'est le cas
+en local, l'image Supabase la précharge — et se contente d'un `notice` ailleurs. Sur le projet
+distant, la planification ne commence qu'une fois la migration appliquée là-bas.
+
+**PostGIS sert à l'appariement, pas à l'affichage.** Il tourne dans la base : ce n'est pas une
+API facturée, et la règle « ni Places, ni Directions, ni Geocoding » n'est pas concernée. Les
+noms de quartier viennent d'une table locale de communes, jamais d'un reverse geocoding.
+
 ## Gardes
 
 ```bash

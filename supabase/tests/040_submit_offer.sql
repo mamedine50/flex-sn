@@ -15,8 +15,10 @@ declare v_id uuid := gen_random_uuid();
 begin
   insert into auth.users (id, email)
   values (v_id, 'u' || replace(v_id::text, '-', '') || '@flex.test');
-  insert into public.profiles (id, role, prenom, nom_complet, telephone)
-  values (v_id, p_role, p_prenom, p_nom, p_tel);
+  insert into public.profiles (id, role, prenom, nom_complet, telephone, documents_valides_le)
+  values (v_id, p_role, p_prenom, p_nom, p_tel,
+          -- Conduire est une capacité : sans documents validés, pas d'offre.
+          case when p_role = 'conducteur' then now() end);
   return v_id;
 end; $$;
 
@@ -43,14 +45,14 @@ select * from public.create_ride_request('urbain', 14.6928, -17.4467, 'Plateau',
                                          14.7167, -17.4677, 'Ouakam', 2500);
 set local role postgres;
 
--- ------------------------------------------------------------- mauvais rôle --
+-- ------------------------------------------------------ documents non validés --
 select public.t_devenir((select passager from f));
 set local role authenticated;
 select throws_ok(
   format($$ select public.submit_offer(%L, 'acceptation', 2500, 4::smallint) $$,
          (select id from d)),
-  'P0001', 'role_invalide',
-  'un passager ne soumet pas d''offre'
+  'P0001', 'documents_non_valides',
+  'un compte sans documents validés ne soumet pas d''offre'
 );
 set local role postgres;
 

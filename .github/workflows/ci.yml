@@ -45,6 +45,9 @@ jobs:
       # besoin d'une vraie base, pas d'un double.
       - run: supabase db start
 
-      - run: supabase db lint --level warning
+      # Restreint à `public` : le schéma `extensions` porte les fonctions
+      # internes de PostGIS, qui déclenchent des dizaines d'avertissements sur
+      # du code qui n'est pas le nôtre.
+      - run: supabase db lint --level warning --schema public
 
       - run: supabase test db supabase/tests

@@ -13,8 +13,10 @@ declare v_id uuid := gen_random_uuid();
 begin
   insert into auth.users (id, email)
   values (v_id, 'u' || replace(v_id::text, '-', '') || '@flex.test');
-  insert into public.profiles (id, role, prenom, nom_complet, telephone)
-  values (v_id, p_role, p_prenom, p_nom, p_tel);
+  insert into public.profiles (id, role, prenom, nom_complet, telephone, documents_valides_le)
+  values (v_id, p_role, p_prenom, p_nom, p_tel,
+          -- Conduire est une capacité : sans documents validés, pas d'offre.
+          case when p_role = 'conducteur' then now() end);
   return v_id;
 end; $$;
 
