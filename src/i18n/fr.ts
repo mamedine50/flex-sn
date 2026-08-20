@@ -324,6 +324,7 @@ export const fr = {
     titre: 'À propos',
     version: 'Version {version}',
     cartes: 'Cartes et lieux',
+    documents: 'Documents',
     osmAttribution: '© contributeurs OpenStreetMap',
     osmLicence: 'Les quartiers, arrêts et repères de Flex viennent d’OpenStreetMap, sous licence ODbL. La base reste libre, et les données qui en dérivent le restent aussi.',
     osmLien: 'openstreetmap.org/copyright',
@@ -375,10 +376,8 @@ export const fr = {
   },
 
   accroche: {
-    titre1: 'Vous fixez votre prix',
-    sous1: 'Proposez ce que vous êtes prêt à payer. Personne ne décide à votre place.',
-    titre2: 'Les conducteurs répondent',
-    sous2: 'Ils acceptent, refusent ou proposent un autre prix. Vous choisissez.',
+    titre: 'Le prix, c’est vous qui le dites',
+    sous: 'Proposez votre prix, un chauffeur vous répond.',
     continuer: 'Continuer',
     legal: 'En continuant, vous acceptez nos {conditions} et notre {confidentialite}.',
     conditions: 'conditions d’utilisation',
@@ -401,6 +400,33 @@ export const fr = {
     aucunAide: 'Enregistrez votre domicile : il apparaîtra en premier au moment de choisir.',
     plafond: 'Vous avez atteint la limite de lieux enregistrés.',
     prive: 'Ce nom et cette précision ne sont visibles que par vous.',
+  },
+
+  localisation: {
+    titre: 'Votre position',
+    explication: 'Flex utilise votre position pour placer votre point de départ. Jamais en arrière-plan.',
+    autoriser: 'Autoriser',
+    plusTard: 'Plus tard',
+  },
+
+  couverture: {
+    horsZone: 'Flex est disponible dans la région de Dakar pour le moment.',
+  },
+
+  legal: {
+    provisoire: 'Version provisoire',
+    provisoireAide: 'Ce texte est une trame de travail. Il sera remplacé par la version rédigée par un juriste avant toute ouverture au public. Il n’a aucune valeur contractuelle en l’état.',
+
+    conditionsTitre: 'Conditions d’utilisation',
+    conditionsIntro: 'Flex met en relation des passagers et des conducteurs indépendants. Flex n’est pas un transporteur.',
+    conditionsSections: 'Objet du service|Qui peut s’inscrire|Le prix et la négociation|Obligations du passager|Obligations du conducteur|Annulation|Responsabilité|Suspension d’un compte|Droit applicable',
+
+    confidentialiteTitre: 'Politique de confidentialité',
+    confidentialiteIntro: 'Ce que Flex collecte, pourquoi, et ce que les autres en voient.',
+    confidentialiteSections: 'Données collectées|Position : ce qui est servi et à qui|Numéro de téléphone|Pièces du dossier conducteur|Durée de conservation|Vos droits|Nous contacter',
+
+    dejaVrai: 'Ce qui est déjà vrai dans l’application',
+    dejaVraiTexte: 'Avant acceptation, un conducteur ne voit ni votre nom complet, ni votre numéro, ni votre position exacte — seulement une zone arrondie et un nom de commune. Le nom de vos lieux enregistrés et vos précisions ne quittent jamais votre téléphone. Ces règles sont vérifiées par des tests automatisés à chaque modification.',
   },
 
   erreurs: {

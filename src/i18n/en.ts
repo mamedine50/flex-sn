@@ -309,6 +309,7 @@ export const en: Dictionnaire = {
     titre: 'About',
     version: 'Version {version}',
     cartes: 'Maps and places',
+    documents: 'Documents',
     osmAttribution: '© OpenStreetMap contributors',
     osmLicence: 'Flex’s neighbourhoods, stops and landmarks come from OpenStreetMap, under the ODbL licence. The database stays open, and so does anything derived from it.',
     osmLien: 'openstreetmap.org/copyright',
@@ -360,10 +361,8 @@ export const en: Dictionnaire = {
   },
 
   accroche: {
-    titre1: 'You set your price',
-    sous1: 'Offer what you are willing to pay. Nobody decides for you.',
-    titre2: 'Drivers answer',
-    sous2: 'They accept, decline, or offer another price. You choose.',
+    titre: 'You name the price',
+    sous: 'Offer your price, a driver answers.',
     continuer: 'Continue',
     legal: 'By continuing, you agree to our {conditions} and our {confidentialite}.',
     conditions: 'terms of use',
@@ -386,6 +385,33 @@ export const en: Dictionnaire = {
     aucunAide: 'Save your home: it will show up first when you pick a place.',
     plafond: 'You have reached the limit of saved places.',
     prive: 'This name and note are visible to you only.',
+  },
+
+  localisation: {
+    titre: 'Your location',
+    explication: 'Flex uses your location to place your pickup point. Never in the background.',
+    autoriser: 'Allow',
+    plusTard: 'Later',
+  },
+
+  couverture: {
+    horsZone: 'Flex is available in the Dakar area for now.',
+  },
+
+  legal: {
+    provisoire: 'Draft version',
+    provisoireAide: 'This text is a working outline. It will be replaced by a version written by a lawyer before any public launch. As it stands it has no contractual value.',
+
+    conditionsTitre: 'Terms of use',
+    conditionsIntro: 'Flex connects passengers with independent drivers. Flex is not a carrier.',
+    conditionsSections: 'What the service is|Who can sign up|Price and negotiation|Passenger obligations|Driver obligations|Cancellation|Liability|Account suspension|Governing law',
+
+    confidentialiteTitre: 'Privacy policy',
+    confidentialiteIntro: 'What Flex collects, why, and what others get to see.',
+    confidentialiteSections: 'Data collected|Location: what is served, and to whom|Phone number|Driver documents|Retention|Your rights|Contact us',
+
+    dejaVrai: 'What is already true in the app',
+    dejaVraiTexte: 'Before a ride is accepted, a driver sees neither your full name, nor your number, nor your exact position — only a rounded area and a district name. The names of your saved places and your notes never leave your phone. These rules are checked by automated tests on every change.',
   },
 
   erreurs: {

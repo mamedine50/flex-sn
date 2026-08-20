@@ -92,7 +92,34 @@ export default function APropos() {
             {t('aPropos.fondCarte')}
           </Text>
         </View>
+
+        <Text className="mb-8 mt-24 text-[12px] font-bold uppercase tracking-wider text-muted">
+          {t('aPropos.documents')}
+        </Text>
+
+        <Lien
+          titre={t('legal.conditionsTitre')}
+          onPress={() => router.push('/conditions')}
+        />
+        <Lien
+          titre={t('legal.confidentialiteTitre')}
+          onPress={() => router.push('/confidentialite')}
+        />
       </ScrollView>
     </View>
+  );
+}
+
+function Lien({ titre, onPress }: { titre: string; onPress: () => void }) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      onPress={onPress}
+      className="mb-8 min-h-[50px] flex-row items-center justify-between rounded-card bg-card px-16"
+      style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+    >
+      <Text className="flex-1 text-[15px] font-bold text-ink">{titre}</Text>
+      <Text className="text-[15px] font-bold text-muted">›</Text>
+    </Pressable>
   );
 }

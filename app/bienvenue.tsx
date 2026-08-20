@@ -1,57 +1,34 @@
 import { router } from 'expo-router';
-import { useState } from 'react';
-import {
-  Linking,
-  Pressable,
-  ScrollView,
-  Text,
-  useWindowDimensions,
-  View,
-  type NativeScrollEvent,
-  type NativeSyntheticEvent,
-} from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import {
-  AccrocheOnVousRepond,
-  AccrocheVotrePrix,
-} from '../src/components/IllustrationsAccroche';
+import { AccrocheVotrePrix } from '../src/components/IllustrationsAccroche';
 import { useT } from '../src/i18n';
-import { configurerGabarit, noterMesure } from '../src/lib/gabarit';
 import { marquerAccrocheVue } from '../src/lib/accroche';
+import { configurerGabarit, noterMesure } from '../src/lib/gabarit';
 
 /**
- * L'accroche : ce que Flex fait, en deux écrans, avant qu'on demande quoi que
- * ce soit.
+ * Bienvenue.
  *
- * Elle ne se voit qu'UNE FOIS. La revoir à chaque lancement transformerait une
- * présentation en péage. `marquerAccrocheVue()` la referme définitivement, et
- * la marque survit à une déconnexion : on ne réexplique pas le produit à
- * quelqu'un qui l'a déjà utilisé.
+ * UN écran, pas un carrousel. Un carrousel demande un geste avant d'avoir rien
+ * donné, et la moitié des gens n'atteignent jamais la deuxième diapositive :
+ * autant dire la moitié du message en une fois.
  *
- * Le défilement est horizontal et libre — pas de minuterie. Une accroche qui
- * avance toute seule fait rater la moitié de ce qu'elle raconte.
+ * Il ne s'affiche qu'au tout premier lancement, avant toute session. La marque
+ * vit dans le stockage local et survit à une déconnexion — on ne réexplique pas
+ * le produit à quelqu'un qui l'a déjà utilisé.
+ *
+ * La ligne légale n'est pas une décoration : c'est le consentement qui rend
+ * l'inscription valable. Ses deux liens mènent aux pages de l'écran À propos.
  */
 
 const GABARIT = { continuer: 56 };
 
-const PAGES = [
-  { cle: 'titre1', sous: 'sous1', Image: AccrocheVotrePrix },
-  { cle: 'titre2', sous: 'sous2', Image: AccrocheOnVousRepond },
-] as const;
-
 export default function Bienvenue() {
   const t = useT();
   const marges = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
-  const [page, setPage] = useState(0);
 
   configurerGabarit('bienvenue', GABARIT);
-
-  const suivre = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const x = e.nativeEvent.contentOffset.x;
-    setPage(Math.round(x / Math.max(1, width)));
-  };
 
   const continuer = () => {
     void marquerAccrocheVue();
@@ -63,39 +40,18 @@ export default function Bienvenue() {
       <Text className="text-center text-[28px] font-extrabold text-ink">Flex</Text>
 
       <ScrollView
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        onMomentumScrollEnd={suivre}
         className="flex-1"
+        contentContainerClassName="items-center justify-center px-24"
+        contentContainerStyle={{ flexGrow: 1 }}
       >
-        {PAGES.map(({ cle, sous, Image }) => (
-          <View key={cle} className="items-center justify-center px-24" style={{ width }}>
-            <Image />
-            <Text className="mt-32 text-center text-[26px] font-extrabold text-ink">
-              {t(`accroche.${cle}`)}
-            </Text>
-            <Text className="mt-12 text-center text-[16px] font-semibold text-muted">
-              {t(`accroche.${sous}`)}
-            </Text>
-          </View>
-        ))}
+        <AccrocheVotrePrix />
+        <Text className="mt-32 text-center text-[28px] font-extrabold text-ink">
+          {t('accroche.titre')}
+        </Text>
+        <Text className="mt-12 text-center text-[16px] font-semibold text-muted">
+          {t('accroche.sous')}
+        </Text>
       </ScrollView>
-
-      {/* Les points disent où l'on en est. Ils ne se tapent pas : deux cibles de
-          8 px côte à côte sont sous tout seuil raisonnable. */}
-      <View
-        className="mb-24 flex-row justify-center gap-8"
-        accessibilityElementsHidden
-        importantForAccessibility="no-hide-descendants"
-      >
-        {PAGES.map((p, i) => (
-          <View
-            key={p.cle}
-            className={`h-8 w-8 rounded-pill ${i === page ? 'bg-ink' : 'bg-line'}`}
-          />
-        ))}
-      </View>
 
       <View className="px-16" style={{ paddingBottom: marges.bottom + 16 }}>
         <Pressable
@@ -117,16 +73,14 @@ export default function Bienvenue() {
 }
 
 /**
- * La phrase légale.
+ * La phrase légale, avec ses deux liens.
  *
- * Les deux liens ne sont cliquables QUE si les adresses existent. Afficher un
- * lien mort vers des conditions d'utilisation, c'est promettre un document
- * qu'on n'a pas — et c'est le genre de promesse qui se lit devant un juge.
+ * Ils mènent aux pages internes — pas à une URL qui n'existe pas encore. Le
+ * texte de ces pages est PROVISOIRE et le dit : le contenu juridique vient d'un
+ * juriste, pas d'ici.
  */
 function MentionLegale() {
   const t = useT();
-  const conditions = process.env.EXPO_PUBLIC_URL_CONDITIONS;
-  const confidentialite = process.env.EXPO_PUBLIC_URL_CONFIDENTIALITE;
 
   const morceaux = t('accroche.legal')
     .split(/(\{conditions\}|\{confidentialite\})/)
@@ -135,24 +89,20 @@ function MentionLegale() {
   return (
     <Text className="mt-16 text-center text-[12px] font-semibold text-muted">
       {morceaux.map((m, i) => {
-        const url = m === '{conditions}' ? conditions : confidentialite;
-        const cle =
-          m === '{conditions}'
-            ? ('accroche.conditions' as const)
-            : ('accroche.confidentialite' as const);
-
         if (m !== '{conditions}' && m !== '{confidentialite}') {
           return <Text key={i}>{m}</Text>;
         }
-        if (!url) return <Text key={i}>{t(cle)}</Text>;
+        const conditions = m === '{conditions}';
         return (
           <Text
             key={i}
             accessibilityRole="link"
             className="font-bold text-accInk underline"
-            onPress={() => void Linking.openURL(url)}
+            onPress={() =>
+              router.push(conditions ? '/conditions' : '/confidentialite')
+            }
           >
-            {t(cle)}
+            {t(conditions ? 'accroche.conditions' : 'accroche.confidentialite')}
           </Text>
         );
       })}

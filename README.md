@@ -76,7 +76,12 @@ Aucune n'empêche de se servir de l'application. Dans cet ordre :
 3. **Migration vers `expo-maps`.** C'est la seule façon de retrouver Google Maps sur
    iOS, donc la palette Flex sur la carte des deux côtés. Chantier de composant, pas
    réglage : nouvelle dépendance native et reconstruction du client.
-4. **Messagerie interne.** « Écrire » passe par le SMS du téléphone en V1 — les numéros
+4. **Passkeys.** Une connexion sans SMS, donc sans coût par message et sans
+   dépendance à un fournisseur qui ferme des pays. Écartée de la V1 : l'OTP
+   téléphone seul, parce qu'un passager dakarois change de téléphone plus souvent
+   qu'il ne synchronise un trousseau, et qu'une seconde méthode double la surface
+   d'authentification avant d'avoir prouvé la première.
+5. **Messagerie interne.** « Écrire » passe par le SMS du téléphone en V1 — les numéros
    se voient donc entre passager et conducteur d'une course acceptée. C'est la seule
    exposition volontaire du produit, et elle est en contradiction avec tout le reste du
    schéma, qui ne sert un numéro qu'à la contrepartie d'une course active et jamais

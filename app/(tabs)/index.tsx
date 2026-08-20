@@ -20,9 +20,12 @@ import {
 } from '../../src/components/IllustrationsTuiles';
 import PanneauDev, { type EtatForce } from '../../src/components/PanneauDev';
 import { useT } from '../../src/i18n';
+import CarteLocalisation from '../../src/components/CarteLocalisation';
 import { Icone } from '../../src/components/Icones';
 import { useEstConducteur } from '../../src/lib/conducteur';
 import { useCourse } from '../../src/lib/course';
+import { horsCouverture } from '../../src/lib/couverture';
+import { dejaVu, marquerVu } from '../../src/lib/premiereFois';
 import { configurerGabarit, noterMesure } from '../../src/lib/gabarit';
 import { useDemandeEnCours } from '../../src/lib/offres';
 import { useLocalisation, type EtatLocalisation } from '../../src/lib/localisation';
@@ -94,6 +97,19 @@ export default function Accueil() {
   const [etatForce, setEtatForce] = useState<EtatForce>('aucun');
   const [panneauOuvert, setPanneauOuvert] = useState(false);
 
+  /**
+   * Le pré-écran de localisation : montré AVANT la boîte système, la toute
+   * première fois. `null` tant qu'on ne sait pas s'il a déjà été vu — on
+   * n'ouvre pas une carte pour la refermer aussitôt.
+   */
+  const [carteLoc, setCarteLoc] = useState(false);
+  const [locDejaVue, setLocDejaVue] = useState<boolean | null>(null);
+  const [banniereCouverture, setBanniereCouverture] = useState(false);
+
+  useEffect(() => {
+    void dejaVu('localisation').then(setLocDejaVue);
+  }, []);
+
   // La carte n'est montée qu'une fois le premier rendu peint et le fil libre.
   // `requestIdleCallback` plutôt qu'`InteractionManager`, déprécié depuis SDK 57.
 
@@ -117,6 +133,19 @@ export default function Accueil() {
       }).start();
     })();
   }, [etatCarte, fondu]);
+
+  // On CONSTATE : si la position obtenue est loin de Dakar, on informe une
+  // fois. Pas de blocage, pas de question — quelqu'un qui prépare un trajet
+  // depuis l'étranger doit pouvoir tout ouvrir.
+  useEffect(() => {
+    if (!position) return;
+    if (!horsCouverture(position)) return;
+    void (async () => {
+      if (await dejaVu('couverture')) return;
+      await marquerVu('couverture');
+      setBanniereCouverture(true);
+    })();
+  }, [position]);
 
   const surEtatCarte = useCallback((etat: Exclude<EtatCarte, 'attente'>) => {
     setEtatCarte(etat);
@@ -174,12 +203,24 @@ export default function Accueil() {
           longitude: REGION_DEFAUT.longitude,
         });
 
+  /**
+   * Première fois : on explique avant de laisser partir la boîte système. Les
+   * suivantes, on demande directement — la carte aurait déjà été lue.
+   */
+  const demanderAvecExplication = () => {
+    if (locDejaVue === false) {
+      setCarteLoc(true);
+      return;
+    }
+    void demander();
+  };
+
   const pastille: Record<EtatLocalisation, { texte: string; action?: () => void }> = {
-    jamais_demandee: { texte: t('accueil.choisirDepart'), action: demander },
+    jamais_demandee: { texte: t('accueil.choisirDepart'), action: demanderAvecExplication },
     en_cours: { texte: t('accueil.localisationEnCours') },
     obtenue: { texte: t('accueil.maPosition') },
     refusee: { texte: t('accueil.localisationRefusee'), action: ouvrirReglages },
-    indisponible: { texte: t('accueil.choisirDepart'), action: demander },
+    indisponible: { texte: t('accueil.choisirDepart'), action: demanderAvecExplication },
   };
   const { texte, action } = pastille[etatPosition];
   const sousTitre =
@@ -219,6 +260,19 @@ export default function Accueil() {
               {t('accueil.horsLigne')}
             </Text>
           </View>
+        ) : null}
+
+        {banniereCouverture ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('couverture.horsZone')}
+            onPress={() => setBanniereCouverture(false)}
+            className="mx-16 mt-8 rounded-field bg-card px-16 py-12"
+          >
+            <Text className="text-[13px] font-semibold text-ink">
+              {t('couverture.horsZone')}
+            </Text>
+          </Pressable>
         ) : null}
 
         {carteMuette ? (
@@ -331,6 +385,23 @@ export default function Accueil() {
           <Text className="text-[15px] font-bold text-ink">{t('accueil.ou')}</Text>
         </Pressable>
       </View>
+
+      <CarteLocalisation
+        visible={carteLoc}
+        onAutoriser={() => {
+          setCarteLoc(false);
+          void marquerVu('localisation');
+          setLocDejaVue(true);
+          void demander();
+        }}
+        onPlusTard={() => {
+          setCarteLoc(false);
+          // Vue vaut vue : « Plus tard » ne se represente pas à chaque appui,
+          // ce serait la boucle de relance qu'on s'interdit.
+          void marquerVu('localisation');
+          setLocDejaVue(true);
+        }}
+      />
 
       {__DEV__ ? (
         <PanneauDev
