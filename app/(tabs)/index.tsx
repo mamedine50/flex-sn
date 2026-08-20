@@ -20,6 +20,8 @@ import {
 } from '../../src/components/IllustrationsTuiles';
 import PanneauDev, { type EtatForce } from '../../src/components/PanneauDev';
 import { useT } from '../../src/i18n';
+import { Icone } from '../../src/components/Icones';
+import { useEstConducteur } from '../../src/lib/conducteur';
 import { useCourse } from '../../src/lib/course';
 import { configurerGabarit, noterMesure } from '../../src/lib/gabarit';
 import { useDemandeEnCours } from '../../src/lib/offres';
@@ -123,6 +125,7 @@ export default function Accueil() {
   // Reprendre où on en était. On ne redirige PAS d'autorité : quelqu'un qui
   // ouvre l'application pendant sa course peut vouloir regarder la carte. On
   // pose une reprise visible, il décide.
+  const capacite = useEstConducteur();
   const course = useCourse();
   const demande = useDemandeEnCours();
   const reprise = course.course
@@ -230,6 +233,25 @@ export default function Accueil() {
         ) : null}
 
         <View className="flex-1" />
+
+        {/* Raccourci conducteur : un conducteur en service bascule en un appui,
+            sans passer par le Profil. Invisible pour tout le monde d'autre. */}
+        {capacite === 'oui' ? (
+          <View className="items-end px-16 pb-8" pointerEvents="box-none">
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('accueil.passerEnLigne')}
+              onPress={() => router.push('/conducteur')}
+              className="min-h-touch flex-row items-center rounded-field border border-line bg-card px-12"
+              style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+            >
+              <Icone nom="volant" />
+              <Text className="ml-8 text-[13px] font-bold text-accInk">
+                {t('accueil.passerEnLigne')}
+              </Text>
+            </Pressable>
+          </View>
+        ) : null}
 
         {/* Pastille du point de départ : 16 pt au-dessus du bord de la feuille. */}
         <View className="items-center pb-16" pointerEvents="box-none">

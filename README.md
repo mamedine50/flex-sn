@@ -14,8 +14,8 @@ bout **sur le projet distant, avec deux vraies sessions** — voir `docs/parcour
 
 | | |
 |---|---|
-| Écrans | Accroche · Connexion (pays, numéro, code, prénom) · Accueil · Fixez votre prix · Offres reçues · Mode conducteur · En route · Profil · Mon profil · Conduire avec Flex · À propos |
-| Base | 42 migrations, **275 assertions pgTAP**, RLS sur chaque table, logique métier en RPC |
+| Écrans | Accroche · Connexion (pays, numéro, code, prénom) · Accueil · Fixez votre prix · Offres reçues · Mode conducteur · En route · Profil · Mon profil · Mes lieux · Conduire avec Flex · À propos |
+| Base | 43 migrations, **287 assertions pgTAP**, RLS sur chaque table, logique métier en RPC |
 | Gardes | `pnpm typecheck` · `pnpm lint` · `pnpm test` · `pnpm tokens:check` (44 paires) · `supabase test db` · `node scripts/parcours-v1.mjs` |
 | Étiquette | `v1.0.0-dev` |
 
@@ -244,7 +244,7 @@ s'il ne le sait pas.
 pnpm tokens:check          # échoue si une paire texte/fond passe sous 4,5:1, dans les deux thèmes
 pnpm typecheck
 pnpm lint
-supabase test db --local   # 275 assertions pgTAP
+supabase test db --local   # 287 assertions pgTAP
 node scripts/parcours-v1.mjs   # le parcours complet sur le DISTANT, deux sessions
 ```
 

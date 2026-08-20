@@ -107,9 +107,10 @@ select is(
        'accept_offer', 'annuler_course', 'annuler_demande', 'avancer_course',
        'commune_la_plus_proche', 'create_ride_request', 'declarer_vehicule',
        'demandes_proches',
-       'est_conducteur', 'maj_photo_profil', 'maj_position', 'maj_profil',
+       'enregistrer_lieu_favori', 'est_conducteur', 'maj_photo_profil',
+       'maj_position', 'maj_profil',
        'noter_course', 'prix_suggere', 'refuse_offer', 'soumettre_document',
-       'submit_offer',
+       'submit_offer', 'supprimer_lieu_favori',
        -- Ni RPC ni utilitaires internes : celles-ci sont appelées DEPUIS des
        -- policies RLS ou DEPUIS des vues, et Postgres vérifie ces appels contre
        -- celui qui interroge — pas contre le propriétaire. Sans le droit, la

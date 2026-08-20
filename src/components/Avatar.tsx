@@ -29,14 +29,27 @@ function teintePour(prenom: string) {
   return TEINTES[somme % TEINTES.length] as (typeof TEINTES)[number];
 }
 
+/**
+ * Deux tailles seulement : la ligne (48) et l'entête du Profil (92). Valeurs
+ * entre crochets plutôt qu'échelle d'espacement — 92 n'y est pas, et une classe
+ * hors échelle est ignorée par NativeWind sans un mot.
+ */
+const TAILLES = {
+  liste: { boite: 'h-48 w-48', texte: 'text-[18px]' },
+  grand: { boite: 'h-[92px] w-[92px]', texte: 'text-[36px]' },
+} as const;
+
 export default function Avatar({
   prenom,
   photo,
+  taille = 'liste',
 }: {
   prenom: string | null;
   /** Le CHEMIN dans `photos-profil`, pas une URL. */
   photo?: string | null;
+  taille?: keyof typeof TAILLES;
 }) {
+  const mesure = TAILLES[taille];
   const nom = prenom?.trim() || '?';
   const uri = useUrlPhoto(photo);
   const teinte = teintePour(nom);
@@ -48,7 +61,7 @@ export default function Avatar({
       <Image
         source={{ uri }}
         accessibilityLabel={nom}
-        className="h-48 w-48 rounded-pill"
+        className={`${mesure.boite} rounded-pill`}
       />
     );
   }
@@ -56,9 +69,9 @@ export default function Avatar({
   return (
     <View
       accessibilityLabel={nom}
-      className={`h-48 w-48 items-center justify-center rounded-pill ${teinte.fond}`}
+      className={`${mesure.boite} items-center justify-center rounded-pill ${teinte.fond}`}
     >
-      <Text className={`text-[18px] font-extrabold ${teinte.encre}`}>
+      <Text className={`${mesure.texte} font-extrabold ${teinte.encre}`}>
         {nom.slice(0, 1).toLocaleUpperCase('fr')}
       </Text>
     </View>

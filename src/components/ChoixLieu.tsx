@@ -1,17 +1,11 @@
 import { lazy, Suspense, useCallback, useMemo, useState } from 'react';
-import {
-  FlatList,
-  Modal,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { FlatList, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { useT } from '../i18n';
 import { communesPour, useCommunes, type Commune } from '../lib/communes';
+import { useFavoris, type Favori } from '../lib/favoris';
 import { chercherLieux, GLYPHE, useLieux } from '../lib/lieux';
+import { lieuDepuisFavori } from '../lib/lieuNeutre';
 import { noterMesure } from '../lib/gabarit';
 import { useTheme } from '../theme/ThemeProvider';
 import type { EtatCarte } from './CarteFond';
@@ -39,8 +33,14 @@ const CarteFond = lazy(() => import('./CarteFond'));
 export type Lieu = {
   lat: number;
   lon: number;
-  /** Ce que l'utilisateur a écrit, ou le nom de la ville choisie. */
+  /** Ce que l'utilisateur a écrit, ou le nom de la ville choisie. PART AU SERVEUR. */
   libelle: string;
+  /**
+   * Le nom d'un favori — « Domicile », « Chez ma sœur ». Affiché À SON
+   * PROPRIÉTAIRE et à personne d'autre : `destination_libelle` est servi au
+   * conducteur, et on ne floute pas un point pour nommer la porte juste après.
+   */
+  prive?: string;
 };
 
 /**
@@ -123,6 +123,7 @@ function SurCarte({
     longitude: number;
   } | null>(null);
   const lieux = useLieux();
+  const { favoris } = useFavoris();
 
   const suggestions = useMemo(() => {
     if (normaliserVide(recherche)) return [];
@@ -177,6 +178,12 @@ function SurCarte({
               </Text>
             </Pressable>
           </View>
+
+          {/* LES FAVORIS D'ABORD. C'est toute la fonctionnalité : un appui et
+              c'est choisi, sans passer par la recherche. Ils ne recentrent pas
+              la carte — ils CHOISISSENT, parce qu'un lieu enregistré a déjà été
+              pointé une fois. */}
+          <RangeeFavoris favoris={favoris} onChoisir={onChoisir} />
 
           {/* Recherche par quartier, filtrée EN LOCAL sur la table communes.
               Aucun appel réseau, aucun service de géocodage. */}
@@ -257,6 +264,67 @@ function SurCarte({
     </Modal>
   );
 }
+
+/**
+ * Les favoris, en pastilles, sur une ligne qui défile.
+ *
+ * Le nom affiché vient de l'interface pour « Domicile » et « Travail » : ces
+ * deux-là ne sont pas stockés, ils se traduisent.
+ */
+function RangeeFavoris({
+  favoris,
+  onChoisir,
+}: {
+  favoris: Favori[];
+  onChoisir: (lieu: Lieu) => void;
+}) {
+  const t = useT();
+  if (favoris.length === 0) return null;
+
+  const nomDe = (f: Favori) =>
+    f.type === 'domicile'
+      ? t('favoris.domicile')
+      : f.type === 'travail'
+        ? t('favoris.travail')
+        : (f.libelle ?? '');
+
+  return (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
+      className="mt-8"
+      contentContainerClassName="gap-8"
+    >
+      {favoris.map((f) => (
+        <Pressable
+          key={f.id}
+          accessibilityRole="button"
+          accessibilityLabel={nomDe(f)}
+          onPress={() =>
+            onChoisir(lieuDepuisFavori(f, t('prix.pointSurLaCarte'), nomDe(f)))
+          }
+          className="min-h-touch flex-row items-center rounded-field bg-card2 px-12"
+          style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+        >
+          <Text className="text-[13px] font-bold text-accInk">
+            {GLYPHE_FAVORI[f.type]}
+          </Text>
+          <Text className="ml-8 text-[14px] font-bold text-ink" numberOfLines={1}>
+            {nomDe(f)}
+          </Text>
+        </Pressable>
+      ))}
+    </ScrollView>
+  );
+}
+
+/** Un signe par type. Même famille que les glyphes de `lieux.ts`. */
+export const GLYPHE_FAVORI: Record<Favori['type'], string> = {
+  domicile: '⌂',
+  travail: '▣',
+  autre: '★',
+};
 
 // ------------------------------------------------------------------ villes --
 

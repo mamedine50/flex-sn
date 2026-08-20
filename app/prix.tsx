@@ -259,14 +259,16 @@ export default function FixerPrix() {
         <Champ
           nom="champDepart"
           libelle={t('prix.depart')}
-          valeur={depart?.libelle ?? null}
+          // Le nom privé d'un favori s'affiche ICI, chez son propriétaire.
+          // C'est `libelle` — neutre — qui part au serveur, voir `envoyer()`.
+          valeur={depart?.prive ?? depart?.libelle ?? null}
           vide={t('prix.choisirDepart')}
           onPress={() => setChoix('depart')}
         />
         <Champ
           nom="champDestination"
           libelle={t('prix.destination')}
-          valeur={destination?.libelle ?? null}
+          valeur={destination?.prive ?? destination?.libelle ?? null}
           vide={t('prix.choisirDestination')}
           onPress={() => setChoix('destination')}
         />

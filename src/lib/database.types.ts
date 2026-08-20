@@ -298,6 +298,57 @@ export type Database = {
         }
         Relationships: []
       }
+      lieux_favoris: {
+        Row: {
+          cree_le: string
+          geo: unknown
+          id: string
+          lat: number
+          libelle: string | null
+          lon: number
+          precision_texte: string | null
+          proprietaire: string
+          type: Database["public"]["Enums"]["type_lieu_favori"]
+        }
+        Insert: {
+          cree_le?: string
+          geo?: unknown
+          id?: string
+          lat: number
+          libelle?: string | null
+          lon: number
+          precision_texte?: string | null
+          proprietaire: string
+          type: Database["public"]["Enums"]["type_lieu_favori"]
+        }
+        Update: {
+          cree_le?: string
+          geo?: unknown
+          id?: string
+          lat?: number
+          libelle?: string | null
+          lon?: number
+          precision_texte?: string | null
+          proprietaire?: string
+          type?: Database["public"]["Enums"]["type_lieu_favori"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lieux_favoris_proprietaire_fkey"
+            columns: ["proprietaire"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lieux_favoris_proprietaire_fkey"
+            columns: ["proprietaire"]
+            isOneToOne: false
+            referencedRelation: "profils_publics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       offers: {
         Row: {
           conducteur_id: string
@@ -1190,6 +1241,33 @@ export type Database = {
         Args: { p_service: Database["public"]["Enums"]["service_course"] }
         Returns: string
       }
+      enregistrer_lieu_favori: {
+        Args: {
+          p_id?: string
+          p_lat: number
+          p_libelle?: string
+          p_lon: number
+          p_precision?: string
+          p_type: Database["public"]["Enums"]["type_lieu_favori"]
+        }
+        Returns: {
+          cree_le: string
+          geo: unknown
+          id: string
+          lat: number
+          libelle: string | null
+          lon: number
+          precision_texte: string | null
+          proprietaire: string
+          type: Database["public"]["Enums"]["type_lieu_favori"]
+        }
+        SetofOptions: {
+          from: "*"
+          to: "lieux_favoris"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       est_conducteur: { Args: { p_profil: string }; Returns: boolean }
       est_nouveau_conducteur: { Args: { p_profil: string }; Returns: boolean }
       expire_stale: {
@@ -1283,6 +1361,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      plafond_lieux_favoris: { Args: never; Returns: number }
       prix_suggere: {
         Args: {
           p_depart_lat: number
@@ -1364,6 +1443,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      supprimer_lieu_favori: { Args: { p_id: string }; Returns: undefined }
       taille_cellule_deg: { Args: never; Returns: number }
     }
     Enums: {
@@ -1399,6 +1479,7 @@ export type Database = {
         | "expiree"
         | "caduque"
       type_document: "piece_identite" | "permis" | "carte_grise" | "selfie"
+      type_lieu_favori: "domicile" | "travail" | "autre"
       type_offre: "acceptation" | "contre_offre"
     }
     CompositeTypes: {
@@ -1559,6 +1640,7 @@ export const Constants = {
       statut_document: ["en_attente", "valide", "refuse"],
       statut_offre: ["en_attente", "acceptee", "refusee", "expiree", "caduque"],
       type_document: ["piece_identite", "permis", "carte_grise", "selfie"],
+      type_lieu_favori: ["domicile", "travail", "autre"],
       type_offre: ["acceptation", "contre_offre"],
     },
   },

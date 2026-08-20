@@ -4,27 +4,40 @@ import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import Avatar from '../../src/components/Avatar';
+import { Pastille, type NomIcone } from '../../src/components/Icones';
 import PanneauDev, { type EtatForce } from '../../src/components/PanneauDev';
 import { LANGUES_DISPONIBLES, useI18n, useT, type Langue } from '../../src/i18n';
 import { useEstConducteur } from '../../src/lib/conducteur';
+import { useFavoris } from '../../src/lib/favoris';
 import { formatXof } from '../../src/lib/format';
+import { configurerGabarit, noterMesure } from '../../src/lib/gabarit';
 import { GAINS_VIDES, useGains } from '../../src/lib/gains';
 import { useMonProfil } from '../../src/lib/monProfil';
-import { configurerGabarit, noterMesure } from '../../src/lib/gabarit';
+import { deposerPhotoProfil } from '../../src/lib/photos';
+import { useProfilPublic } from '../../src/lib/profilPublic';
 import { useSession } from '../../src/lib/session';
 import { supabase } from '../../src/lib/supabase';
+import { useVehicule } from '../../src/lib/vehicule';
 import { PREFERENCES, useTheme, type PreferenceTheme } from '../../src/theme/ThemeProvider';
 import { chiffresTabulaires } from '../../src/theme/typographie';
 
 /**
  * Profil.
  *
- * L'entrée du mode conducteur vit ICI, et n'apparaît que pour qui a la
- * capacité. Elle était dans le panneau de développement faute de place produit ;
- * elle en sort.
+ * PAS de tiroir latéral : la barre d'onglets est la seule navigation. Ce qu'un
+ * tiroir contiendrait vit ici, groupé, et sur l'accueil pour le raccourci
+ * conducteur.
+ *
+ * L'ordre des sections n'est pas décoratif. « Mes lieux » d'abord parce que
+ * c'est ce qu'on vient régler le plus souvent ; « Conducteur » ensuite parce
+ * que c'est ce qui rapporte ; l'affichage et le compte à la fin, parce qu'on y
+ * va une fois.
+ *
+ * Chaque ligne porte une icône en pastille : l'œil suit une colonne de formes
+ * avant de suivre une colonne de mots.
  */
 
-const GABARIT = { rangee: 48 };
+const GABARIT = { entete: 92, ligne: 50 };
 
 export default function Profil() {
   const t = useT();
@@ -32,134 +45,222 @@ export default function Profil() {
   const { preference, definirPreference } = useTheme();
   const { langue, definirLangue } = useI18n();
   const session = useSession();
+
   const capacite = useEstConducteur();
-  const gains = useGains(capacite === 'oui');
-  const { profil: moi } = useMonProfil();
+  const conducteur = capacite === 'oui';
+
+  const { profil, relire: relireProfil } = useMonProfil();
+  const [photoEnCours, setPhotoEnCours] = useState(false);
+  const public_ = useProfilPublic(
+    session.statut === 'connecte' ? session.session.user.id : null,
+  );
+  const gains = useGains(conducteur);
+  const auto = useVehicule();
+  const { favoris } = useFavoris();
 
   const [etatForce, setEtatForce] = useState<EtatForce>('aucun');
   const [panneauOuvert, setPanneauOuvert] = useState(false);
   const [confirmeDeconnexion, setConfirmeDeconnexion] = useState(false);
 
-  configurerGabarit('profil', { rangee: GABARIT.rangee });
+  configurerGabarit(conducteur ? 'profil+conducteur' : 'profil', GABARIT);
 
   const connecte = session.statut === 'connecte';
+  const numero =
+    profil?.telephone?.trim() ||
+    (connecte ? session.session.user.phone?.trim() : '') ||
+    '';
+
+  const domicile = favoris.find((f) => f.type === 'domicile') ?? null;
+  const travail = favoris.find((f) => f.type === 'travail') ?? null;
 
   return (
     <View className="flex-1 bg-bg">
       <ScrollView
-        className="flex-1 px-16"
+        className="flex-1"
         contentContainerStyle={{
           paddingTop: marges.top + 8,
-          paddingBottom: marges.bottom + 24,
+          // La barre d'onglets flotte au-dessus : sans cette réserve, la
+          // dernière ligne se retrouve dessous et ne se tape plus.
+          paddingBottom: marges.bottom + 96,
         }}
       >
+        {/* ─────────────────────────────────────────────────── entête ─── */}
         <Pressable
-          accessibilityRole="header"
+          accessibilityRole="button"
+          accessibilityLabel={`${profil?.prenom ?? ''}. ${t('profil.modifier')}`}
+          onPress={() => router.push('/mon-profil')}
           onLongPress={__DEV__ ? () => setPanneauOuvert(true) : undefined}
+          onLayout={(e) => noterMesure('entete', e.nativeEvent.layout.height)}
+          className="items-center px-16"
+          style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
         >
-          <Text className="text-[22px] font-extrabold text-ink">{t('profil.titre')}</Text>
+          <View>
+            <Avatar prenom={profil?.prenom ?? null} photo={profil?.photo_url} taille="grand" />
+            {/* La pastille ouvre le téléversement existant — dépôt privé et
+                réduction à 1200 px déjà branchés. Elle ne mène PAS à l'écran
+                d'édition : changer sa photo est un geste, pas un formulaire. */}
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('monProfil.changerPhoto')}
+              disabled={photoEnCours}
+              onPress={async () => {
+                setPhotoEnCours(true);
+                const r = await deposerPhotoProfil();
+                setPhotoEnCours(false);
+                if (r.ok) relireProfil();
+              }}
+              className="absolute bottom-0 right-0 h-32 w-32 items-center justify-center rounded-pill border-2 border-bg bg-accFill"
+              style={({ pressed }) => ({ opacity: pressed || photoEnCours ? 0.7 : 1 })}
+            >
+              <Text className="text-[13px] font-extrabold text-onAcc">◎</Text>
+            </Pressable>
+          </View>
+
+          <Text className="mt-12 text-center text-[22px] font-extrabold text-ink">
+            {[profil?.prenom, profil?.nom_complet].filter(Boolean).join(' ') || '—'}
+          </Text>
+
+          <Text className="mt-4 text-center text-[13px] font-semibold text-muted">
+            {conducteur && auto.vehicule
+              ? `${auto.vehicule.modele} ${auto.vehicule.couleur} · ${auto.vehicule.plaque}`
+              : [
+                  numero ? t('profil.numeroMasque', { fin: numero.slice(-4) }) : null,
+                  profil
+                    ? t('profil.membreDepuis', {
+                        date: new Date(profil.cree_le).toLocaleDateString(
+                          langue === 'en' ? 'en-GB' : 'fr-FR',
+                          { month: 'long', year: 'numeric' },
+                        ),
+                      })
+                    : null,
+                ]
+                  .filter(Boolean)
+                  .join(' · ')}
+          </Text>
+
+          <View className="mt-12 flex-row flex-wrap justify-center gap-8">
+            {/* Sous cinq courses au volant, le badge remplace la note : une
+                moyenne sur deux avis n'est pas une note. */}
+            <Badge
+              texte={
+                public_?.est_nouveau || public_?.note_moyenne === null
+                  ? t('profil.nouveauConducteur')
+                  : t('offres.note', {
+                      note: String(public_?.note_moyenne).replace('.', ','),
+                    })
+              }
+            />
+            <Badge
+              texte={
+                (public_?.courses_comme_conducteur ?? 0) === 1
+                  ? t('profil.courses', { n: public_?.courses_comme_conducteur ?? 0 })
+                  : t('profil.coursesPluriel', {
+                      n: public_?.courses_comme_conducteur ?? 0,
+                    })
+              }
+            />
+            {conducteur ? <Badge texte={t('profil.valide')} succes /> : null}
+          </View>
         </Pressable>
 
-        {/* Conduire, ou conduire déjà. La capacité décide, pas un rôle. */}
-        {capacite === 'oui' ? (
+        {/* ──────────────────────────────────────────────── mes lieux ─── */}
+        <Section titre={t('profil.mesLieux')} />
+        <Ligne
+          nom="ligne"
+          icone="domicile"
+          titre={t('favoris.domicile')}
+          sous={domicile ? t('favoris.modifier') : t('favoris.definir')}
+          onPress={() => router.push('/mes-lieux')}
+        />
+        <Ligne
+          icone="travail"
+          titre={t('favoris.travail')}
+          sous={travail ? t('favoris.modifier') : t('favoris.definir')}
+          onPress={() => router.push('/mes-lieux')}
+        />
+        <Ligne
+          icone="plus"
+          titre={t('favoris.ajouter')}
+          onPress={() => router.push('/mes-lieux')}
+        />
+
+        {/* ─────────────────────────────────────────────── conducteur ─── */}
+        <Section titre={t('profil.conducteur')} />
+        {conducteur ? (
           <>
             <Gains gains={gains ?? GAINS_VIDES} />
-            <Rangee
-              nom="rangee"
-              titre={t('profil.modeConducteur')}
-              sous={t('profil.modeConducteurSous')}
-              principale
+            <Ligne
+              icone="volant"
+              titre={t('profil.passerEnLigne')}
+              sous={t('profil.passerEnLigneSous')}
               onPress={() => router.push('/conducteur')}
+            />
+            <Ligne
+              icone="documents"
+              titre={t('profil.vehiculeEtDocuments')}
+              sous={t('profil.vehiculeEtDocumentsSous')}
+              onPress={() => router.push('/devenir-conducteur')}
             />
           </>
         ) : (
-          <Rangee
-            nom="rangee"
-            titre={t('profil.conduire')}
-            sous={t('profil.conduireSous')}
-            principale
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`${t('profil.conduire')}. ${t('profil.gainsCommission')}`}
             onPress={() => router.push('/devenir-conducteur')}
-          />
-        )}
-
-        <Section titre={t('profil.apparence')} />
-        <Choix
-          valeurs={PREFERENCES.map((p) => ({ cle: p, libelle: t(`theme.${p}`) }))}
-          actuelle={preference}
-          onChoisir={(v) => definirPreference(v as PreferenceTheme)}
-        />
-
-        <Section titre={t('profil.langue')} />
-        <Choix
-          valeurs={LANGUES_DISPONIBLES.map((l) => ({ cle: l, libelle: t(`langues.${l}`) }))}
-          actuelle={langue}
-          onChoisir={(v) => definirLangue(v as Langue)}
-        />
-
-        <Section titre={t('profil.application')} />
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={`${t('profil.aPropos')}. ${t('profil.aProposSous')}`}
-          onPress={() => router.push('/a-propos')}
-          className="min-h-touch justify-center rounded-card bg-card px-16 py-12"
-          style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
-        >
-          <Text className="text-[14px] font-bold text-ink">{t('profil.aPropos')}</Text>
-          <Text className="text-[12px] font-semibold text-muted">
-            {t('profil.aProposSous')}
-          </Text>
-        </Pressable>
-
-        <Section titre={t('profil.compte')} />
-        {connecte ? (
-          <>
-            {/* Le compte, et l'entrée qui permet de le corriger. Sans elle,
-                `maj_profil()` existait sans qu'aucun écran ne l'appelle : tous
-                les nouveaux inscrits restaient nommés « Passager ».
-
-                `phone` vaut '' — pas `null` — pour un compte créé par courriel :
-                `??` ne rattrape pas la chaîne vide, et la carte restait
-                blanche. */}
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={`${t('monProfil.titre')}. ${t('profil.modifier')}`}
-              onPress={() => router.push('/mon-profil')}
-              className="min-h-touch flex-row items-center rounded-card bg-card p-16"
-              style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
-            >
-              <Avatar prenom={moi?.prenom ?? null} photo={moi?.photo_url} />
-              <View className="ml-12 flex-1">
-                <Text className="text-[15px] font-bold text-ink">
-                  {moi?.prenom ?? '—'}
-                </Text>
-                <Text className="text-[12px] font-semibold text-muted">
-                  {session.session.user.phone?.trim() ||
-                    session.session.user.email ||
-                    session.session.user.id}
-                </Text>
-              </View>
-              <Text className="text-[14px] font-bold text-accInk">
-                {t('profil.modifier')}
-              </Text>
-            </Pressable>
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => setConfirmeDeconnexion(true)}
-              className="mt-12 min-h-touch items-center justify-center rounded-field bg-card2"
-              style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
-            >
-              <Text className="text-[14px] font-bold text-danger">
-                {t('profil.seDeconnecter')}
-              </Text>
-            </Pressable>
-          </>
-        ) : (
-          <View className="rounded-card bg-card p-16">
-            <Text className="text-[14px] font-semibold text-muted">
-              {t('profil.nonConnecte')}
+            className="mx-16 min-h-driving justify-center rounded-card bg-accFill px-16 py-12"
+            style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+          >
+            <Text className="text-[16px] font-extrabold text-onAcc">
+              {t('profil.conduire')}
             </Text>
-          </View>
+            <Text className="mt-2 text-[12px] font-semibold text-onAcc">
+              {t('profil.gainsCommission')}
+            </Text>
+          </Pressable>
         )}
+
+        {/* ──────────────────────────────────────────────── affichage ─── */}
+        <Section titre={t('profil.affichage')} />
+        <View className="px-16">
+          <Choix
+            valeurs={PREFERENCES.map((p) => ({ cle: p, libelle: t(`theme.${p}`) }))}
+            actuelle={preference}
+            onChoisir={(v) => definirPreference(v as PreferenceTheme)}
+          />
+          <View className="h-8" />
+          <Choix
+            valeurs={LANGUES_DISPONIBLES.map((l) => ({
+              cle: l,
+              libelle: t(`langues.${l}`),
+            }))}
+            actuelle={langue}
+            onChoisir={(v) => definirLangue(v as Langue)}
+          />
+        </View>
+
+        {/* ─────────────────────────────────────────────────── compte ─── */}
+        <Section titre={t('profil.compte')} />
+        <Ligne
+          icone="bloque"
+          titre={t('profil.personnesBloquees')}
+          sous={t('profil.personnesBloqueesSous')}
+          inactive
+        />
+        <Ligne icone="aide" titre={t('profil.aide')} sous={t('profil.aideSous')} inactive />
+        <Ligne
+          icone="infos"
+          titre={t('profil.aPropos')}
+          sous={t('profil.aProposSous')}
+          onPress={() => router.push('/a-propos')}
+        />
+        {connecte ? (
+          <Ligne
+            icone="sortie"
+            titre={t('profil.seDeconnecter')}
+            danger
+            onPress={() => setConfirmeDeconnexion(true)}
+          />
+        ) : null}
       </ScrollView>
 
       <Modal visible={confirmeDeconnexion} transparent animationType="fade">
@@ -213,20 +314,88 @@ export default function Profil() {
   );
 }
 
+function Badge({ texte, succes = false }: { texte: string; succes?: boolean }) {
+  return (
+    <View
+      className={`rounded-pill px-12 py-4 ${succes ? 'bg-ok' : 'bg-card'}`}
+    >
+      <Text
+        className={`text-[12px] font-bold ${succes ? 'text-onOk' : 'text-ink'}`}
+        style={chiffresTabulaires}
+      >
+        {texte}
+      </Text>
+    </View>
+  );
+}
+
+function Section({ titre }: { titre: string }) {
+  return (
+    <Text className="mb-8 mt-24 px-16 text-[12px] font-bold uppercase tracking-wider text-muted">
+      {titre}
+    </Text>
+  );
+}
+
 /**
- * Les gains, en tête du Profil conducteur.
+ * Une ligne de réglage. 50 pt au minimum — c'est ce que vérifie l'assertion de
+ * gabarit, sur les quatre tailles d'écran.
+ */
+function Ligne({
+  nom,
+  icone,
+  titre,
+  sous,
+  onPress,
+  danger = false,
+  inactive = false,
+}: {
+  nom?: string;
+  icone: NomIcone;
+  titre: string;
+  sous?: string;
+  onPress?: () => void;
+  danger?: boolean;
+  inactive?: boolean;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ disabled: inactive }}
+      accessibilityLabel={sous ? `${titre}. ${sous}` : titre}
+      disabled={inactive || !onPress}
+      onPress={onPress}
+      onLayout={nom ? (e) => noterMesure(nom, e.nativeEvent.layout.height) : undefined}
+      className="mx-16 mb-8 min-h-[50px] flex-row items-center rounded-card bg-card px-12 py-8"
+      style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+    >
+      <Pastille nom={icone} danger={danger} />
+      <View className="ml-12 flex-1">
+        <Text
+          className={`text-[15px] font-bold ${
+            danger ? 'text-danger' : inactive ? 'text-muted' : 'text-ink'
+          }`}
+        >
+          {titre}
+        </Text>
+        {sous ? (
+          <Text className="text-[12px] font-semibold text-muted">{sous}</Text>
+        ) : null}
+      </View>
+      {onPress && !inactive ? (
+        <Text className="text-[15px] font-bold text-muted">›</Text>
+      ) : null}
+    </Pressable>
+  );
+}
+
+/**
+ * Les gains, en tête de la section conducteur.
  *
- * LA SEMAINE EN GROS, le cumul en dessous. Un conducteur pense en semaines :
- * c'est le cycle du carburant, du versement au propriétaire du véhicule et de
- * la dépense familiale du dimanche. Un total cumulé grossit toujours, donc il
- * ne dit rien de « comment ça marche en ce moment » — et c'est bien le chiffre
- * de la semaine qu'il compare à ce que la concurrence lui laisse.
- *
- * Le montant en `moneyInk` et en chiffres tabulaires : c'est un montant, et il
- * change. La ligne de commission est une PROMESSE, pas une donnée — le jour où
- * une commission existe, elle viendra de `mes_gains` et cette ligne cessera
- * d'être écrite en dur. Elle est en `ok` et non en ambre : « 0 % » ressemble à
- * un chiffre, mais ce n'est pas une somme.
+ * LA SEMAINE EN GROS, le cumul en dessous : un conducteur pense en semaines —
+ * carburant, versement au propriétaire du véhicule, dépense du dimanche. Un
+ * total cumulé grossit toujours, il ne dit rien de « comment ça marche en ce
+ * moment ».
  */
 function Gains({
   gains,
@@ -234,9 +403,8 @@ function Gains({
   gains: { courses: number; total_xof: number; semaine_xof: number };
 }) {
   const t = useT();
-
   return (
-    <View className="mt-16 rounded-card bg-card p-16">
+    <View className="mx-16 mb-8 rounded-card bg-card p-16">
       <Text className="text-[12px] font-bold uppercase tracking-wider text-muted">
         {t('profil.gainsSemaine')}
       </Text>
@@ -246,69 +414,12 @@ function Gains({
       >
         {formatXof(gains.semaine_xof)}
       </Text>
-
       <Text className="mt-4 text-[13px] font-semibold text-muted">
         {gains.courses === 0
           ? t('profil.gainsVide')
-          : `${t('profil.gainsTotal', {
-              montant: formatXof(gains.total_xof),
-            })} · ${
-              gains.courses === 1
-                ? t('profil.courses', { n: gains.courses })
-                : t('profil.coursesPluriel', { n: gains.courses })
-            }`}
-      </Text>
-
-      <Text className="mt-12 text-[13px] font-bold text-ok">
-        {t('profil.gainsCommission')}
+          : t('profil.gainsTotalLigne', { montant: formatXof(gains.total_xof) })}
       </Text>
     </View>
-  );
-}
-
-function Section({ titre }: { titre: string }) {
-  return (
-    <Text className="mb-8 mt-24 text-[12px] font-bold uppercase tracking-wider text-muted">
-      {titre}
-    </Text>
-  );
-}
-
-function Rangee({
-  nom,
-  titre,
-  sous,
-  principale = false,
-  onPress,
-}: {
-  nom: string;
-  titre: string;
-  sous: string;
-  principale?: boolean;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={`${titre}. ${sous}`}
-      onPress={onPress}
-      onLayout={(e) => noterMesure(nom, e.nativeEvent.layout.height)}
-      className={`mt-16 min-h-driving justify-center rounded-card px-16 py-12 ${
-        principale ? 'bg-accFill' : 'bg-card'
-      }`}
-      style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
-    >
-      <Text
-        className={`text-[16px] font-extrabold ${principale ? 'text-onAcc' : 'text-ink'}`}
-      >
-        {titre}
-      </Text>
-      <Text
-        className={`text-[12px] font-semibold ${principale ? 'text-onAcc' : 'text-muted'}`}
-      >
-        {sous}
-      </Text>
-    </Pressable>
   );
 }
 
@@ -337,9 +448,6 @@ function Choix({
             }`}
             style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
           >
-            {/* Deux lignes tolérées : les trois libellés tiennent sur une
-                aujourd'hui, une traduction plus longue déborderait, et un
-                libellé tronqué ne veut plus rien dire. */}
             <Text
               className={`text-center text-[13px] font-bold ${
                 choisi ? 'text-onAcc' : 'text-ink'
