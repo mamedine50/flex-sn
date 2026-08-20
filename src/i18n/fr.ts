@@ -211,6 +211,7 @@ export const fr = {
     gainsTotal: 'Total {montant}',
     gainsCommission: '0 % de commission. Vous gardez tout.',
     gainsVide: 'Votre première course apparaîtra ici.',
+    modifier: 'Modifier',
     application: 'Application',
     aPropos: 'À propos',
     aProposSous: 'Version, cartes et licences',
@@ -336,6 +337,23 @@ export const fr = {
     continuer: 'Continuer',
 
     horsLigne: 'Hors ligne. La connexion demande le réseau.',
+  },
+
+  monProfil: {
+    titre: 'Mon profil',
+    photo: 'Photo',
+    changerPhoto: 'Changer la photo',
+    ajouterPhoto: 'Ajouter une photo',
+    prenom: 'Prénom',
+    prenomAide: 'C’est le nom que verront les conducteurs.',
+    nom: 'Nom',
+    nomFacultatif: 'Facultatif. Il n’apparaît qu’une fois la course acceptée.',
+    numero: 'Numéro',
+    numeroFige: 'Il sert à vous connecter. En changer viendra plus tard.',
+    enregistrer: 'Enregistrer',
+    enregistre: 'Modifications enregistrées.',
+    illisible: 'Votre profil ne se charge pas.',
+    horsLigne: 'Hors ligne. Vos modifications partiront au retour du réseau.',
   },
 
   erreurs: {

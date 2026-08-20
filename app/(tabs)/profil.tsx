@@ -3,11 +3,13 @@ import { useState } from 'react';
 import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import Avatar from '../../src/components/Avatar';
 import PanneauDev, { type EtatForce } from '../../src/components/PanneauDev';
 import { LANGUES_DISPONIBLES, useI18n, useT, type Langue } from '../../src/i18n';
 import { useEstConducteur } from '../../src/lib/conducteur';
 import { formatXof } from '../../src/lib/format';
 import { GAINS_VIDES, useGains } from '../../src/lib/gains';
+import { useMonProfil } from '../../src/lib/monProfil';
 import { configurerGabarit, noterMesure } from '../../src/lib/gabarit';
 import { useSession } from '../../src/lib/session';
 import { supabase } from '../../src/lib/supabase';
@@ -32,6 +34,7 @@ export default function Profil() {
   const session = useSession();
   const capacite = useEstConducteur();
   const gains = useGains(capacite === 'oui');
+  const { profil: moi } = useMonProfil();
 
   const [etatForce, setEtatForce] = useState<EtatForce>('aucun');
   const [panneauOuvert, setPanneauOuvert] = useState(false);
@@ -110,16 +113,35 @@ export default function Profil() {
         <Section titre={t('profil.compte')} />
         {connecte ? (
           <>
-            <View className="rounded-card bg-card p-16">
-              {/* `phone` vaut '' — pas `null` — pour un compte créé par
-                  courriel : `??` ne rattrape pas la chaîne vide, et la carte
-                  restait blanche. */}
-              <Text className="text-[14px] font-bold text-ink">
-                {session.session.user.phone?.trim() ||
-                  session.session.user.email ||
-                  session.session.user.id}
+            {/* Le compte, et l'entrée qui permet de le corriger. Sans elle,
+                `maj_profil()` existait sans qu'aucun écran ne l'appelle : tous
+                les nouveaux inscrits restaient nommés « Passager ».
+
+                `phone` vaut '' — pas `null` — pour un compte créé par courriel :
+                `??` ne rattrape pas la chaîne vide, et la carte restait
+                blanche. */}
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`${t('monProfil.titre')}. ${t('profil.modifier')}`}
+              onPress={() => router.push('/mon-profil')}
+              className="min-h-touch flex-row items-center rounded-card bg-card p-16"
+              style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+            >
+              <Avatar prenom={moi?.prenom ?? null} photo={moi?.photo_url} />
+              <View className="ml-12 flex-1">
+                <Text className="text-[15px] font-bold text-ink">
+                  {moi?.prenom ?? '—'}
+                </Text>
+                <Text className="text-[12px] font-semibold text-muted">
+                  {session.session.user.phone?.trim() ||
+                    session.session.user.email ||
+                    session.session.user.id}
+                </Text>
+              </View>
+              <Text className="text-[14px] font-bold text-accInk">
+                {t('profil.modifier')}
               </Text>
-            </View>
+            </Pressable>
             <Pressable
               accessibilityRole="button"
               onPress={() => setConfirmeDeconnexion(true)}

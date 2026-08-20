@@ -24,4 +24,5 @@ export const wo: DictionnairePartiel = {
   dossier: {},
   aPropos: {},
   connexion: {},
+  monProfil: {},
 };

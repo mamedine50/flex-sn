@@ -14,8 +14,8 @@ bout **sur le projet distant, avec deux vraies sessions** — voir `docs/parcour
 
 | | |
 |---|---|
-| Écrans | Accueil · Fixez votre prix · Offres reçues · Mode conducteur · En route · Profil · Conduire avec Flex · À propos |
-| Base | 40 migrations, **265 assertions pgTAP**, RLS sur chaque table, logique métier en RPC |
+| Écrans | Accueil · Fixez votre prix · Offres reçues · Mode conducteur · En route · Profil · Mon profil · Conduire avec Flex · Connexion (numéro, code, prénom) · À propos |
+| Base | 42 migrations, **275 assertions pgTAP**, RLS sur chaque table, logique métier en RPC |
 | Gardes | `pnpm typecheck` · `pnpm lint` · `pnpm test` · `pnpm tokens:check` (44 paires) · `supabase test db` · `node scripts/parcours-v1.mjs` |
 | Étiquette | `v1.0.0-dev` |
 
@@ -60,6 +60,23 @@ Dans cet ordre, et pas avant :
 5. **Paiement** — après l'entité et le compte marchand, pas avant.
 6. **Notifications push** — une offre qui arrive quand l'application est fermée. Impose
    une dépendance native et une reconstruction du client.
+
+### Les pages au backlog
+
+Aucune n'empêche de se servir de l'application. Dans cet ordre :
+
+1. **Historique des courses.** `rides` n'est lu que pour la course active : ni le
+   passager ni le conducteur ne peuvent voir ce qu'ils ont fait. Côté conducteur c'est
+   le complément direct de la carte de gains — « 4 400 FCFA cette semaine » appelle
+   « lesquelles ».
+2. **Mes avis.** `evaluations_visibles` est construite, commentée, testée, avec sa règle
+   de double aveugle — et lue par aucun écran. La note s'affiche, les avis qui la
+   composent restent invisibles, y compris pour celui qui les a reçus.
+3. **Messagerie interne.** « Écrire » passe par le SMS du téléphone en V1 — les numéros
+   se voient donc entre passager et conducteur d'une course acceptée. C'est la seule
+   exposition volontaire du produit, et elle est en contradiction avec tout le reste du
+   schéma, qui ne sert un numéro qu'à la contrepartie d'une course active et jamais
+   avant. La messagerie interne est prévue pour la fermer.
 
 ---
 
@@ -221,7 +238,7 @@ s'il ne le sait pas.
 pnpm tokens:check          # échoue si une paire texte/fond passe sous 4,5:1, dans les deux thèmes
 pnpm typecheck
 pnpm lint
-supabase test db --local   # 265 assertions pgTAP
+supabase test db --local   # 275 assertions pgTAP
 node scripts/parcours-v1.mjs   # le parcours complet sur le DISTANT, deux sessions
 ```
 

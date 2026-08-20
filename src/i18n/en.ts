@@ -203,6 +203,7 @@ export const en: Dictionnaire = {
     gainsTotal: '{montant} in total',
     gainsCommission: '0 % commission. You keep it all.',
     gainsVide: 'Your first ride will show up here.',
+    modifier: 'Edit',
     application: 'App',
     aPropos: 'About',
     aProposSous: 'Version, maps and licences',
@@ -321,6 +322,23 @@ export const en: Dictionnaire = {
     continuer: 'Continue',
 
     horsLigne: 'Offline. Signing in needs the network.',
+  },
+
+  monProfil: {
+    titre: 'My profile',
+    photo: 'Photo',
+    changerPhoto: 'Change the photo',
+    ajouterPhoto: 'Add a photo',
+    prenom: 'First name',
+    prenomAide: 'This is the name drivers will see.',
+    nom: 'Last name',
+    nomFacultatif: 'Optional. It only appears once a ride is accepted.',
+    numero: 'Number',
+    numeroFige: 'It signs you in. Changing it comes later.',
+    enregistrer: 'Save',
+    enregistre: 'Changes saved.',
+    illisible: 'Your profile will not load.',
+    horsLigne: 'Offline. Your changes will go out when the network is back.',
   },
 
   erreurs: {
