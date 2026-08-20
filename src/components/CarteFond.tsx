@@ -19,36 +19,42 @@ import { useTheme } from '../theme/ThemeProvider';
 const DELAI_CARTE_MS = 6000;
 
 /**
- * Une clé PAR PLATEFORME : une clé Google ne porte qu'un seul type de restriction,
- * iOS par bundle ou Android par SHA-1, et les deux s'excluent. Une clé unique
- * devrait rester sans restriction pour servir les deux.
+ * Le fournisseur de carte, par plateforme.
  *
- * Sans la clé de la plateforme courante, `PROVIDER_GOOGLE` rend une carte grise et
- * muette — le piège exact que décrit CLAUDE.md. On retombe alors sur le
- * fournisseur du système, qui n'en demande pas.
+ * **iOS : Apple, sans discussion possible.** `react-native-maps` 1.27 — la
+ * version que porte le SDK 57 — NE LIVRE PLUS le podspec
+ * `react-native-google-maps`. Déclarer `ios.config.googleMapsApiKey` dans
+ * `app.json` fait réclamer ce pod par l'autolinking, et `pod install` échoue :
+ * c'est ce qui a fait tomber le premier build iOS. La clé Google iOS ne sert
+ * donc plus à rien tant qu'on reste sur cette bibliothèque.
+ *
+ * Conséquence à connaître, et elle n'est pas cosmétique : `customMapStyle` est
+ * une fonction de Google. **La palette Flex ne colore pas la carte sur iOS**,
+ * ni en développement ni en production. Sur Android, si.
+ *
+ * Une clé PAR PLATEFORME reste la règle côté Android : une clé Google ne porte
+ * qu'un seul type de restriction, iOS par bundle ou Android par SHA-1, et les
+ * deux s'excluent.
+ *
+ * Sans la clé Android, `PROVIDER_GOOGLE` rend une carte grise et muette — le
+ * piège exact que décrit CLAUDE.md. On retombe alors sur le fournisseur du
+ * système, qui n'en demande pas.
  */
 const cleGoogle = Platform.select({
-  ios: process.env.EXPO_PUBLIC_GOOGLE_MAPS_KEY_IOS,
   android: process.env.EXPO_PUBLIC_GOOGLE_MAPS_KEY_ANDROID,
   default: undefined,
 });
 
 /**
- * Expo Go n'embarque pas le SDK natif Google Maps sur iOS. Y demander
- * `PROVIDER_GOOGLE` ne rend RIEN : `onMapReady` ne part jamais, le chien de
- * garde conclut « carte indisponible », et on passe le développement sans carte
- * alors que la clé est bonne.
- *
- * On retombe donc sur le fournisseur du système dans Expo Go. Conséquence à
- * connaître : `customMapStyle` ne s'applique qu'à Google, donc les jetons de
- * thème ne colorent pas la carte tant qu'on développe dans Expo Go. Un build de
- * développement ou de production affiche bien Google, et la palette avec.
+ * Expo Go n'embarque pas non plus le SDK natif Google Maps. La bascule vaut
+ * donc pour les deux raisons — mais sur iOS elle ne dépend plus de l'exécution :
+ * c'est la bibliothèque elle-même qui n'a plus de Google à offrir.
  */
 const dansExpoGo =
   Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
 
 export const fournisseurGoogle =
-  Boolean(cleGoogle && cleGoogle.length > 0) && !dansExpoGo;
+  Platform.OS === 'android' && Boolean(cleGoogle && cleGoogle.length > 0) && !dansExpoGo;
 
 export type EtatCarte = 'attente' | 'prete' | 'indisponible';
 

@@ -10,9 +10,6 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "sn.flex.app",
-      "config": {
-        "googleMapsApiKey": "$EXPO_PUBLIC_GOOGLE_MAPS_KEY_IOS"
-      },
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }

@@ -72,7 +72,10 @@ Aucune n'empêche de se servir de l'application. Dans cet ordre :
 2. **Mes avis.** `evaluations_visibles` est construite, commentée, testée, avec sa règle
    de double aveugle — et lue par aucun écran. La note s'affiche, les avis qui la
    composent restent invisibles, y compris pour celui qui les a reçus.
-3. **Messagerie interne.** « Écrire » passe par le SMS du téléphone en V1 — les numéros
+3. **Migration vers `expo-maps`.** C'est la seule façon de retrouver Google Maps sur
+   iOS, donc la palette Flex sur la carte des deux côtés. Chantier de composant, pas
+   réglage : nouvelle dépendance native et reconstruction du client.
+4. **Messagerie interne.** « Écrire » passe par le SMS du téléphone en V1 — les numéros
    se voient donc entre passager et conducteur d'une course acceptée. C'est la seule
    exposition volontaire du produit, et elle est en contradiction avec tout le reste du
    schéma, qui ne sert un numéro qu'à la contrepartie d'une course active et jamais
@@ -100,7 +103,7 @@ Hors périmètre V1, à ne pas construire : colis, fret, moto, repas, abonnement
 | Styles | NativeWind v4 (Tailwind), thèmes clair et sombre |
 | Base de données | Supabase — Postgres, RLS, Realtime, Edge Functions |
 | Auth | Supabase Auth, OTP par téléphone |
-| Cartes | react-native-maps avec `PROVIDER_GOOGLE`, **affichage seul** |
+| Cartes | react-native-maps — **Google sur Android, Apple sur iOS**, affichage seul |
 | Langues | i18n, `fr` par défaut, `en` disponible, `wo` préparé non rempli |
 | Paiement | Wave en direct, PayDunya en second canal (Orange Money) |
 | Retours | expo-haptics sur les actions de prix et d'acceptation |
@@ -215,13 +218,15 @@ Toute autre remontée est un vrai défaut et se corrige.
 Ce ne sont pas des bloquants : ce sont les endroits où quelqu'un va perdre une demi-journée
 s'il ne le sait pas.
 
-- **Google Maps ne s'affiche pas dans Expo Go sur iOS.** Expo Go n'embarque pas le SDK
-  natif Google Maps : y demander `PROVIDER_GOOGLE` ne rend rien du tout. L'application
-  retombe donc sur le fournisseur du système quand elle tourne dans Expo Go — la carte
-  fonctionne, mais `customMapStyle` ne s'applique qu'à Google, donc **les jetons de thème
-  ne colorent pas la carte tant qu'on développe dans Expo Go**. Un build de développement
-  (`npx expo run:ios` ou un profil EAS `development`) affiche Google et la palette avec.
-  C'est le seul endroit où développement et production diffèrent volontairement.
+- **Sur iOS, la carte est celle d'Apple — et la palette Flex ne s'y applique pas.**
+  `react-native-maps` 1.27, la version que porte le SDK 57, ne livre plus le podspec
+  `react-native-google-maps` : déclarer `ios.config.googleMapsApiKey` fait échouer
+  `pod install`, ce qui a fait tomber le premier build iOS. `customMapStyle` étant une
+  fonction de Google, **les jetons de thème ne colorent la carte que sur Android**. Ce
+  n'est pas un réglage à retrouver : c'est la bibliothèque qui n'a plus de Google à
+  offrir sur iOS. La clé `EXPO_PUBLIC_GOOGLE_MAPS_KEY_IOS` ne sert donc plus à rien.
+  Pour récupérer Google sur iOS il faudrait migrer vers `expo-maps` — un chantier, pas
+  un réglage, et il est au backlog.
 - **Le keystore de production ne doit jamais entrer dans le dépôt.** `.gitignore` couvre
   `*.jks`, `*.keystore` et `credentials.json`.
 - **Session de développement sans OTP.** Le panneau de dev ouvre une session par mot de
