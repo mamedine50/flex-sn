@@ -104,7 +104,7 @@ select is(
      and has_function_privilege('authenticated', p.oid, 'execute')
      and p.proname <> all (array[
        -- Les RPC métier.
-       'accept_offer', 'annuler_course', 'avancer_course',
+       'accept_offer', 'annuler_course', 'annuler_demande', 'avancer_course',
        'commune_la_plus_proche', 'create_ride_request', 'declarer_vehicule',
        'demandes_proches',
        'est_conducteur', 'maj_photo_profil', 'maj_position', 'maj_profil',

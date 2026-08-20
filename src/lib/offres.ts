@@ -119,6 +119,16 @@ export function useOffres(demandeId: string | null) {
 /** La demande en cours du passager, s'il en a une. */
 export type Demande = Database['public']['Tables']['ride_requests']['Row'];
 
+/**
+ * Retirer une demande encore ouverte.
+ *
+ * Après verrouillage c'est `annuler_course()` qui s'applique : la distinction
+ * n'est pas cosmétique, une course a un conducteur en route.
+ */
+export async function annulerDemande(demandeId: string) {
+  return supabase.rpc('annuler_demande', { p_demande_id: demandeId });
+}
+
 export function useDemandeEnCours() {
   const [etat, setEtat] = useState<{
     statut: 'chargement' | 'pret' | 'erreur';

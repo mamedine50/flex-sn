@@ -106,6 +106,11 @@ export const fr = {
   },
 
   offres: {
+    annulerDemande: 'Annuler ma demande',
+    confirmerAnnulation: 'Retirer votre demande ?',
+    confirmerAnnulationAide: 'Les conducteurs cesseront de la voir, et les offres en attente tombent.',
+    annulationEnCours: 'Retrait…',
+    garder: 'La garder',
     titre: 'Offres reçues',
     attente: 'Votre proposition est partie. Les réponses arrivent ici.',
     vide: 'Aucune réponse pour le moment.',
@@ -313,6 +318,7 @@ export const fr = {
     plaquePrise: 'Cette plaque est déjà déclarée par un autre conducteur.',
     plaqueInvalide: 'Une plaque compte au moins quatre caractères.',
     cheminEtranger: 'Ce fichier ne vous appartient pas.',
+    demandeIndisponible: 'Cette demande n’est plus active.',
     reseau: 'La connexion a été perdue. Vérifiez le réseau et réessayez.',
     demandeExpiree: 'Cette demande a expiré. Proposez un nouveau prix.',
     dejaVerrouillee: 'Cette course vient d’être prise par un autre conducteur.',

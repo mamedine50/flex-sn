@@ -1007,6 +1007,34 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      annuler_demande: {
+        Args: { p_demande_id: string }
+        Returns: {
+          cree_le: string
+          depart_geo: unknown
+          depart_lat: number
+          depart_libelle: string
+          depart_lon: number
+          destination_geo: unknown
+          destination_lat: number
+          destination_libelle: string
+          destination_lon: number
+          expires_at: string
+          id: string
+          passager_id: string
+          prix_xof: number
+          service: Database["public"]["Enums"]["service_course"]
+          statut: Database["public"]["Enums"]["statut_demande"]
+          verrouillee_le: string | null
+          zone_depart_geo: unknown
+        }
+        SetofOptions: {
+          from: "*"
+          to: "ride_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       arrondir_zone: { Args: { coord: number }; Returns: number }
       avancer_course: {
         Args: {

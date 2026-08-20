@@ -98,6 +98,11 @@ export const en: Dictionnaire = {
   },
 
   offres: {
+    annulerDemande: 'Cancel my request',
+    confirmerAnnulation: 'Withdraw your request?',
+    confirmerAnnulationAide: 'Drivers will stop seeing it, and pending offers fall away.',
+    annulationEnCours: 'Withdrawing…',
+    garder: 'Keep it',
     titre: 'Offers received',
     attente: 'Your offer is out. Answers land here.',
     vide: 'No answer yet.',
@@ -298,6 +303,7 @@ export const en: Dictionnaire = {
     plaquePrise: 'That plate is already registered by another driver.',
     plaqueInvalide: 'A plate has at least four characters.',
     cheminEtranger: 'That file is not yours.',
+    demandeIndisponible: 'That request is no longer active.',
     reseau: 'The connection dropped. Check your network and try again.',
     demandeExpiree: 'This request has expired. Set a new price.',
     dejaVerrouillee: 'Another driver just took this ride.',
