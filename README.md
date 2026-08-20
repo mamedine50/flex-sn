@@ -171,6 +171,10 @@ Toute autre remontée est un vrai défaut et se corrige.
 - **Attribution OpenStreetMap.** La table `lieux` vient d'une extraction OSM sous
   ODbL : la mention « © contributeurs OpenStreetMap » doit apparaître dans
   l'application avant publication. Voir `docs/extraction-lieux.md`.
+- **Validation des dossiers conducteur à la main.** `decider_document()` n'est
+  exécutable que par `service_role` : aujourd'hui, valider ou refuser une pièce se fait
+  par une requête SQL. Tenable pour les premiers conducteurs, intenable ensuite — c'est
+  le back-office qui lève ce point, pas une rustine côté application.
 - **Supprimer le compte `dev@flex.test`** du projet distant. Il sert au panneau de
   développement pour ouvrir une session sans OTP ; son mot de passe est en clair dans
   `src/lib/sessionDev.ts`. Il n'a rien à faire sur une base ouverte au public.

@@ -19,4 +19,7 @@ export const wo: DictionnairePartiel = {
   conducteur: {},
   enRoute: {},
   erreurs: {},
+  onglets: {},
+  profil: {},
+  dossier: {},
 };

@@ -36,6 +36,9 @@ const CORRESPONDANCE: Record<string, CleTraduction> = {
   course_non_terminee: 'erreurs.courseNonTerminee',
   deja_note: 'erreurs.dejaNote',
   etape_invalide: 'erreurs.etapeInvalide',
+  plaque_prise: 'erreurs.plaquePrise',
+  plaque_invalide: 'erreurs.plaqueInvalide',
+  chemin_etranger: 'erreurs.cheminEtranger',
 };
 
 export function cleErreur(erreur: PostgrestError | Error | null): CleTraduction {

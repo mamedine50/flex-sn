@@ -4,6 +4,11 @@
 import type { Dictionnaire } from './types';
 
 export const en: Dictionnaire = {
+  onglets: {
+    accueil: 'Ride',
+    profil: 'Profile',
+  },
+
   commun: {
     annuler: 'Cancel',
     continuer: 'Continue',
@@ -107,7 +112,6 @@ export const en: Dictionnaire = {
     votrePrixMention: 'your price',
     minutes: '{n} min',
     note: '★ {note}',
-    sansNote: 'New',
 
     accepter: 'Accept',
     refuser: 'Decline',
@@ -118,6 +122,74 @@ export const en: Dictionnaire = {
 
     horsLigne: 'Offline. New offers are not coming in.',
     resynchronisation: 'Updating…',
+  },
+
+  dossier: {
+    titre: 'Drive with Flex',
+    intro: 'Four documents. We check them by hand, within 48 hours.',
+    piece_identite: 'ID document',
+    piece_identiteAide: 'National card or passport, front side legible',
+    permis: 'Driving licence',
+    permisAide: 'Currently valid',
+    carte_grise: 'Vehicle registration',
+    carte_griseAide: 'For the vehicle you will drive',
+    selfie: 'Photo of you',
+    selfieAide: 'Face clear — it is compared with your ID',
+
+    ajouter: 'Add',
+    remplacer: 'Replace',
+    en_attente: 'Checking',
+    valide: 'Approved',
+    refuse: 'Redo',
+
+    complet: 'Your file is complete.',
+    completAide: 'Driver mode is open from your profile.',
+    enCours: 'File under review.',
+    enCoursAide: 'We get back to you within 48 hours.',
+    manquant: '{n} document missing.',
+    manquantPluriel: '{n} documents missing.',
+
+    erreurPermission: 'Flex needs access to your photos for this document.',
+    erreurEnvoi: 'Upload failed. Check your network and try again.',
+    envoiEnCours: 'Uploading…',
+
+    photo: 'Profile photo',
+    photoAide: 'It appears on your offers. It is not part of the file.',
+    photoPosee: 'Set',
+    vehicule: 'Your vehicle',
+    vehiculeManquant: 'Your vehicle is still missing.',
+    vehiculeManquantAide: 'Your documents are approved. Driver mode opens as soon as the car is filled in.',
+    vehiculeAide: 'What the passenger will see pull up.',
+    plaque: 'Plate',
+    plaquePlaceholder: 'DK-1234-A',
+    modele: 'Model',
+    modelePlaceholder: 'Kia Picanto',
+    couleur: 'Colour',
+    couleurPlaceholder: 'grey',
+    enregistrer: 'Save',
+    vehiculeEnregistre: 'Saved',
+    horsLigne: 'Offline. Uploading a document needs the network.',
+    illisible: 'Your file will not load.',
+    illisibleAide: 'Nothing is lost — documents already sent are stored.',
+  },
+
+  profil: {
+    titre: 'Profile',
+    apparence: 'Appearance',
+    langue: 'Language',
+    compte: 'Account',
+    conduire: 'Drive with Flex',
+    conduireSous: 'Earn with your vehicle',
+    modeConducteur: 'Driver mode',
+    modeConducteurSous: 'See nearby requests',
+    seDeconnecter: 'Sign out',
+    confirmerDeconnexion: 'Sign out of Flex?',
+    nonConnecte: 'You are not signed in.',
+    seConnecter: 'Sign in',
+    membreDepuis: 'Member since {date}',
+    courses: '{n} ride',
+    coursesPluriel: '{n} rides',
+    nouveauConducteur: 'New driver',
   },
 
   conducteur: {
@@ -202,6 +274,9 @@ export const en: Dictionnaire = {
   },
 
   erreurs: {
+    plaquePrise: 'That plate is already registered by another driver.',
+    plaqueInvalide: 'A plate has at least four characters.',
+    cheminEtranger: 'That file is not yours.',
     reseau: 'The connection dropped. Check your network and try again.',
     demandeExpiree: 'This request has expired. Set a new price.',
     dejaVerrouillee: 'Another driver just took this ride.',

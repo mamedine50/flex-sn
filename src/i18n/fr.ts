@@ -5,6 +5,11 @@
  * Voix active. Un bouton dit ce qui se passe.
  */
 export const fr = {
+  onglets: {
+    accueil: 'Course',
+    profil: 'Profil',
+  },
+
   commun: {
     annuler: 'Annuler',
     continuer: 'Continuer',
@@ -115,7 +120,6 @@ export const fr = {
     votrePrixMention: 'votre prix',
     minutes: '{n} min',
     note: '★ {note}',
-    sansNote: 'Nouveau',
 
     accepter: 'Accepter',
     refuser: 'Refuser',
@@ -126,6 +130,74 @@ export const fr = {
 
     horsLigne: 'Hors ligne. Les nouvelles offres n’arrivent pas.',
     resynchronisation: 'Mise à jour…',
+  },
+
+  dossier: {
+    titre: 'Conduire avec Flex',
+    intro: 'Quatre pièces à fournir. Nous les vérifions à la main, sous 48 heures.',
+    piece_identite: 'Pièce d’identité',
+    piece_identiteAide: 'Carte nationale ou passeport, recto lisible',
+    permis: 'Permis de conduire',
+    permisAide: 'En cours de validité',
+    carte_grise: 'Carte grise',
+    carte_griseAide: 'Du véhicule que vous conduirez',
+    selfie: 'Photo de vous',
+    selfieAide: 'Visage dégagé, elle sera comparée à votre pièce',
+
+    ajouter: 'Ajouter',
+    remplacer: 'Remplacer',
+    en_attente: 'En vérification',
+    valide: 'Validé',
+    refuse: 'À refaire',
+
+    complet: 'Votre dossier est complet.',
+    completAide: 'Le mode conducteur est ouvert depuis votre profil.',
+    enCours: 'Dossier en vérification.',
+    enCoursAide: 'Nous revenons vers vous sous 48 heures.',
+    manquant: 'Il manque {n} pièce.',
+    manquantPluriel: 'Il manque {n} pièces.',
+
+    erreurPermission: 'Flex a besoin de l’accès à vos photos pour cette pièce.',
+    erreurEnvoi: 'L’envoi a échoué. Vérifiez le réseau et réessayez.',
+    envoiEnCours: 'Envoi…',
+
+    photo: 'Photo de profil',
+    photoAide: 'Elle apparaît sur vos offres. Ce n’est pas une pièce du dossier.',
+    photoPosee: 'En place',
+    vehicule: 'Votre véhicule',
+    vehiculeManquant: 'Il reste votre véhicule à déclarer.',
+    vehiculeManquantAide: 'Vos pièces sont validées. Le mode conducteur s’ouvrira dès que la voiture sera renseignée.',
+    vehiculeAide: 'Ce que le passager verra arriver.',
+    plaque: 'Plaque',
+    plaquePlaceholder: 'DK-1234-A',
+    modele: 'Modèle',
+    modelePlaceholder: 'Kia Picanto',
+    couleur: 'Couleur',
+    couleurPlaceholder: 'grise',
+    enregistrer: 'Enregistrer',
+    vehiculeEnregistre: 'Enregistré',
+    horsLigne: 'Hors ligne. L’envoi d’une pièce demande le réseau.',
+    illisible: 'Votre dossier ne se charge pas.',
+    illisibleAide: 'Rien n’est perdu : les pièces déjà envoyées sont en base.',
+  },
+
+  profil: {
+    titre: 'Profil',
+    apparence: 'Apparence',
+    langue: 'Langue',
+    compte: 'Compte',
+    conduire: 'Conduire avec Flex',
+    conduireSous: 'Gagnez de l’argent avec votre véhicule',
+    modeConducteur: 'Mode conducteur',
+    modeConducteurSous: 'Voir les demandes à proximité',
+    seDeconnecter: 'Se déconnecter',
+    confirmerDeconnexion: 'Se déconnecter de Flex ?',
+    nonConnecte: 'Vous n’êtes pas connecté.',
+    seConnecter: 'Se connecter',
+    membreDepuis: 'Membre depuis {date}',
+    courses: '{n} course',
+    coursesPluriel: '{n} courses',
+    nouveauConducteur: 'Nouveau conducteur',
   },
 
   conducteur: {
@@ -217,6 +289,9 @@ export const fr = {
   },
 
   erreurs: {
+    plaquePrise: 'Cette plaque est déjà déclarée par un autre conducteur.',
+    plaqueInvalide: 'Une plaque compte au moins quatre caractères.',
+    cheminEtranger: 'Ce fichier ne vous appartient pas.',
     reseau: 'La connexion a été perdue. Vérifiez le réseau et réessayez.',
     demandeExpiree: 'Cette demande a expiré. Proposez un nouveau prix.',
     dejaVerrouillee: 'Cette course vient d’être prise par un autre conducteur.',

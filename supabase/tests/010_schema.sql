@@ -105,15 +105,18 @@ select is(
      and p.proname <> all (array[
        -- Les RPC métier.
        'accept_offer', 'annuler_course', 'avancer_course',
-       'commune_la_plus_proche', 'create_ride_request', 'demandes_proches',
-       'est_conducteur', 'maj_position', 'maj_profil', 'noter_course',
-       'prix_suggere', 'refuse_offer', 'submit_offer',
-       -- Ni RPC ni utilitaires internes : ces quatre-là sont appelées DEPUIS des
+       'commune_la_plus_proche', 'create_ride_request', 'declarer_vehicule',
+       'demandes_proches',
+       'est_conducteur', 'maj_photo_profil', 'maj_position', 'maj_profil',
+       'noter_course', 'prix_suggere', 'refuse_offer', 'soumettre_document',
+       'submit_offer',
+       -- Ni RPC ni utilitaires internes : celles-ci sont appelées DEPUIS des
        -- policies RLS ou DEPUIS des vues, et Postgres vérifie ces appels contre
        -- celui qui interroge — pas contre le propriétaire. Sans le droit, la
        -- lecture échoue en « permission denied for function ».
        'course_active', 'course_en_deplacement', 'arrondir_zone',
-       'taille_cellule_deg', 'delai_double_aveugle'
+       'taille_cellule_deg', 'delai_double_aveugle', 'seuil_nouveau_conducteur',
+       'courses_terminees', 'est_nouveau_conducteur'
      ])),
   '',
   'seules les RPC métier listées sont exécutables par authenticated'

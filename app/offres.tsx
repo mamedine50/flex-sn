@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { FlatList, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import Avatar from '../src/components/Avatar';
 import PanneauDev, { type EtatForce } from '../src/components/PanneauDev';
 import { useT } from '../src/i18n';
 import { cleErreur } from '../src/lib/erreursServeur';
@@ -219,11 +220,7 @@ function CarteOffre({
   return (
     <View className="mb-12 rounded-card bg-card p-16">
       <View className="flex-row items-center">
-        <View className="h-48 w-48 items-center justify-center rounded-pill bg-card2">
-          <Text className="text-[18px] font-extrabold text-ink">
-            {(offre.conducteur_prenom ?? '?').slice(0, 1)}
-          </Text>
-        </View>
+        <Avatar prenom={offre.conducteur_prenom} photo={offre.conducteur_photo} />
 
         <View className="ml-12 flex-1">
           <Text className="text-[15px] font-bold text-ink">{offre.conducteur_prenom}</Text>
@@ -232,8 +229,11 @@ function CarteOffre({
           <Text className="text-[12px] font-semibold text-muted" numberOfLines={2}>
             {t('offres.minutes', { n: offre.delai_arrivee_min ?? 0 })} ·{' '}
             {offre.vehicule_modele} {offre.vehicule_couleur} ·{' '}
-            {offre.conducteur_note === null
-              ? t('offres.sansNote')
+            {/* Sous cinq courses, on dit ce qu'on sait — « nouveau » — plutôt
+                qu'une moyenne sur deux avis, qui est du bruit présenté comme un
+                chiffre. */}
+            {offre.conducteur_est_nouveau || offre.conducteur_note === null
+              ? t('profil.nouveauConducteur')
               : t('offres.note', { note: String(offre.conducteur_note).replace('.', ',') })}
           </Text>
         </View>

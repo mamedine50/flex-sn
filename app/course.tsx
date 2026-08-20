@@ -7,6 +7,7 @@ import { Marker } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { EtatCarte } from '../src/components/CarteFond';
+import Avatar from '../src/components/Avatar';
 import PanneauDev, { type EtatForce } from '../src/components/PanneauDev';
 import { useT } from '../src/i18n';
 import {
@@ -22,6 +23,7 @@ import {
 import { cleErreur } from '../src/lib/erreursServeur';
 import { formatXof } from '../src/lib/format';
 import { configurerGabarit, noterMesure } from '../src/lib/gabarit';
+import { useProfilPublic } from '../src/lib/profilPublic';
 import { useSession } from '../src/lib/session';
 import {
   ageSecondes,
@@ -347,7 +349,9 @@ export default function EnRoute() {
 
           {autre && !terminee && !annulee ? (
             <Contrepartie
+              id={autre.id}
               prenom={autre.prenom}
+              photo={autre.photo_url}
               telephone={autre.telephone}
               suisConducteur={suisConducteur}
             />
@@ -461,21 +465,38 @@ export default function EnRoute() {
 }
 
 function Contrepartie({
+  id,
   prenom,
+  photo,
   telephone,
   suisConducteur,
 }: {
+  id: string;
   prenom: string;
+  photo: string | null;
   telephone: string | null;
   suisConducteur: boolean;
 }) {
   const t = useT();
+  const profil = useProfilPublic(id);
+
   return (
     <View className="mt-12 flex-row items-center rounded-card bg-card p-16">
-      <View className="h-48 w-48 items-center justify-center rounded-pill bg-card2">
-        <Text className="text-[18px] font-extrabold text-ink">{prenom.slice(0, 1)}</Text>
+      <Avatar prenom={prenom} photo={photo} />
+      <View className="ml-12 flex-1">
+        <Text className="text-[15px] font-bold text-ink">{prenom}</Text>
+        {/* Sous cinq courses, le badge remplace la note : une moyenne sur deux
+            avis n'est pas une note. */}
+        {profil ? (
+          <Text className="text-[12px] font-semibold text-muted" numberOfLines={1}>
+            {profil.est_nouveau || profil.note_moyenne === null
+              ? t('profil.nouveauConducteur')
+              : t('offres.note', {
+                  note: String(profil.note_moyenne).replace('.', ','),
+                })}
+          </Text>
+        ) : null}
       </View>
-      <Text className="ml-12 flex-1 text-[15px] font-bold text-ink">{prenom}</Text>
 
       {/* Le numéro n'existe qu'à partir d'ici : la policy ne le sert que sur une
           course active. Sans lui, on n'affiche pas de bouton mort. */}

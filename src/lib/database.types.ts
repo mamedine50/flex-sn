@@ -91,6 +91,51 @@ export type Database = {
         }
         Relationships: []
       }
+      documents_conducteur: {
+        Row: {
+          chemin: string
+          cree_le: string
+          decide_le: string | null
+          motif_refus: string | null
+          profil_id: string
+          statut: Database["public"]["Enums"]["statut_document"]
+          type: Database["public"]["Enums"]["type_document"]
+        }
+        Insert: {
+          chemin: string
+          cree_le?: string
+          decide_le?: string | null
+          motif_refus?: string | null
+          profil_id: string
+          statut?: Database["public"]["Enums"]["statut_document"]
+          type: Database["public"]["Enums"]["type_document"]
+        }
+        Update: {
+          chemin?: string
+          cree_le?: string
+          decide_le?: string | null
+          motif_refus?: string | null
+          profil_id?: string
+          statut?: Database["public"]["Enums"]["statut_document"]
+          type?: Database["public"]["Enums"]["type_document"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_conducteur_profil_id_fkey"
+            columns: ["profil_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_conducteur_profil_id_fkey"
+            columns: ["profil_id"]
+            isOneToOne: false
+            referencedRelation: "profils_publics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       evaluations: {
         Row: {
           auteur_id: string
@@ -758,7 +803,9 @@ export type Database = {
       }
       offres_recues: {
         Row: {
+          conducteur_est_nouveau: boolean | null
           conducteur_id: string | null
+          conducteur_nb_courses: number | null
           conducteur_nb_notes: number | null
           conducteur_note: number | null
           conducteur_photo: string | null
@@ -807,24 +854,30 @@ export type Database = {
       }
       profils_publics: {
         Row: {
+          est_nouveau: boolean | null
           id: string | null
           nb_notes: number | null
+          nombre_courses_terminees: number | null
           note_moyenne: number | null
           photo_url: string | null
           prenom: string | null
           role: Database["public"]["Enums"]["role_utilisateur"] | null
         }
         Insert: {
+          est_nouveau?: never
           id?: string | null
           nb_notes?: number | null
+          nombre_courses_terminees?: never
           note_moyenne?: number | null
           photo_url?: string | null
           prenom?: string | null
           role?: Database["public"]["Enums"]["role_utilisateur"] | null
         }
         Update: {
+          est_nouveau?: never
           id?: string | null
           nb_notes?: number | null
+          nombre_courses_terminees?: never
           note_moyenne?: number | null
           photo_url?: string | null
           prenom?: string | null
@@ -969,6 +1022,7 @@ export type Database = {
         Args: { p_statut: Database["public"]["Enums"]["statut_course"] }
         Returns: boolean
       }
+      courses_terminees: { Args: { p_profil: string }; Returns: number }
       create_ride_request: {
         Args: {
           p_depart_lat: number
@@ -1003,6 +1057,47 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "ride_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      decider_document: {
+        Args: {
+          p_motif?: string
+          p_profil: string
+          p_type: Database["public"]["Enums"]["type_document"]
+          p_valide: boolean
+        }
+        Returns: {
+          chemin: string
+          cree_le: string
+          decide_le: string | null
+          motif_refus: string | null
+          profil_id: string
+          statut: Database["public"]["Enums"]["statut_document"]
+          type: Database["public"]["Enums"]["type_document"]
+        }
+        SetofOptions: {
+          from: "*"
+          to: "documents_conducteur"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      declarer_vehicule: {
+        Args: { p_couleur: string; p_modele: string; p_plaque: string }
+        Returns: {
+          actif: boolean
+          conducteur_id: string
+          couleur: string
+          cree_le: string
+          id: string
+          modele: string
+          plaque: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "vehicles"
           isOneToOne: true
           isSetofReturn: false
         }
@@ -1043,12 +1138,35 @@ export type Database = {
         Returns: string
       }
       est_conducteur: { Args: { p_profil: string }; Returns: boolean }
+      est_nouveau_conducteur: { Args: { p_profil: string }; Returns: boolean }
       expire_stale: {
         Args: never
         Returns: {
           demandes_expirees: number
           offres_expirees: number
         }[]
+      }
+      maj_photo_profil: {
+        Args: { p_chemin: string }
+        Returns: {
+          cree_le: string
+          documents_valides_le: string | null
+          id: string
+          langue: string
+          nb_notes: number
+          nom_complet: string | null
+          note_moyenne: number | null
+          photo_url: string | null
+          prenom: string
+          role: Database["public"]["Enums"]["role_utilisateur"]
+          telephone: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       maj_position: {
         Args: {
@@ -1145,6 +1263,28 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      seuil_nouveau_conducteur: { Args: never; Returns: number }
+      soumettre_document: {
+        Args: {
+          p_chemin: string
+          p_type: Database["public"]["Enums"]["type_document"]
+        }
+        Returns: {
+          chemin: string
+          cree_le: string
+          decide_le: string | null
+          motif_refus: string | null
+          profil_id: string
+          statut: Database["public"]["Enums"]["statut_document"]
+          type: Database["public"]["Enums"]["type_document"]
+        }
+        SetofOptions: {
+          from: "*"
+          to: "documents_conducteur"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       submit_offer: {
         Args: {
           p_delai_arrivee_min: number
@@ -1198,12 +1338,14 @@ export type Database = {
         | "terminee"
         | "annulee"
       statut_demande: "ouverte" | "verrouillee" | "expiree" | "annulee"
+      statut_document: "en_attente" | "valide" | "refuse"
       statut_offre:
         | "en_attente"
         | "acceptee"
         | "refusee"
         | "expiree"
         | "caduque"
+      type_document: "piece_identite" | "permis" | "carte_grise" | "selfie"
       type_offre: "acceptation" | "contre_offre"
     }
     CompositeTypes: {
@@ -1361,7 +1503,9 @@ export const Constants = {
         "annulee",
       ],
       statut_demande: ["ouverte", "verrouillee", "expiree", "annulee"],
+      statut_document: ["en_attente", "valide", "refuse"],
       statut_offre: ["en_attente", "acceptee", "refusee", "expiree", "caduque"],
+      type_document: ["piece_identite", "permis", "carte_grise", "selfie"],
       type_offre: ["acceptation", "contre_offre"],
     },
   },

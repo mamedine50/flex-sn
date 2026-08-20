@@ -12,17 +12,17 @@ import {
 import { Marker } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import type { EtatCarte } from '../src/components/CarteFond';
+import type { EtatCarte } from '../../src/components/CarteFond';
 import {
   Loupe,
   VoitureInterurbaine,
   VoitureUrbaine,
-} from '../src/components/IllustrationsTuiles';
-import PanneauDev, { type EtatForce } from '../src/components/PanneauDev';
-import { useT } from '../src/i18n';
-import { configurerGabarit, noterMesure } from '../src/lib/gabarit';
-import { useLocalisation, type EtatLocalisation } from '../src/lib/localisation';
-import { useTheme } from '../src/theme/ThemeProvider';
+} from '../../src/components/IllustrationsTuiles';
+import PanneauDev, { type EtatForce } from '../../src/components/PanneauDev';
+import { useT } from '../../src/i18n';
+import { configurerGabarit, noterMesure } from '../../src/lib/gabarit';
+import { useLocalisation, type EtatLocalisation } from '../../src/lib/localisation';
+import { useTheme } from '../../src/theme/ThemeProvider';
 
 /**
  * Accueil.
@@ -34,7 +34,7 @@ import { useTheme } from '../src/theme/ThemeProvider';
  * Import par sous-chemin et paresseux — jamais depuis un barrel : un barrel
  * tirerait react-native-maps dans le premier bundle évalué.
  */
-const CarteFond = lazy(() => import('../src/components/CarteFond'));
+const CarteFond = lazy(() => import('../../src/components/CarteFond'));
 
 /** Dakar, Plateau. Le point de repli tant qu'on ne sait rien de l'utilisateur. */
 const REGION_DEFAUT = {

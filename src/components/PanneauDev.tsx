@@ -31,6 +31,8 @@ export const ETATS_FORCABLES = [
   { cle: 'carte_muette', libelle: 'Carte : indisponible' },
   { cle: 'bornes_chargement', libelle: 'Bornes de prix : chargement' },
   { cle: 'bornes_erreur', libelle: 'Bornes de prix : indisponibles' },
+  { cle: 'dossier_chargement', libelle: 'Dossier : chargement' },
+  { cle: 'dossier_erreur', libelle: 'Dossier : illisible' },
   { cle: 'envoi_en_cours', libelle: 'Envoi : en cours' },
   { cle: 'envoi_refuse', libelle: 'Envoi : refusé par le serveur' },
 ] as const;
