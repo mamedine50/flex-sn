@@ -2,7 +2,7 @@
 begin;
 create extension if not exists pgtap with schema public;
 
-select plan(8);
+select plan(10);
 
 create function public.t_utilisateur(p_prenom text) returns uuid
 language plpgsql as $$
@@ -67,10 +67,10 @@ select is(
 );
 
 select is(
-  (select nombre_courses_terminees from public.profils_publics
+  (select courses_comme_conducteur from public.profils_publics
    where id = (select conducteur from f)),
   0,
-  'et son compteur de courses est à zéro'
+  'et son compteur de courses au volant est à zéro'
 );
 
 -- Cinq courses terminées : le seuil est atteint, le badge tombe.
@@ -103,10 +103,26 @@ select public.t_devenir((select passager from f));
 set local role authenticated;
 
 select is(
-  (select nombre_courses_terminees from public.profils_publics
+  (select courses_comme_conducteur from public.profils_publics
    where id = (select conducteur from f)),
   5,
-  'cinq courses terminées comptent pour cinq'
+  'cinq courses terminées au volant comptent pour cinq'
+);
+
+-- LE défaut que cette séparation corrige : le passager de ces cinq courses n'a
+-- jamais conduit. Le compter comme expérimenté tromperait exactement la
+-- personne que le badge protège.
+select is(
+  (select courses_comme_conducteur from public.profils_publics
+   where id = (select passager from f)),
+  0,
+  'le passager des cinq courses n''a, lui, conduit zéro fois'
+);
+
+select is(
+  (select est_nouveau from public.profils_publics where id = (select passager from f)),
+  true,
+  'et reste « nouveau conducteur » : cinq courses de passager ne sont pas cinq courses au volant'
 );
 
 select is(

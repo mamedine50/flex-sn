@@ -288,11 +288,22 @@ etape('7. Les deux notent');
 
   const { data } = await passager
     .from('profils_publics')
-    .select('prenom, nombre_courses_terminees, est_nouveau')
+    .select('prenom, courses_comme_conducteur, est_nouveau')
     .eq('id', idConducteur)
     .single();
-  noter('le compteur de courses du conducteur avance', (data?.nombre_courses_terminees ?? 0) > 0,
-    `${data?.nombre_courses_terminees} course(s) · nouveau=${data?.est_nouveau}`);
+  // Le compteur du VOLANT, pas celui de la personne : cinq courses de passager
+  // ne font pas un conducteur expérimenté.
+  noter('le compteur de courses AU VOLANT avance', (data?.courses_comme_conducteur ?? 0) > 0,
+    `${data?.courses_comme_conducteur} course(s) · nouveau=${data?.est_nouveau}`);
+
+  const { data: moi } = await passager
+    .from('profils_publics')
+    .select('courses_comme_conducteur')
+    .eq('id', idPassager)
+    .single();
+  noter('le passager, lui, reste à zéro course au volant',
+    moi?.courses_comme_conducteur === 0,
+    `${moi?.courses_comme_conducteur} course(s)`);
 }
 
 await conducteur.rpc('maj_position', {

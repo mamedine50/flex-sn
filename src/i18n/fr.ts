@@ -30,7 +30,7 @@ export const fr = {
 
   theme: {
     titre: 'Apparence',
-    systeme: 'Comme le téléphone',
+    systeme: 'Auto',
     clair: 'Clair',
     sombre: 'Sombre',
   },
@@ -202,6 +202,13 @@ export const fr = {
     courses: '{n} course',
     coursesPluriel: '{n} courses',
     nouveauConducteur: 'Nouveau conducteur',
+    gains: 'Vos gains',
+    gainsSemaine: 'Cette semaine',
+    gainsCommission: '0 % de commission. Vous gardez tout.',
+    gainsVide: 'Votre première course apparaîtra ici.',
+    application: 'Application',
+    aPropos: 'À propos',
+    aProposSous: 'Version, cartes et licences',
   },
 
   conducteur: {
@@ -290,6 +297,16 @@ export const fr = {
     dejaNote: 'Merci, votre note est enregistrée.',
     dejaNoteAide: 'Elle sera visible quand l’autre aura noté, ou dans sept jours.',
     etoiles: '{n} sur 5',
+  },
+
+  aPropos: {
+    titre: 'À propos',
+    version: 'Version {version}',
+    cartes: 'Cartes et lieux',
+    osmAttribution: '© contributeurs OpenStreetMap',
+    osmLicence: 'Les quartiers, arrêts et repères de Flex viennent d’OpenStreetMap, sous licence ODbL. La base reste libre, et les données qui en dérivent le restent aussi.',
+    osmLien: 'openstreetmap.org/copyright',
+    fondCarte: 'Le fond de carte est fourni par la plateforme — Google sur Android, Apple sur iOS.',
   },
 
   erreurs: {

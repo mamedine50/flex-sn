@@ -29,7 +29,7 @@ export const en: Dictionnaire = {
 
   theme: {
     titre: 'Appearance',
-    systeme: 'Match the phone',
+    systeme: 'Auto',
     clair: 'Light',
     sombre: 'Dark',
   },
@@ -194,6 +194,13 @@ export const en: Dictionnaire = {
     courses: '{n} ride',
     coursesPluriel: '{n} rides',
     nouveauConducteur: 'New driver',
+    gains: 'Your earnings',
+    gainsSemaine: 'This week',
+    gainsCommission: '0 % commission. You keep it all.',
+    gainsVide: 'Your first ride will show up here.',
+    application: 'App',
+    aPropos: 'About',
+    aProposSous: 'Version, maps and licences',
   },
 
   conducteur: {
@@ -275,6 +282,16 @@ export const en: Dictionnaire = {
     dejaNote: 'Thank you, your rating is saved.',
     dejaNoteAide: 'It appears once the other person rates, or in seven days.',
     etoiles: '{n} out of 5',
+  },
+
+  aPropos: {
+    titre: 'About',
+    version: 'Version {version}',
+    cartes: 'Maps and places',
+    osmAttribution: '© OpenStreetMap contributors',
+    osmLicence: 'Flex’s neighbourhoods, stops and landmarks come from OpenStreetMap, under the ODbL licence. The database stays open, and so does anything derived from it.',
+    osmLien: 'openstreetmap.org/copyright',
+    fondCarte: 'The base map is provided by the platform — Google on Android, Apple on iOS.',
   },
 
   erreurs: {

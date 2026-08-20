@@ -6,10 +6,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import PanneauDev, { type EtatForce } from '../../src/components/PanneauDev';
 import { LANGUES_DISPONIBLES, useI18n, useT, type Langue } from '../../src/i18n';
 import { useEstConducteur } from '../../src/lib/conducteur';
+import { formatXof } from '../../src/lib/format';
+import { GAINS_VIDES, useGains } from '../../src/lib/gains';
 import { configurerGabarit, noterMesure } from '../../src/lib/gabarit';
 import { useSession } from '../../src/lib/session';
 import { supabase } from '../../src/lib/supabase';
 import { PREFERENCES, useTheme, type PreferenceTheme } from '../../src/theme/ThemeProvider';
+import { chiffresTabulaires } from '../../src/theme/typographie';
 
 /**
  * Profil.
@@ -28,6 +31,7 @@ export default function Profil() {
   const { langue, definirLangue } = useI18n();
   const session = useSession();
   const capacite = useEstConducteur();
+  const gains = useGains(capacite === 'oui');
 
   const [etatForce, setEtatForce] = useState<EtatForce>('aucun');
   const [panneauOuvert, setPanneauOuvert] = useState(false);
@@ -55,13 +59,16 @@ export default function Profil() {
 
         {/* Conduire, ou conduire déjà. La capacité décide, pas un rôle. */}
         {capacite === 'oui' ? (
-          <Rangee
-            nom="rangee"
-            titre={t('profil.modeConducteur')}
-            sous={t('profil.modeConducteurSous')}
-            principale
-            onPress={() => router.push('/conducteur')}
-          />
+          <>
+            <Gains gains={gains ?? GAINS_VIDES} />
+            <Rangee
+              nom="rangee"
+              titre={t('profil.modeConducteur')}
+              sous={t('profil.modeConducteurSous')}
+              principale
+              onPress={() => router.push('/conducteur')}
+            />
+          </>
         ) : (
           <Rangee
             nom="rangee"
@@ -85,6 +92,20 @@ export default function Profil() {
           actuelle={langue}
           onChoisir={(v) => definirLangue(v as Langue)}
         />
+
+        <Section titre={t('profil.application')} />
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`${t('profil.aPropos')}. ${t('profil.aProposSous')}`}
+          onPress={() => router.push('/a-propos')}
+          className="min-h-touch justify-center rounded-card bg-card px-16 py-12"
+          style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+        >
+          <Text className="text-[14px] font-bold text-ink">{t('profil.aPropos')}</Text>
+          <Text className="text-[12px] font-semibold text-muted">
+            {t('profil.aProposSous')}
+          </Text>
+        </Pressable>
 
         <Section titre={t('profil.compte')} />
         {connecte ? (
@@ -170,6 +191,50 @@ export default function Profil() {
   );
 }
 
+/**
+ * Les gains, en tête du Profil conducteur.
+ *
+ * Le montant en `moneyInk` et en chiffres tabulaires : c'est un montant, et il
+ * change. La ligne de commission est une PROMESSE, pas une donnée — le jour où
+ * une commission existe, elle viendra de `mes_gains` et cette ligne cessera
+ * d'être écrite en dur.
+ */
+function Gains({
+  gains,
+}: {
+  gains: { courses: number; total_xof: number; semaine_xof: number };
+}) {
+  const t = useT();
+
+  return (
+    <View className="mt-16 rounded-card bg-card p-16">
+      <Text className="text-[12px] font-bold uppercase tracking-wider text-muted">
+        {t('profil.gains')}
+      </Text>
+      <Text
+        className="mt-4 text-[28px] font-extrabold text-moneyInk"
+        style={chiffresTabulaires}
+      >
+        {formatXof(gains.total_xof)}
+      </Text>
+
+      <Text className="mt-4 text-[13px] font-semibold text-muted">
+        {gains.courses === 0
+          ? t('profil.gainsVide')
+          : `${
+              gains.courses === 1
+                ? t('profil.courses', { n: gains.courses })
+                : t('profil.coursesPluriel', { n: gains.courses })
+            } · ${t('profil.gainsSemaine')} ${formatXof(gains.semaine_xof)}`}
+      </Text>
+
+      <Text className="mt-12 text-[13px] font-bold text-ok">
+        {t('profil.gainsCommission')}
+      </Text>
+    </View>
+  );
+}
+
 function Section({ titre }: { titre: string }) {
   return (
     <Text className="mb-8 mt-24 text-[12px] font-bold uppercase tracking-wider text-muted">
@@ -241,8 +306,9 @@ function Choix({
             }`}
             style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
           >
-            {/* Deux lignes : « Comme le téléphone » ne tient pas sur un tiers
-                de largeur en français, et tronqué il ne veut plus rien dire. */}
+            {/* Deux lignes tolérées : les trois libellés tiennent sur une
+                aujourd'hui, une traduction plus longue déborderait, et un
+                libellé tronqué ne veut plus rien dire. */}
             <Text
               className={`text-center text-[13px] font-bold ${
                 choisi ? 'text-onAcc' : 'text-ink'

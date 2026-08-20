@@ -116,7 +116,8 @@ select is(
        -- lecture échoue en « permission denied for function ».
        'course_active', 'course_en_deplacement', 'arrondir_zone',
        'taille_cellule_deg', 'delai_double_aveugle', 'seuil_nouveau_conducteur',
-       'courses_terminees', 'est_nouveau_conducteur'
+       'courses_terminees', 'courses_comme_conducteur',
+       'est_nouveau_conducteur'
      ])),
   '',
   'seules les RPC métier listées sont exécutables par authenticated'

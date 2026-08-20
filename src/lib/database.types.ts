@@ -801,6 +801,30 @@ export type Database = {
           },
         ]
       }
+      mes_gains: {
+        Row: {
+          courses: number | null
+          profil_id: string | null
+          semaine_xof: number | null
+          total_xof: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rides_conducteur_id_fkey"
+            columns: ["profil_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rides_conducteur_id_fkey"
+            columns: ["profil_id"]
+            isOneToOne: false
+            referencedRelation: "profils_publics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       offres_recues: {
         Row: {
           conducteur_est_nouveau: boolean | null
@@ -854,30 +878,30 @@ export type Database = {
       }
       profils_publics: {
         Row: {
+          courses_comme_conducteur: number | null
           est_nouveau: boolean | null
           id: string | null
           nb_notes: number | null
-          nombre_courses_terminees: number | null
           note_moyenne: number | null
           photo_url: string | null
           prenom: string | null
           role: Database["public"]["Enums"]["role_utilisateur"] | null
         }
         Insert: {
+          courses_comme_conducteur?: never
           est_nouveau?: never
           id?: string | null
           nb_notes?: number | null
-          nombre_courses_terminees?: never
           note_moyenne?: number | null
           photo_url?: string | null
           prenom?: string | null
           role?: Database["public"]["Enums"]["role_utilisateur"] | null
         }
         Update: {
+          courses_comme_conducteur?: never
           est_nouveau?: never
           id?: string | null
           nb_notes?: number | null
-          nombre_courses_terminees?: never
           note_moyenne?: number | null
           photo_url?: string | null
           prenom?: string | null
@@ -1022,6 +1046,7 @@ export type Database = {
         Args: { p_statut: Database["public"]["Enums"]["statut_course"] }
         Returns: boolean
       }
+      courses_comme_conducteur: { Args: { p_profil: string }; Returns: number }
       courses_terminees: { Args: { p_profil: string }; Returns: number }
       create_ride_request: {
         Args: {
