@@ -13,7 +13,8 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { useT } from '../../src/i18n';
+import ChoixPays from '../../src/components/ChoixPays';
+import { useI18n, useT } from '../../src/i18n';
 import {
   cleErreurAuth,
   envoyerCode,
@@ -21,6 +22,7 @@ import {
   numeroPlausible,
 } from '../../src/lib/auth';
 import { configurerGabarit, noterMesure } from '../../src/lib/gabarit';
+import { drapeau, PAYS_PAR_DEFAUT, type Pays } from '../../src/lib/pays';
 import { useTheme } from '../../src/theme/ThemeProvider';
 import { chiffresTabulaires } from '../../src/theme/typographie';
 
@@ -44,10 +46,14 @@ export default function Connexion() {
   const marges = useSafeAreaInsets();
   const reseau = useNetworkState();
   const { couleurs } = useTheme();
+  const { langue } = useI18n();
   const { retour } = useLocalSearchParams<{ retour?: string }>();
 
-  const [indicatif, setIndicatif] = useState('221');
+  const [pays, setPays] = useState<Pays>(PAYS_PAR_DEFAUT);
+  const [choixPays, setChoixPays] = useState(false);
   const [national, setNational] = useState('');
+
+  const indicatif = pays.indicatif;
   const [envoi, setEnvoi] = useState<'repos' | 'envoi'>('repos');
   const [echec, setEchec] = useState<string | null>(null);
 
@@ -92,14 +98,18 @@ export default function Connexion() {
           paddingBottom: marges.bottom + 24,
         }}
       >
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('commun.retour')}
-          onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
-          className="min-h-touch justify-center self-start"
-        >
-          <Text className="text-[15px] font-bold text-accInk">{t('commun.retour')}</Text>
-        </Pressable>
+        {/* Pas de « Retour » quand la connexion EST la porte d'entrée : il n'y
+            aurait nulle part où revenir, et la garde renverrait ici même. */}
+        {router.canGoBack() ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('commun.retour')}
+            onPress={() => router.back()}
+            className="min-h-touch justify-center self-start"
+          >
+            <Text className="text-[15px] font-bold text-accInk">{t('commun.retour')}</Text>
+          </Pressable>
+        ) : null}
 
         <Text className="mt-16 text-[28px] font-extrabold text-ink">
           {t('connexion.titreNumero')}
@@ -116,50 +126,41 @@ export default function Connexion() {
           </View>
         ) : null}
 
+        {/* Drapeau et indicatif ouvrent la liste ; le numéro se tape à côté.
+            Un champ d'indicatif nu obligeait à connaître le sien par cœur. */}
         <View className="mt-24 flex-row gap-12">
-          <View className="w-[104px]">
-            <Text className="text-[12px] font-bold uppercase tracking-wider text-muted">
-              {t('connexion.indicatif')}
-            </Text>
-            <View
-              className="mt-4 h-[64px] flex-row items-center rounded-field bg-card px-12"
-              onLayout={(e) => noterMesure('champ', e.nativeEvent.layout.height)}
-            >
-              <Text
-                className="text-[22px] font-extrabold text-muted"
-                style={chiffresTabulaires}
-              >
-                +
-              </Text>
-              <TextInput
-                value={indicatif}
-                onChangeText={(v) => setIndicatif(v.replace(/[^0-9]/g, '').slice(0, 3))}
-                keyboardType="number-pad"
-                maxLength={3}
-                accessibilityLabel={t('connexion.indicatif')}
-                className="ml-4 flex-1 text-[22px] font-extrabold text-ink"
-                style={chiffresTabulaires}
-              />
-            </View>
-          </View>
-
-          <View className="flex-1">
-            <Text className="text-[12px] font-bold uppercase tracking-wider text-muted">
-              {t('connexion.numero')}
-            </Text>
-            <TextInput
-              value={national}
-              onChangeText={(v) => setNational(v.replace(/[^0-9]/g, '').slice(0, 14))}
-              keyboardType="number-pad"
-              textContentType="telephoneNumber"
-              autoFocus
-              placeholder="77 123 45 67"
-              placeholderTextColor={couleurs.muted}
-              accessibilityLabel={t('connexion.numero')}
-              className="mt-4 h-[64px] rounded-field bg-card px-12 text-[22px] font-extrabold text-ink"
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`${t('connexion.choisirPays')} : ${
+              langue === 'en' ? (pays.nomEn ?? pays.nom) : pays.nom
+            } +${pays.indicatif}`}
+            onPress={() => setChoixPays(true)}
+            onLayout={(e) => noterMesure('champ', e.nativeEvent.layout.height)}
+            className="h-[64px] flex-row items-center rounded-field bg-card px-12"
+            style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+          >
+            <Text className="text-[22px]">{drapeau(pays.code)}</Text>
+            <Text className="ml-4 text-[13px] font-bold text-muted">▾</Text>
+            <Text
+              className="ml-8 text-[22px] font-extrabold text-ink"
               style={chiffresTabulaires}
-            />
-          </View>
+            >
+              +{pays.indicatif}
+            </Text>
+          </Pressable>
+
+          <TextInput
+            value={national}
+            onChangeText={(v) => setNational(v.replace(/[^0-9]/g, '').slice(0, 14))}
+            keyboardType="number-pad"
+            textContentType="telephoneNumber"
+            autoFocus
+            placeholder={pays.code === 'SN' ? '77 123 45 67' : '000 000 0000'}
+            placeholderTextColor={couleurs.muted}
+            accessibilityLabel={t('connexion.numero')}
+            className="h-[64px] flex-1 rounded-field bg-card px-12 text-[22px] font-extrabold text-ink"
+            style={chiffresTabulaires}
+          />
         </View>
 
         {echec ? (
@@ -191,6 +192,15 @@ export default function Connexion() {
           </Text>
         </Pressable>
       </ScrollView>
+
+      <ChoixPays
+        visible={choixPays}
+        onChoisir={(p) => {
+          setPays(p);
+          setChoixPays(false);
+        }}
+        onFermer={() => setChoixPays(false)}
+      />
     </KeyboardAvoidingView>
   );
 }

@@ -301,6 +301,9 @@ export const en: Dictionnaire = {
   },
 
   connexion: {
+    choisirPays: 'Your country',
+    chercherPays: 'Search a country or a dialling code',
+    aucunPays: 'No country matches.',
     titreNumero: 'Your number',
     aideNumero: 'You will receive a code by SMS.',
     indicatif: 'Code',
@@ -339,6 +342,17 @@ export const en: Dictionnaire = {
     enregistre: 'Changes saved.',
     illisible: 'Your profile will not load.',
     horsLigne: 'Offline. Your changes will go out when the network is back.',
+  },
+
+  accroche: {
+    titre1: 'You set your price',
+    sous1: 'Offer what you are willing to pay. Nobody decides for you.',
+    titre2: 'Drivers answer',
+    sous2: 'They accept, decline, or offer another price. You choose.',
+    continuer: 'Continue',
+    legal: 'By continuing, you agree to our {conditions} and our {confidentialite}.',
+    conditions: 'terms of use',
+    confidentialite: 'privacy policy',
   },
 
   erreurs: {

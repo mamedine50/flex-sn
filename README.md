@@ -14,7 +14,7 @@ bout **sur le projet distant, avec deux vraies sessions** — voir `docs/parcour
 
 | | |
 |---|---|
-| Écrans | Accueil · Fixez votre prix · Offres reçues · Mode conducteur · En route · Profil · Mon profil · Conduire avec Flex · Connexion (numéro, code, prénom) · À propos |
+| Écrans | Accroche · Connexion (pays, numéro, code, prénom) · Accueil · Fixez votre prix · Offres reçues · Mode conducteur · En route · Profil · Mon profil · Conduire avec Flex · À propos |
 | Base | 42 migrations, **275 assertions pgTAP**, RLS sur chaque table, logique métier en RPC |
 | Gardes | `pnpm typecheck` · `pnpm lint` · `pnpm test` · `pnpm tokens:check` (44 paires) · `supabase test db` · `node scripts/parcours-v1.mjs` |
 | Étiquette | `v1.0.0-dev` |
@@ -35,6 +35,7 @@ publie pas.
 | **Vérification humaine des dossiers** | Le selfie doit être comparé à la pièce par quelqu'un. Le schéma le permet, personne ne le fait encore. | Opérations |
 | **Empreinte SHA-1 de développement (Google Maps)** | La clé Android est restreinte au SHA-1 du keystore de production. En dev, Expo signe avec un keystore de debug : carte grise sur Android tant que la seconde empreinte n'est pas ajoutée. | Console Google Cloud |
 | **Protection contre les mots de passe compromis** | Signalée par les advisors. La production passe par OTP, mais tant que l'authentification par mot de passe reste ouverte, elle doit l'être. | Auth → Policies |
+| **Conditions d'utilisation et politique de confidentialité** | L'écran d'accroche annonce que continuer vaut acceptation. Sans les deux documents et leurs URL (`EXPO_PUBLIC_URL_CONDITIONS`, `EXPO_PUBLIC_URL_CONFIDENTIALITE`), la phrase reste en texte simple, sans lien — et Apple exige l'URL de confidentialité avant toute publication, TestFlight externe compris. | Juridique + hébergement |
 | **Entité sénégalaise (NINEA + RCCM)** | Obligatoire pour tout compte marchand. Bloque le paiement, donc la monétisation. | Hors code |
 | **Blocage réciproque entre utilisateurs** | Rien ne permet à quelqu'un de ne plus jamais croiser quelqu'un d'autre. | Schéma + écran |
 | **Évaluations en double aveugle, retrait d'un avis abusif** | Le double aveugle existe en base ; le retrait d'un avis, non. | Back-office |

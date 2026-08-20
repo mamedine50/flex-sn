@@ -316,6 +316,9 @@ export const fr = {
   },
 
   connexion: {
+    choisirPays: 'Votre pays',
+    chercherPays: 'Chercher un pays ou un indicatif',
+    aucunPays: 'Aucun pays ne correspond.',
     titreNumero: 'Votre numéro',
     aideNumero: 'Vous recevrez un code par SMS.',
     indicatif: 'Indicatif',
@@ -354,6 +357,17 @@ export const fr = {
     enregistre: 'Modifications enregistrées.',
     illisible: 'Votre profil ne se charge pas.',
     horsLigne: 'Hors ligne. Vos modifications partiront au retour du réseau.',
+  },
+
+  accroche: {
+    titre1: 'Vous fixez votre prix',
+    sous1: 'Proposez ce que vous êtes prêt à payer. Personne ne décide à votre place.',
+    titre2: 'Les conducteurs répondent',
+    sous2: 'Ils acceptent, refusent ou proposent un autre prix. Vous choisissez.',
+    continuer: 'Continuer',
+    legal: 'En continuant, vous acceptez nos {conditions} et notre {confidentialite}.',
+    conditions: 'conditions d’utilisation',
+    confidentialite: 'politique de confidentialité',
   },
 
   erreurs: {
