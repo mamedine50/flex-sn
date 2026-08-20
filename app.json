@@ -13,7 +13,9 @@
       "config": {
         "googleMapsApiKey": "$EXPO_PUBLIC_GOOGLE_MAPS_KEY_IOS"
       },
-      "buildNumber": "1"
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "sn.flex.app",
@@ -28,7 +30,6 @@
         "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.CAMERA"
       ],
-      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/icone-adaptative.png",
         "backgroundColor": "#0B7A5F"
