@@ -194,10 +194,17 @@ export default function Profil() {
 /**
  * Les gains, en tête du Profil conducteur.
  *
+ * LA SEMAINE EN GROS, le cumul en dessous. Un conducteur pense en semaines :
+ * c'est le cycle du carburant, du versement au propriétaire du véhicule et de
+ * la dépense familiale du dimanche. Un total cumulé grossit toujours, donc il
+ * ne dit rien de « comment ça marche en ce moment » — et c'est bien le chiffre
+ * de la semaine qu'il compare à ce que la concurrence lui laisse.
+ *
  * Le montant en `moneyInk` et en chiffres tabulaires : c'est un montant, et il
  * change. La ligne de commission est une PROMESSE, pas une donnée — le jour où
  * une commission existe, elle viendra de `mes_gains` et cette ligne cessera
- * d'être écrite en dur.
+ * d'être écrite en dur. Elle est en `ok` et non en ambre : « 0 % » ressemble à
+ * un chiffre, mais ce n'est pas une somme.
  */
 function Gains({
   gains,
@@ -209,23 +216,25 @@ function Gains({
   return (
     <View className="mt-16 rounded-card bg-card p-16">
       <Text className="text-[12px] font-bold uppercase tracking-wider text-muted">
-        {t('profil.gains')}
+        {t('profil.gainsSemaine')}
       </Text>
       <Text
         className="mt-4 text-[28px] font-extrabold text-moneyInk"
         style={chiffresTabulaires}
       >
-        {formatXof(gains.total_xof)}
+        {formatXof(gains.semaine_xof)}
       </Text>
 
       <Text className="mt-4 text-[13px] font-semibold text-muted">
         {gains.courses === 0
           ? t('profil.gainsVide')
-          : `${
+          : `${t('profil.gainsTotal', {
+              montant: formatXof(gains.total_xof),
+            })} · ${
               gains.courses === 1
                 ? t('profil.courses', { n: gains.courses })
                 : t('profil.coursesPluriel', { n: gains.courses })
-            } · ${t('profil.gainsSemaine')} ${formatXof(gains.semaine_xof)}`}
+            }`}
       </Text>
 
       <Text className="mt-12 text-[13px] font-bold text-ok">
