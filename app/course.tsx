@@ -23,6 +23,13 @@ import { cleErreur } from '../src/lib/erreursServeur';
 import { formatXof } from '../src/lib/format';
 import { configurerGabarit, noterMesure } from '../src/lib/gabarit';
 import { useSession } from '../src/lib/session';
+import {
+  ageSecondes,
+  etaMinutes,
+  POSITION_PERIMEE_MS,
+  useEmissionPosition,
+  useMarqueurLisse,
+} from '../src/lib/suivi';
 import { chiffresTabulaires } from '../src/theme/typographie';
 
 const CarteFond = lazy(() => import('../src/components/CarteFond'));
@@ -55,13 +62,6 @@ export default function EnRoute() {
   const { statut, course, resynchronise } = useCourse();
   const dejaNote = useDejaNote(course?.id ?? null);
 
-  const suitLeConducteur =
-    Boolean(course) && course?.statut === 'en_route' && course?.conducteur_id !== null;
-  const positionConducteur = usePositionConducteur(
-    course?.conducteur_id ?? null,
-    suitLeConducteur,
-  );
-
   // Le battement de l'horloge : « immobile depuis 4 min » doit vieillir sous les
   // yeux, sinon le passager lit une durée figée et croit l'écran mort.
   const [maintenant, setMaintenant] = useState(() => Date.now());
@@ -70,9 +70,6 @@ export default function EnRoute() {
     return () => clearInterval(battement);
   }, []);
 
-  const minutesImmobile = positionConducteur
-    ? Math.floor((maintenant - new Date(positionConducteur.majLe).getTime()) / 60000)
-    : 0;
 
   const [occupe, setOccupe] = useState(false);
   const [echec, setEchec] = useState<ReturnType<typeof cleErreur> | null>(null);
@@ -84,6 +81,50 @@ export default function EnRoute() {
   const moi = session.statut === 'connecte' ? session.session.user.id : null;
   const suisConducteur = Boolean(moi && course && course.conducteur_id === moi);
   const autre = suisConducteur ? course?.passager : course?.conducteur;
+
+  // Côté conducteur : on ÉMET, et seulement pendant le déplacement.
+  useEmissionPosition(suisConducteur ? (course?.statut as StatutCourse) : null);
+
+  // Côté passager : on SUIT. La position n'est servie qu'à partir de « en route ».
+  const enDeplacement =
+    course?.statut === 'en_route' ||
+    course?.statut === 'arrive' ||
+    course?.statut === 'commencee';
+  const positionConducteur = usePositionConducteur(
+    course?.conducteur_id ?? null,
+    !suisConducteur && enDeplacement,
+  );
+
+  const marqueur = useMarqueurLisse(
+    positionConducteur
+      ? {
+          latitude: positionConducteur.latitude,
+          longitude: positionConducteur.longitude,
+          cap: positionConducteur.cap,
+          majLe: new Date(positionConducteur.majLe).getTime(),
+        }
+      : null,
+  );
+
+  const ageM = marqueur ? ageSecondes(marqueur.majLe, maintenant) : 0;
+  const positionPerimee = Boolean(marqueur) && ageM * 1000 > POSITION_PERIMEE_MS;
+  const minutesImmobile = Math.floor(ageM / 60);
+
+  // L'ETA se recalcule sur la distance restante — la même estimation que le
+  // bouton d'acceptation du conducteur, jamais un appel Directions.
+  const cible =
+    course?.statut === 'commencee'
+      ? course.demande
+        ? {
+            latitude: course.demande.destination_lat,
+            longitude: course.demande.destination_lon,
+          }
+        : null
+      : course?.demande
+        ? { latitude: course.demande.depart_lat, longitude: course.demande.depart_lon }
+        : null;
+  const eta = marqueur ? etaMinutes(marqueur, cible) : null;
+
 
   configurerGabarit(
     !course ? 'course' : suisConducteur ? 'course+conducteur' : 'course+passager',
@@ -183,6 +224,20 @@ export default function EnRoute() {
                   <View className="h-24 w-24 rounded-pill border-2 border-shapeOutline bg-moneyFill" />
                 </Marker>
               ) : null}
+              {marqueur ? (
+                <Marker
+                  coordinate={{ latitude: marqueur.latitude, longitude: marqueur.longitude }}
+                  anchor={{ x: 0.5, y: 0.5 }}
+                  flat
+                  // Le cap oriente la voiture. Sans lui elle glisse de côté, ce
+                  // qui se lit comme un bug avant de se lire comme une voiture.
+                  rotation={marqueur.cap ?? 0}
+                >
+                  <View className="h-32 w-32 items-center justify-center rounded-pill border-2 border-shapeOutline bg-card">
+                    <Text className="text-[15px] font-extrabold text-ink">▲</Text>
+                  </View>
+                </Marker>
+              ) : null}
             </CarteFond>
           </Suspense>
         </View>
@@ -221,6 +276,12 @@ export default function EnRoute() {
         pointerEvents="box-none"
       >
         {horsLigne ? <Bandeau texte={t('enRoute.horsLigne')} /> : null}
+        {/* Une position qui date : on le DIT, plutôt que d'afficher une voiture
+            faussement immobile. Le conducteur a peut-être quitté l'application —
+            la V1 ne suit pas en arrière-plan, et c'est assumé. */}
+        {!suisConducteur && positionPerimee && minutesImmobile < IMMOBILE_MIN ? (
+          <Bandeau texte={t('enRoute.positionDatee', { secondes: ageM })} />
+        ) : null}
         {!suisConducteur && minutesImmobile >= IMMOBILE_MIN ? (
           <Bandeau texte={t('enRoute.immobile', { minutes: minutesImmobile })} />
         ) : null}
@@ -257,6 +318,14 @@ export default function EnRoute() {
                       `enRoute.${course.statut}${suisConducteur ? 'Conducteur' : ''}` as never,
                     )}
             </Text>
+
+            {!suisConducteur && eta !== null && !terminee && !annulee ? (
+              <Text className="mt-4 text-[13px] font-semibold text-muted">
+                {course.statut === 'commencee'
+                  ? t('enRoute.etaArrivee', { minutes: eta })
+                  : t('enRoute.etaPriseEnCharge', { minutes: eta })}
+              </Text>
+            ) : null}
 
             {/* La PLAQUE, en gros, côté passager : c'est avec elle qu'on monte
                 dans la bonne voiture. Elle n'existe nulle part avant

@@ -112,8 +112,8 @@ select is(
        -- policies RLS ou DEPUIS des vues, et Postgres vérifie ces appels contre
        -- celui qui interroge — pas contre le propriétaire. Sans le droit, la
        -- lecture échoue en « permission denied for function ».
-       'course_active', 'arrondir_zone', 'taille_cellule_deg',
-       'delai_double_aveugle'
+       'course_active', 'course_en_deplacement', 'arrondir_zone',
+       'taille_cellule_deg', 'delai_double_aveugle'
      ])),
   '',
   'seules les RPC métier listées sont exécutables par authenticated'

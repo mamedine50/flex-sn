@@ -1,0 +1,59 @@
+/**
+ * Géométrie et estimations. Aucune dépendance : c'est du calcul, et un test doit
+ * pouvoir le vérifier sans monter un client Supabase.
+ */
+
+/**
+ * Vitesse moyenne retenue pour estimer un délai, en km/h. Dakar aux heures
+ * ouvrables. C'est une ESTIMATION, montrée avant qu'on s'engage dessus.
+ */
+export const VITESSE_KMH = 18;
+
+/** Un trajet routier à Dakar vaut environ 1,3× la distance à vol d'oiseau. */
+export const FACTEUR_DETOUR = 1.3;
+
+/** Distance à vol d'oiseau, en mètres. */
+export function distanceM(
+  a: { latitude: number; longitude: number },
+  b: { latitude: number; longitude: number },
+): number {
+  const R = 6371000;
+  const rad = (d: number) => (d * Math.PI) / 180;
+  const dLat = rad(b.latitude - a.latitude);
+  const dLon = rad(b.longitude - a.longitude);
+  const lat1 = rad(a.latitude);
+  const lat2 = rad(b.latitude);
+  const h =
+    Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+
+/** Délai d'arrivée estimé, en minutes, jamais moins d'une. */
+export function delaiEstimeMin(metres: number): number {
+  const metresRoute = metres * FACTEUR_DETOUR;
+  return Math.max(1, Math.round(((metresRoute / 1000) * 60) / VITESSE_KMH));
+}
+
+/** Faut-il émettre sa position ? Voir `src/lib/suivi.ts`. */
+export function doitEmettre(statut: string | null | undefined): boolean {
+  return (
+    statut === 'en_route' ||
+    statut === 'arrive' ||
+    statut === 'commencee' ||
+    statut === 'en_cours'
+  );
+}
+
+/** Âge d'une position, en secondes. Jamais négatif, même si les horloges divergent. */
+export function ageSecondes(majLe: number, maintenant: number): number {
+  return Math.max(0, Math.round((maintenant - majLe) / 1000));
+}
+
+/** Le temps d'arrivée restant, sur la distance à vol d'oiseau. Jamais Directions. */
+export function etaMinutes(
+  conducteur: { latitude: number; longitude: number } | null,
+  cible: { latitude: number; longitude: number } | null,
+): number | null {
+  if (!conducteur || !cible) return null;
+  return delaiEstimeMin(distanceM(conducteur, cible));
+}

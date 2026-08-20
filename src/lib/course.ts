@@ -162,6 +162,7 @@ export function usePositionConducteur(conducteurId: string | null, actif: boolea
   const [position, setPosition] = useState<{
     latitude: number;
     longitude: number;
+    cap: number | null;
     majLe: string;
   } | null>(null);
 
@@ -172,11 +173,16 @@ export function usePositionConducteur(conducteurId: string | null, actif: boolea
     const relire = async () => {
       const { data } = await supabase
         .from('positions_conducteurs')
-        .select('lat, lon, maj_le')
+        .select('lat, lon, cap, maj_le')
         .eq('conducteur_id', conducteurId)
         .maybeSingle();
       if (marqueur.annule || !data) return;
-      setPosition({ latitude: data.lat, longitude: data.lon, majLe: data.maj_le });
+      setPosition({
+        latitude: data.lat,
+        longitude: data.lon,
+        cap: data.cap,
+        majLe: data.maj_le,
+      });
     };
 
     void relire();

@@ -74,6 +74,7 @@ supabase migration list   # local et distant doivent afficher les mêmes version
 | (droits anon) | 20260819270000_fermer_fonctions_anon.sql |
 | (course) | 20260820100000 → 20260820100400 (cinq fichiers) |
 | (alias) | 20260820110000_alias_communes.sql |
+| (suivi) | 20260820120000_suivi_direct.sql |
 
 ## Tant que ce n'est pas fait
 

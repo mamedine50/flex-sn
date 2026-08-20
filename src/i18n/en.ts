@@ -186,6 +186,9 @@ export const en: Dictionnaire = {
     annuleeParVous: 'You cancelled this ride.',
 
     immobile: 'Your driver has not moved for {minutes} min.',
+    positionDatee: 'Position {secondes} s ago.',
+    etaPriseEnCharge: 'Pickup in about {minutes} min',
+    etaArrivee: 'Arriving in about {minutes} min',
     horsLigne: 'Offline. Tracking resumes when the network returns.',
     resynchronisation: 'Updating…',
     aucuneCourse: 'You have no ride in progress.',

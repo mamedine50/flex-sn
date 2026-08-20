@@ -307,6 +307,7 @@ export type Database = {
       }
       positions_conducteurs: {
         Row: {
+          cap: number | null
           conducteur_id: string
           en_ligne: boolean
           geo: unknown
@@ -315,6 +316,7 @@ export type Database = {
           maj_le: string
         }
         Insert: {
+          cap?: number | null
           conducteur_id: string
           en_ligne?: boolean
           geo?: unknown
@@ -323,6 +325,7 @@ export type Database = {
           maj_le?: string
         }
         Update: {
+          cap?: number | null
           conducteur_id?: string
           en_ligne?: boolean
           geo?: unknown
@@ -932,6 +935,10 @@ export type Database = {
         Args: { p_statut: Database["public"]["Enums"]["statut_course"] }
         Returns: boolean
       }
+      course_en_deplacement: {
+        Args: { p_statut: Database["public"]["Enums"]["statut_course"] }
+        Returns: boolean
+      }
       create_ride_request: {
         Args: {
           p_depart_lat: number
@@ -1014,8 +1021,14 @@ export type Database = {
         }[]
       }
       maj_position: {
-        Args: { p_en_ligne?: boolean; p_lat: number; p_lon: number }
+        Args: {
+          p_cap?: number
+          p_en_ligne?: boolean
+          p_lat: number
+          p_lon: number
+        }
         Returns: {
+          cap: number | null
           conducteur_id: string
           en_ligne: boolean
           geo: unknown

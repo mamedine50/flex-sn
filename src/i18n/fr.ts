@@ -200,6 +200,9 @@ export const fr = {
     annuleeParVous: 'Vous avez annulé cette course.',
 
     immobile: 'Votre conducteur n’a pas bougé depuis {minutes} min.',
+    positionDatee: 'Position il y a {secondes} s.',
+    etaPriseEnCharge: 'Arrivée estimée dans {minutes} min',
+    etaArrivee: 'Vous arrivez dans {minutes} min',
     horsLigne: 'Hors ligne. Le suivi reprendra au retour du réseau.',
     resynchronisation: 'Mise à jour…',
     aucuneCourse: 'Vous n’avez pas de course en cours.',

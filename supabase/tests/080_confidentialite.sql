@@ -6,7 +6,7 @@
 begin;
 create extension if not exists pgtap with schema public;
 
-select plan(25);
+select plan(29);
 
 -- Les tests calculent leurs valeurs attendues avec ces utilitaires. Le PRODUIT
 -- ne les appelle que depuis des fonctions SECURITY DEFINER, qui n'ont pas besoin
@@ -226,6 +226,52 @@ select public.t_devenir((select passager from f));
 set local role authenticated;
 
 set local role postgres;
+
+-- ================================== LA POSITION DU CONDUCTEUR, dans les deux sens --
+-- Elle n'est servie qu'au passager de la course, et seulement une fois la course
+-- en DÉPLACEMENT. Entre l'acceptation et le départ, personne ne suit personne :
+-- suivre quelqu'un qui n'a pas commencé à venir, c'est collecter sans usage.
+set local role postgres;
+insert into public.positions_conducteurs (conducteur_id, lat, lon, en_ligne)
+select conducteur, 14.6990, -17.4520, true from f;
+
+select public.t_devenir((select passager from f));
+set local role authenticated;
+select is_empty(
+  $$ select 1 from public.positions_conducteurs $$,
+  'course acceptée mais pas encore partie : le passager ne suit pas le conducteur'
+);
+set local role postgres;
+
+update public.rides set statut = 'en_route' where id = (select id from c);
+
+select public.t_devenir((select passager from f));
+set local role authenticated;
+select isnt_empty(
+  $$ select 1 from public.positions_conducteurs $$,
+  'course en route : le passager voit la position de SON conducteur'
+);
+set local role postgres;
+
+select public.t_devenir((select temoin from f));
+set local role authenticated;
+select is_empty(
+  $$ select 1 from public.positions_conducteurs $$,
+  'un tiers ne voit la position d''aucun conducteur, même en course'
+);
+set local role postgres;
+
+update public.rides set statut = 'terminee', terminee_le = now() where id = (select id from c);
+
+select public.t_devenir((select passager from f));
+set local role authenticated;
+select is_empty(
+  $$ select 1 from public.positions_conducteurs $$,
+  'course terminée : le suivi s''arrête, y compris en base'
+);
+set local role postgres;
+
+update public.rides set statut = 'verrouillee', terminee_le = null where id = (select id from c);
 
 -- ============================================================ un tiers ne voit rien
 select public.t_devenir((select temoin from f));
