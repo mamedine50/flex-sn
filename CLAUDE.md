@@ -94,6 +94,14 @@ Règles permanentes de ce dépôt. À lire avant toute modification.
   L'acceptation concurrente est testée — deux passagers ne peuvent pas verrouiller le même conducteur.
 - Un conducteur ne peut pas voir le nom complet ni le numéro du passager avant acceptation.
 - La position exacte du passager n'est servie qu'après acceptation. Avant, zone approximative.
+- **Un lieu favori a deux noms.** Le nom privé — « Domicile », « chez maman » — et la
+  précision qui l'accompagne ne sont lisibles que par leur propriétaire. Le serveur et
+  les autres ne voient jamais qu'un libellé neutre. On ne floute pas un point pour
+  nommer la porte juste après. `destination_libelle` est servi au conducteur : c'est là
+  que la règle se joue, et `lieuDepuisFavori()` est le seul chemin autorisé.
+- **Vingt lieux favoris par personne.** Au-delà ce n'est plus une liste de raccourcis,
+  c'est un annuaire — et un annuaire de domiciles est une donnée qu'on ne veut pas
+  détenir.
 
 ## Performance
 
@@ -128,6 +136,12 @@ Budget non négociable, cible Android d'entrée de gamme en 3G :
   NativeWind.** Jamais par `style` inline à côté d'un `className` : NativeWind l'ignore
   sans avertissement. Seules exceptions, les valeurs calculées au runtime qui n'ont pas
   de classe — zone sûre, dimensions mesurées.
+- **Toute valeur de géométrie hors échelle est ignorée par NativeWind, sans
+  avertissement.** L'échelle de `src/theme/tokens.ts` — 4, 8, 12, 16, 24, 32, 48 — est la
+  seule source. `h-40` ne fait pas 40 px : il ne fait RIEN, la pastille disparaît, et la
+  revue de code ne voit qu'une classe qui a l'air juste. Ce qui n'y est pas s'écrit entre
+  crochets, `h-[92px]`, jamais approximé sur la valeur voisine. L'assertion de gabarit est
+  le filet : c'est elle qui a attrapé les deux cas.
 - **Une capture prouve un appareil un jour donné. Une assertion mesurée prouve la règle
   partout.** Tout écran à gabarit contraint porte son assertion, exécutée sous `__DEV__`
   à chaque lancement. Voir `src/lib/gabarit.ts`.

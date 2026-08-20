@@ -30,7 +30,8 @@ publie pas.
 | Bloquant | Ce qui se passe sans | Où |
 |---|---|---|
 | **Fournisseur SMS (Twilio)** | L'authentification est en OTP téléphone. Sans fournisseur configuré dans Auth → Providers → Phone, personne n'ouvre de session en production. | Console Supabase |
-| **Supprimer `dev@flex.test` et `essai-route@flex.test`** | Deux comptes de développement, mots de passe en clair dans `src/lib/sessionDev.ts` et `scripts/parcours-v1.mjs`. Ils n'ont rien à faire sur une base ouverte. | Projet distant |
+| **Geo Permissions Twilio : Sénégal à activer** | Twilio refuse l'envoi vers le +221 (erreur 21408). Un testeur sénégalais tape son numéro et ne reçoit jamais de code — l'application s'ouvrant sur la connexion, il ne voit rien du tout. La vague 1 de testeurs est donc en +1. Se règle côté Twilio, pas dans le code. | Console Twilio |
+| ~~Supprimer `dev@flex.test` et `essai-route@flex.test`~~ | **Fait.** Les deux comptes sont supprimés du distant, l'outillage passe désormais par des comptes éphémères créés en LOCAL par l'API admin — voir `scripts/session-locale.mjs`. La garde `garde-compte-dev` reste en place et détecte une résurrection. | ✔ |
 | **Back-office de modération** | `decider_document()` est réservée à `service_role` : valider une pièce se fait aujourd'hui par une requête SQL. Tenable pour les dix premiers conducteurs, pas au-delà. | Premier chantier après-V1 |
 | **Vérification humaine des dossiers** | Le selfie doit être comparé à la pièce par quelqu'un. Le schéma le permet, personne ne le fait encore. | Opérations |
 | **Empreinte SHA-1 de développement (Google Maps)** | La clé Android est restreinte au SHA-1 du keystore de production. En dev, Expo signe avec un keystore de debug : carte grise sur Android tant que la seconde empreinte n'est pas ajoutée. | Console Google Cloud |

@@ -1,6 +1,5 @@
 /**
- * Garde de build : le compte de développement ne doit pas survivre à la mise en
- * ligne.
+ * Garde de build : le compte de développement ne doit pas RENAÎTRE.
  *
  *   node scripts/garde-compte-dev.mjs
  *
@@ -19,6 +18,13 @@
 import { createClient } from '@supabase/supabase-js';
 import { readFileSync } from 'node:fs';
 
+/**
+ * Ce couple n'est PLUS un secret : le compte a été supprimé du distant, et le
+ * mot de passe ne vaut plus rien. Il reste ici parce que c'est exactement ce
+ * que la garde cherche — une résurrection du compte, par restauration de
+ * sauvegarde ou par distraction. Une garde qui ne sait pas quoi essayer ne
+ * garde rien.
+ */
 const COMPTE = { email: 'dev@flex.test', motDePasse: 'flex-dev-2026' };
 
 function lireEnv() {

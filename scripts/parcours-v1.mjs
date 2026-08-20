@@ -1,48 +1,63 @@
 /**
- * Parcours V1 de bout en bout, sur le projet DISTANT, avec DEUX sessions.
+ * Parcours V1 de bout en bout, avec DEUX sessions réelles et la clé anonyme.
  *
- * Ce n'est pas un test unitaire : les tests pgTAP tournent en `postgres`, qui
- * traverse tout. Ici on passe par PostgREST avec la clé anonyme et deux vraies
- * sessions — c'est le seul endroit où un `grant` manquant se voit.
+ * Ce n'est pas un test unitaire : les 287 assertions pgTAP tournent en
+ * `postgres`, qui traverse les policies et les `grant`. Un droit manquant ne
+ * s'y voit pas. Ce script passe par PostgREST comme l'application.
  *
- * Ce que le parcours prouve, dans l'ordre où un utilisateur le vit :
- *   1. le passager reçoit une recommandation, et propose EN DESSOUS ;
- *   2. le conducteur voit la demande par la MAILLE, jamais par le point exact ;
- *   3. avant acceptation, ni nom complet, ni numéro, ni plaque ;
- *   4. après acceptation, les trois arrivent — c'est la bascule ;
- *   5. la position du conducteur n'est servie que pendant la course ;
- *   6. la course se termine et se note.
+ *   pnpm db:start && node scripts/parcours-v1.mjs
  *
- *   node scripts/parcours-v1.mjs
+ * CE QUI A CHANGÉ, ET POURQUOI. Il tournait auparavant sur le projet DISTANT
+ * avec deux comptes à mot de passe versionné. Ces comptes étaient une porte
+ * d'entrée : ils ont été supprimés. Le script travaille désormais sur la pile
+ * LOCALE et fabrique ses acteurs à la volée par l'API admin — aucun mot de
+ * passe, aucun compte qui survit à l'exécution.
+ *
+ * Ce qu'on y perd, et il faut le savoir : les `grant` du DISTANT ne sont plus
+ * éprouvés par ce script. Ils le restent par les migrations, qui sont les mêmes
+ * des deux côtés, et par l'inventaire de `supabase/tests/010_schema.sql`.
+ *
+ * La clé `service_role` est lue à la volée depuis `supabase status`. Elle ne
+ * quitte jamais ce processus, et le script REFUSE de tourner ailleurs qu'en
+ * local.
  */
 import { createClient } from '@supabase/supabase-js';
-import { readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { execFileSync } from 'node:child_process';
+import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const racine = join(dirname(fileURLToPath(import.meta.url)), '..');
-const env = Object.fromEntries(
-  readFileSync(join(racine, '.env'), 'utf8')
-    .split('\n')
-    .filter((l) => l.includes('=') && !l.trimStart().startsWith('#'))
-    .map((l) => [l.slice(0, l.indexOf('=')).trim(), l.slice(l.indexOf('=') + 1).trim()]),
-);
+const racine = dirname(dirname(fileURLToPath(import.meta.url)));
 
-// Deux comptes de développement, sur le distant. Ils partent avec le compte dev
-// avant l'ouverture publique — voir les bloquants du README.
-const COMPTES = {
-  passager: { email: 'dev@flex.test', password: 'flex-dev-2026' },
-  conducteur: { email: 'essai-route@flex.test', password: 'essai-route-2026' },
-};
+function pileLocale() {
+  const sortie = execFileSync('supabase', ['status', '-o', 'env'], {
+    encoding: 'utf8',
+    cwd: racine,
+  });
+  const lire = (cle) => sortie.match(new RegExp(`^${cle}="?([^"\\n]+)"?$`, 'm'))?.[1];
+  return { url: lire('API_URL'), anon: lire('ANON_KEY'), service: lire('SERVICE_ROLE_KEY') };
+}
+
+const { url, anon, service } = pileLocale();
+
+if (!url || !anon || !service) {
+  console.log('Pile locale introuvable. Lancez `pnpm db:start`.');
+  process.exit(1);
+}
+
+// Une clé de service pointée sur le distant annulerait toute la RLS.
+if (!/^https?:\/\/(127\.0\.0\.1|localhost)/.test(url)) {
+  console.log(`Refus : ${url} n'est pas la pile locale.`);
+  process.exit(1);
+}
+
+const admin = createClient(url, service, { auth: { persistSession: false } });
+const PREFIXE = 'parcours-';
 
 // Colobane → Mermoz. Deux points réels, à 3,3 km l'un de l'autre.
 const DEPART = { lat: 14.7091, lon: -17.4478, libelle: 'Colobane' };
 const DESTINATION = { lat: 14.7074, lon: -17.4744, libelle: 'Mermoz' };
 
-const client = () =>
-  createClient(env.EXPO_PUBLIC_SUPABASE_URL, env.EXPO_PUBLIC_SUPABASE_ANON_KEY, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
+const client = () => createClient(url, anon, { auth: { persistSession: false } });
 
 const lignes = [];
 let echecs = 0;
@@ -52,43 +67,91 @@ const noter = (nom, ok, detail = '') => {
 };
 const etape = (titre) => lignes.push(`\n── ${titre}`);
 
-const sortir = (message) => {
+/** Efface tout ce que le script a créé, quoi qu'il arrive. */
+async function nettoyer() {
+  const { data } = await admin.auth.admin.listUsers({ perPage: 1000 });
+  for (const u of data?.users ?? []) {
+    if (!u.email?.startsWith(PREFIXE)) continue;
+    await admin.from('evaluations').delete().or(`auteur_id.eq.${u.id},cible_id.eq.${u.id}`);
+    await admin.from('rides').delete().or(`passager_id.eq.${u.id},conducteur_id.eq.${u.id}`);
+    await admin.auth.admin.deleteUser(u.id);
+  }
+}
+
+const sortir = async (message) => {
+  await nettoyer();
   console.log(lignes.join('\n'));
   console.log(`\n${message}`);
   process.exit(1);
 };
 
-// ───────────────────────────────────────────────────────────── les sessions --
-etape('Deux sessions');
-const passager = client();
-const conducteur = client();
+/**
+ * Un acteur : compte éphémère, session obtenue par lien magique. Aucun mot de
+ * passe n'existe, donc aucun ne peut fuiter.
+ */
+async function acteur(prenom, { conducteur = false } = {}) {
+  const email = `${PREFIXE}${prenom.toLowerCase()}-${Date.now()}@flex.test`;
+  const { data: cree, error } = await admin.auth.admin.createUser({
+    email,
+    email_confirm: true,
+    user_metadata: { prenom },
+  });
+  if (error) await sortir(`Compte ${prenom} refusé : ${error.message}`);
 
-const { data: sp, error: ep } = await passager.auth.signInWithPassword(COMPTES.passager);
-if (ep) sortir(`Session passager refusée : ${ep.message}`);
-const { data: sc, error: ec } = await conducteur.auth.signInWithPassword(COMPTES.conducteur);
-if (ec) sortir(`Session conducteur refusée : ${ec.message}`);
+  // Un nom complet et un numéro : sans eux, la BASCULE de confidentialité n'a
+  // rien à révéler après acceptation, et l'assertion qui la garde tomberait
+  // pour une raison qui n'a rien à voir avec la règle.
+  await admin
+    .from('profiles')
+    .update({
+      nom_complet: `${prenom} Diop`,
+      telephone: `+2217${String(Date.now()).slice(-8)}`,
+    })
+    .eq('id', cree.user.id);
 
-const idPassager = sp.user.id;
-const idConducteur = sc.user.id;
-noter('session passager', Boolean(sp.session), idPassager);
-noter('session conducteur', Boolean(sc.session), idConducteur);
-
-// ─────────────────────────────────────────────── on part d'une table nette --
-etape('État de départ');
-{
-  const { data } = await conducteur
-    .from('rides')
-    .select('id, statut')
-    .in('statut', ['verrouillee', 'en_route', 'arrive', 'commencee', 'en_cours']);
-
-  for (const c of data ?? []) {
-    await conducteur.rpc('annuler_course', {
-      p_course_id: c.id,
-      p_motif: 'Nettoyage avant le parcours de bout en bout.',
+  if (conducteur) {
+    for (const type of ['piece_identite', 'permis', 'carte_grise', 'selfie']) {
+      await admin
+        .from('documents_conducteur')
+        .insert({ profil_id: cree.user.id, type, chemin: `${cree.user.id}/${type}.jpg` });
+      await admin.rpc('decider_document', {
+        p_profil: cree.user.id,
+        p_type: type,
+        p_valide: true,
+      });
+    }
+    await admin.from('vehicles').insert({
+      conducteur_id: cree.user.id,
+      plaque: `DK-${String(Date.now()).slice(-4)}-EP`,
+      modele: 'Kia Picanto',
+      couleur: 'grise',
     });
   }
-  noter('aucune course active au départ', true, `${data?.length ?? 0} nettoyée(s)`);
+
+  const { data: lien } = await admin.auth.admin.generateLink({ type: 'magiclink', email });
+  const sb = client();
+  const { error: erreurSession } = await sb.auth.verifyOtp({
+    token_hash: lien.properties.hashed_token,
+    type: 'email',
+  });
+  if (erreurSession) await sortir(`Session ${prenom} refusée : ${erreurSession.message}`);
+
+  return { sb, id: cree.user.id, email };
 }
+
+// ───────────────────────────────────────────────────────────── les sessions --
+etape('Deux acteurs, créés pour ce passage');
+
+const p = await acteur('Awa');
+const c = await acteur('Ousmane', { conducteur: true });
+
+const passager = p.sb;
+const conducteur = c.sb;
+const idPassager = p.id;
+const idConducteur = c.id;
+
+noter('session passager', true, p.email);
+noter('session conducteur (documents validés, véhicule actif)', true, c.email);
 
 // ───────────────────────────────────────────────── 1. le prix recommandé --
 etape('1. Le passager fixe son prix');
@@ -116,7 +179,7 @@ const { data: demande, error: erreurDemande } = await passager.rpc('create_ride_
   p_prix_xof: prixPassager,
   p_recommandation_xof: suggere,
 });
-if (erreurDemande) sortir(`Demande refusée : ${erreurDemande.message}`);
+if (erreurDemande) await sortir(`Demande refusée : ${erreurDemande.message}`);
 noter('demande créée sous la recommandation', true, `${prixPassager} FCFA`);
 
 // ────────────────────────────────────── 2. le conducteur voit la MAILLE --
@@ -130,7 +193,7 @@ await conducteur.rpc('maj_position', {
 const { data: file, error: erreurFile } = await conducteur.rpc('demandes_proches', {
   p_rayon_m: 3000,
 });
-if (erreurFile) sortir(`File refusée : ${erreurFile.message}`);
+if (erreurFile) await sortir(`File refusée : ${erreurFile.message}`);
 
 const vue = (file ?? []).find((d) => d.id === demande.id);
 noter('la demande est dans la file du conducteur', Boolean(vue), `${file?.length ?? 0} demande(s)`);
@@ -154,7 +217,7 @@ const { data: offre, error: erreurOffre } = await conducteur.rpc('submit_offer',
   p_prix_xof: prixConducteur,
   p_delai_arrivee_min: 6,
 });
-if (erreurOffre) sortir(`Offre refusée : ${erreurOffre.message}`);
+if (erreurOffre) await sortir(`Offre refusée : ${erreurOffre.message}`);
 noter('contre-offre soumise', true, `${prixConducteur} FCFA · 6 min`);
 
 const { data: recues } = await passager
@@ -207,7 +270,7 @@ etape('5. Le passager accepte');
 const { data: course, error: erreurAccept } = await passager.rpc('accept_offer', {
   p_offre_id: offre.id,
 });
-if (erreurAccept) sortir(`Acceptation refusée : ${erreurAccept.message}`);
+if (erreurAccept) await sortir(`Acceptation refusée : ${erreurAccept.message}`);
 noter('course verrouillée', course?.statut === 'verrouillee', course?.id ?? '');
 noter('au prix de l’offre acceptée', course?.prix_convenu_xof === prixConducteur,
   `${course?.prix_convenu_xof} FCFA`);
@@ -312,8 +375,11 @@ await conducteur.rpc('maj_position', {
   p_en_ligne: false,
 });
 
+await nettoyer();
+
 console.log(lignes.join('\n'));
 console.log(
   `\n${echecs === 0 ? 'PARCOURS COMPLET — aucune assertion en échec.' : `${echecs} assertion(s) en échec.`}`,
 );
+console.log('Comptes éphémères effacés.');
 process.exit(echecs === 0 ? 0 : 1);

@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
 
 import { useSession } from '../lib/session';
-import { fermerSessionDeTest, ouvrirSessionDeTest } from '../lib/sessionDev';
+import { fermerSessionDeTest, MODE_EMPLOI_SESSION } from '../lib/sessionDev';
 
 /**
  * Panneau de développement — forcer un état, ouvrir une session sans OTP.
@@ -51,12 +51,9 @@ export default function PanneauDev({ visible, actuel, onChoisir, onFermer }: Pro
   const [message, setMessage] = useState<string | null>(null);
   const [occupe, setOccupe] = useState(false);
 
-  const basculerSession = async () => {
+  const fermer = async () => {
     setOccupe(true);
-    const resultat =
-      session.statut === 'connecte'
-        ? await fermerSessionDeTest()
-        : await ouvrirSessionDeTest();
+    const resultat = await fermerSessionDeTest();
     setMessage(resultat.ok ? null : resultat.message);
     setOccupe(false);
   };
@@ -79,25 +76,31 @@ export default function PanneauDev({ visible, actuel, onChoisir, onFermer }: Pro
             Appui long sur la pastille de départ pour revenir ici.
           </Text>
 
-          {/* Session sans OTP : le fournisseur SMS n'est pas encore branché. */}
+          {/* Plus de bouton « ouvrir une session » : il reposait sur un compte
+              à mot de passe versionné, et ce compte a été supprimé. Une
+              application ne peut pas se fabriquer une session sans porte
+              dérobée — le jeton vient de dehors, par le script. */}
           <View className="mb-16 rounded-field bg-card2 p-12">
             <Text className="text-[12px] font-bold text-ink">{etiquetteSession}</Text>
             {message ? (
               <Text className="mt-4 text-[11px] font-semibold text-danger">{message}</Text>
             ) : null}
-            <Pressable
-              accessibilityRole="button"
-              disabled={occupe}
-              onPress={() => void basculerSession()}
-              className="mt-8 min-h-touch justify-center rounded-field bg-accFill px-16"
-              style={({ pressed }) => ({ opacity: pressed || occupe ? 0.6 : 1 })}
-            >
-              <Text className="text-[13px] font-bold text-onAcc">
-                {session.statut === 'connecte'
-                  ? 'Fermer la session'
-                  : 'Ouvrir une session de test'}
+
+            {session.statut === 'connecte' ? (
+              <Pressable
+                accessibilityRole="button"
+                disabled={occupe}
+                onPress={() => void fermer()}
+                className="mt-8 min-h-touch justify-center rounded-field bg-accFill px-16"
+                style={({ pressed }) => ({ opacity: pressed || occupe ? 0.6 : 1 })}
+              >
+                <Text className="text-[13px] font-bold text-onAcc">Fermer la session</Text>
+              </Pressable>
+            ) : (
+              <Text className="mt-8 text-[11px] font-semibold text-muted">
+                {MODE_EMPLOI_SESSION}
               </Text>
-            </Pressable>
+            )}
           </View>
 
           {/* L'entrée produit du mode conducteur ira dans l'onglet Profil, qui

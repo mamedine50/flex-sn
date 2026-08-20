@@ -1,20 +1,41 @@
 // Aller-retour réel : la recommandation, le journal, et son invisibilité.
 //
-//   node scripts/verif-recommandation.mjs
+//   pnpm db:start && node scripts/verif-recommandation.mjs
 //
-// Demande le compte dev@flex.test sur le distant. Il CRÉE une demande de course
-// et supprime celles du compte de dev — ne pas le lancer sur une base qui porte
-// de vraies données.
+// LOCAL uniquement, avec un compte éphémère créé par l'API admin et effacé en
+// fin de course. Il tournait auparavant sur le distant avec `dev@flex.test` —
+// un compte à mot de passe versionné, supprimé depuis.
 import { createClient } from '@supabase/supabase-js';
-import { readFileSync } from 'node:fs';
-const env = Object.fromEntries(
-  readFileSync(new URL('../.env', import.meta.url), 'utf8')
-    .split('\n').filter((l) => l.includes('=') && !l.startsWith('#'))
-    .map((l) => [l.slice(0, l.indexOf('=')), l.slice(l.indexOf('=') + 1)]),
-);
-const sb = createClient(env.EXPO_PUBLIC_SUPABASE_URL, env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
-  { auth: { persistSession: false, autoRefreshToken: false } });
-await sb.auth.signInWithPassword({ email: 'dev@flex.test', password: 'flex-dev-2026' });
+import { execFileSync } from 'node:child_process';
+import { dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const racine = dirname(dirname(fileURLToPath(import.meta.url)));
+const sortie = execFileSync('supabase', ['status', '-o', 'env'], {
+  encoding: 'utf8',
+  cwd: racine,
+});
+const lire = (cle) => sortie.match(new RegExp(`^${cle}="?([^"\\n]+)"?$`, 'm'))?.[1];
+const url = lire('API_URL');
+const anon = lire('ANON_KEY');
+const service = lire('SERVICE_ROLE_KEY');
+
+if (!/^https?:\/\/(127\.0\.0\.1|localhost)/.test(url ?? '')) {
+  console.log('Refus : ce script ne sort jamais de la pile locale.');
+  process.exit(1);
+}
+
+const admin = createClient(url, service, { auth: { persistSession: false } });
+const email = `verif-reco-${Date.now()}@flex.test`;
+const { data: cree } = await admin.auth.admin.createUser({
+  email,
+  email_confirm: true,
+  user_metadata: { prenom: 'Awa' },
+});
+const { data: lien } = await admin.auth.admin.generateLink({ type: 'magiclink', email });
+
+const sb = createClient(url, anon, { auth: { persistSession: false } });
+await sb.auth.verifyOtp({ token_hash: lien.properties.hashed_token, type: 'email' });
 
 const r = [];
 const v = (nom, ok, detail = '') => r.push(`${ok ? '✓' : '✗'} ${nom.padEnd(56)}${detail}`);
@@ -47,3 +68,5 @@ v('ni stats_routes', Boolean(stats), stats?.code ?? '');
 
 console.log(r.join('\n'));
 console.log(`\n${r.filter((x) => x.startsWith('✓')).length}/${r.length} vérifications passées`);
+
+await admin.auth.admin.deleteUser(cree.user.id);
