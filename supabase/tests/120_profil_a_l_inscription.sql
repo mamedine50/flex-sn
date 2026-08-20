@@ -2,7 +2,7 @@
 begin;
 create extension if not exists pgtap with schema public;
 
-select plan(8);
+select plan(9);
 
 create function public.t_devenir(p_uid uuid) returns void language sql as $$
   select set_config('request.jwt.claims',
@@ -37,14 +37,26 @@ select is(
   'le numéro est normalisé au format international'
 );
 
--- Un numéro d'un autre pays ne doit pas faire échouer l'inscription.
+-- Un numéro d'un autre pays est GARDÉ, pas jeté. Le perdre en silence, c'est le
+-- bouton « Appeler » qui disparaît pendant la course sans que rien ne le dise.
 insert into auth.users (id, email, phone)
 values ('aaaaaaaa-0000-4000-8000-000000000003', 'etranger@flex.test', '33612345678');
 
+select is(
+  (select telephone from public.profiles
+   where id = 'aaaaaaaa-0000-4000-8000-000000000003'),
+  '+33612345678',
+  'un numéro étranger est conservé au format E.164, pas remplacé par NULL'
+);
+
+-- Ce qui ne ressemble à rien reste NULL : mieux vaut pas de numéro qu'un faux.
+insert into auth.users (id, email, phone)
+values ('aaaaaaaa-0000-4000-8000-000000000004', 'informe@flex.test', '01234');
+
 select ok(
   (select telephone is null from public.profiles
-   where id = 'aaaaaaaa-0000-4000-8000-000000000003'),
-  'un numéro hors Sénégal laisse le champ vide plutôt que de bloquer l''inscription'
+   where id = 'aaaaaaaa-0000-4000-8000-000000000004'),
+  'un numéro qui n''est pas de l''E.164 laisse le champ vide plutôt que de mentir'
 );
 
 -- ------------------------------- le nouvel inscrit peut poser une demande --

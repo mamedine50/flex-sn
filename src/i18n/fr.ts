@@ -314,11 +314,40 @@ export const fr = {
     fondCarte: 'Le fond de carte est fourni par la plateforme — Google sur Android, Apple sur iOS.',
   },
 
+  connexion: {
+    titreNumero: 'Votre numéro',
+    aideNumero: 'Vous recevrez un code par SMS.',
+    indicatif: 'Indicatif',
+    numero: 'Numéro',
+    recevoirCode: 'Recevoir le code',
+    envoiEnCours: 'Envoi…',
+
+    titreCode: 'Votre code',
+    aideCode: 'Envoyé au {numero}.',
+    verification: 'Vérification…',
+    renvoyer: 'Renvoyer le code',
+    renvoyerDans: 'Renvoyer dans {secondes} s',
+    modifierNumero: 'Modifier le numéro',
+    pasRecu: 'Rien reçu ? Vérifiez le numéro, puis renvoyez le code.',
+
+    titrePrenom: 'Votre prénom',
+    aidePrenom: 'C’est le nom que verront les conducteurs.',
+    prenom: 'Prénom',
+    continuer: 'Continuer',
+
+    horsLigne: 'Hors ligne. La connexion demande le réseau.',
+  },
+
   erreurs: {
     plaquePrise: 'Cette plaque est déjà déclarée par un autre conducteur.',
     plaqueInvalide: 'Une plaque compte au moins quatre caractères.',
     cheminEtranger: 'Ce fichier ne vous appartient pas.',
     demandeIndisponible: 'Cette demande n’est plus active.',
+    numeroInvalide: 'Ce numéro n’est pas valide. Vérifiez l’indicatif et les chiffres.',
+    codeInvalide: 'Ce code ne correspond pas. Retapez-le.',
+    codeExpire: 'Ce code a expiré. Demandez-en un nouveau.',
+    tropDeTentatives: 'Trop de tentatives. Réessayez dans une minute.',
+    smsIndisponible: 'L’envoi de SMS n’est pas encore branché. Utilisez le panneau de développement.',
     reseau: 'La connexion a été perdue. Vérifiez le réseau et réessayez.',
     demandeExpiree: 'Cette demande a expiré. Proposez un nouveau prix.',
     dejaVerrouillee: 'Cette course vient d’être prise par un autre conducteur.',

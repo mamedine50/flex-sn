@@ -10,6 +10,7 @@ import PanneauDev, { type EtatForce } from '../src/components/PanneauDev';
 import { useT } from '../src/i18n';
 import { cleErreur } from '../src/lib/erreursServeur';
 import { formatXof } from '../src/lib/format';
+import { useGardeSession } from '../src/lib/garde';
 import { configurerGabarit, noterMesure } from '../src/lib/gabarit';
 import {
   annulerDemande,
@@ -37,6 +38,9 @@ const GABARIT = { entete: 48, action: 48 };
 
 export default function OffresRecues() {
   const t = useT();
+  // Cet écran écrit : sans session, il n'a rien à montrer. La garde
+  // emporte le chemin, et la connexion y revient.
+  useGardeSession('/offres');
   const marges = useSafeAreaInsets();
   const reseau = useNetworkState();
 

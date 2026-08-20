@@ -299,11 +299,40 @@ export const en: Dictionnaire = {
     fondCarte: 'The base map is provided by the platform — Google on Android, Apple on iOS.',
   },
 
+  connexion: {
+    titreNumero: 'Your number',
+    aideNumero: 'You will receive a code by SMS.',
+    indicatif: 'Code',
+    numero: 'Number',
+    recevoirCode: 'Send me the code',
+    envoiEnCours: 'Sending…',
+
+    titreCode: 'Your code',
+    aideCode: 'Sent to {numero}.',
+    verification: 'Checking…',
+    renvoyer: 'Resend the code',
+    renvoyerDans: 'Resend in {secondes} s',
+    modifierNumero: 'Change the number',
+    pasRecu: 'Nothing came? Check the number, then resend the code.',
+
+    titrePrenom: 'Your first name',
+    aidePrenom: 'This is the name drivers will see.',
+    prenom: 'First name',
+    continuer: 'Continue',
+
+    horsLigne: 'Offline. Signing in needs the network.',
+  },
+
   erreurs: {
     plaquePrise: 'That plate is already registered by another driver.',
     plaqueInvalide: 'A plate has at least four characters.',
     cheminEtranger: 'That file is not yours.',
     demandeIndisponible: 'That request is no longer active.',
+    numeroInvalide: 'That number is not valid. Check the country code and the digits.',
+    codeInvalide: 'That code does not match. Type it again.',
+    codeExpire: 'That code has expired. Ask for a new one.',
+    tropDeTentatives: 'Too many attempts. Try again in a minute.',
+    smsIndisponible: 'SMS sending is not wired up yet. Use the development panel.',
     reseau: 'The connection dropped. Check your network and try again.',
     demandeExpiree: 'This request has expired. Set a new price.',
     dejaVerrouillee: 'Another driver just took this ride.',

@@ -19,6 +19,7 @@ import {
 import { useCourse } from '../src/lib/course';
 import { cleErreur } from '../src/lib/erreursServeur';
 import { arrondirAuPas, formatXof, PAS_XOF } from '../src/lib/format';
+import { useGardeSession } from '../src/lib/garde';
 import { configurerGabarit, noterMesure } from '../src/lib/gabarit';
 import { useLocalisation } from '../src/lib/localisation';
 import { supabase } from '../src/lib/supabase';
@@ -49,6 +50,9 @@ type EtatAction =
 
 export default function ModeConducteur() {
   const t = useT();
+  // Cet écran écrit : sans session, il n'a rien à montrer. La garde
+  // emporte le chemin, et la connexion y revient.
+  useGardeSession('/conducteur');
   const marges = useSafeAreaInsets();
   const reseau = useNetworkState();
   const { position, demander } = useLocalisation();

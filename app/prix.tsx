@@ -11,8 +11,10 @@ import { useT } from '../src/i18n';
 import { useBornesPrix } from '../src/lib/bornesPrix';
 import { cleErreur } from '../src/lib/erreursServeur';
 import { arrondirAuPas, formatXof, PAS_XOF, separerMilliers } from '../src/lib/format';
+import { exigerSession } from '../src/lib/garde';
 import { configurerGabarit, noterMesure } from '../src/lib/gabarit';
 import { useLocalisation } from '../src/lib/localisation';
+import { useSession } from '../src/lib/session';
 import { supabase } from '../src/lib/supabase';
 import { chiffresTabulaires } from '../src/theme/typographie';
 
@@ -41,7 +43,17 @@ export default function FixerPrix() {
   const t = useT();
   const marges = useSafeAreaInsets();
   const reseau = useNetworkState();
-  const parametres = useLocalSearchParams<{ service?: string }>();
+  const parametres = useLocalSearchParams<{
+    service?: string;
+    departLat?: string;
+    departLon?: string;
+    departLibelle?: string;
+    destLat?: string;
+    destLon?: string;
+    destLibelle?: string;
+    prix?: string;
+  }>();
+  const session = useSession();
   const { position } = useLocalisation();
 
   const service = parametres.service === 'interurbain' ? 'interurbain' : 'urbain';
@@ -50,12 +62,29 @@ export default function FixerPrix() {
   const [panneauOuvert, setPanneauOuvert] = useState(false);
 
   const bornesReelles = useBornesPrix(service);
-  const [depart, setDepart] = useState<Lieu | null>(null);
-  const [destination, setDestination] = useState<Lieu | null>(null);
+  /**
+   * Le trajet peut ARRIVER par l'URL : c'est ainsi qu'on le retrouve au retour
+   * de la connexion. Sans ça, quelqu'un qui s'inscrit au moment d'envoyer sa
+   * proposition reviendrait devant un formulaire vide — et c'est exactement le
+   * moment où l'on abandonne.
+   */
+  const [depart, setDepart] = useState<Lieu | null>(() =>
+    lieuDepuisParametres(
+      parametres.departLat,
+      parametres.departLon,
+      parametres.departLibelle,
+    ),
+  );
+  const [destination, setDestination] = useState<Lieu | null>(() =>
+    lieuDepuisParametres(parametres.destLat, parametres.destLon, parametres.destLibelle),
+  );
   const [choix, setChoix] = useState<'depart' | 'destination' | null>(null);
 
   /** `null` = rien saisi. On ne confond pas « vide » et « zéro ». */
-  const [prix, setPrix] = useState<number | null>(null);
+  const [prix, setPrix] = useState<number | null>(() => {
+    const p = Number.parseInt(parametres.prix ?? '', 10);
+    return Number.isFinite(p) && p > 0 ? p : null;
+  });
   /**
    * La suggestion porte la paire de points qu'elle décrit. Sans ça, changer de
    * destination laisserait le prix de l'ancienne le temps d'un aller-retour —
@@ -153,6 +182,12 @@ export default function FixerPrix() {
   const envoyer = useCallback(async () => {
     if (!depart || !destination || prix === null) return;
 
+    // On regarde d'abord, on s'inscrit quand on agit. Le trajet part dans
+    // l'URL de retour : la connexion ramène ici, rempli.
+    if (!exigerSession(session.statut, cheminRetour(service, depart, destination, prix))) {
+      return;
+    }
+
     setEnvoi({ statut: 'envoi' });
     const { error } = await supabase.rpc('create_ride_request', {
       p_service: service,
@@ -186,7 +221,7 @@ export default function FixerPrix() {
     // porte lui-même la confirmation — l'afficher ici aussi, c'est la dire deux
     // fois et laisser l'utilisateur sur un écran qui n'a plus rien à faire.
     router.replace('/offres');
-  }, [depart, destination, prix, service, suggere]);
+  }, [depart, destination, prix, service, session.statut, suggere]);
 
   const envoiPossible =
     Boolean(depart) &&
@@ -403,6 +438,38 @@ export default function FixerPrix() {
       ) : null}
     </View>
   );
+}
+
+/** Un lieu reconstruit depuis l'URL. `null` dès qu'une pièce manque. */
+function lieuDepuisParametres(
+  lat?: string,
+  lon?: string,
+  libelle?: string,
+): Lieu | null {
+  const la = Number.parseFloat(lat ?? '');
+  const lo = Number.parseFloat(lon ?? '');
+  if (!Number.isFinite(la) || !Number.isFinite(lo) || !libelle) return null;
+  return { lat: la, lon: lo, libelle };
+}
+
+/** L'écran, tel qu'il faudra le rouvrir après la connexion. */
+function cheminRetour(
+  service: string,
+  depart: Lieu,
+  destination: Lieu,
+  prix: number,
+): string {
+  const p = new URLSearchParams({
+    service,
+    departLat: String(depart.lat),
+    departLon: String(depart.lon),
+    departLibelle: depart.libelle,
+    destLat: String(destination.lat),
+    destLon: String(destination.lon),
+    destLibelle: destination.libelle,
+    prix: String(prix),
+  });
+  return `/prix?${p.toString()}`;
 }
 
 function Bandeau({ texte }: { texte: string }) {

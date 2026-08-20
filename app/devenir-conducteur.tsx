@@ -22,6 +22,7 @@ import {
   type Document,
   type TypeDocument,
 } from '../src/lib/documents';
+import { useGardeSession } from '../src/lib/garde';
 import { configurerGabarit, noterMesure } from '../src/lib/gabarit';
 import { deposerPhotoProfil } from '../src/lib/photos';
 import { useProfilPublic } from '../src/lib/profilPublic';
@@ -46,6 +47,9 @@ const GABARIT = { vehicule: 96, photo: 96, piece1: 64, bouton: 48, action: 48 };
 
 export default function DevenirConducteur() {
   const t = useT();
+  // Cet écran écrit : sans session, il n'a rien à montrer. La garde
+  // emporte le chemin, et la connexion y revient.
+  useGardeSession('/devenir-conducteur');
   const marges = useSafeAreaInsets();
   const reseau = useNetworkState();
   const dossier = useDossier();

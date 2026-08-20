@@ -22,6 +22,7 @@ import {
 } from '../src/lib/course';
 import { cleErreur } from '../src/lib/erreursServeur';
 import { formatXof } from '../src/lib/format';
+import { useGardeSession } from '../src/lib/garde';
 import { configurerGabarit, noterMesure } from '../src/lib/gabarit';
 import { useProfilPublic } from '../src/lib/profilPublic';
 import { useSession } from '../src/lib/session';
@@ -54,6 +55,9 @@ const IMMOBILE_MIN = 3;
 
 export default function EnRoute() {
   const t = useT();
+  // Cet écran écrit : sans session, il n'a rien à montrer. La garde
+  // emporte le chemin, et la connexion y revient.
+  useGardeSession('/course');
   const marges = useSafeAreaInsets();
   const reseau = useNetworkState();
   const session = useSession();
