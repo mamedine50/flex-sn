@@ -66,6 +66,7 @@ export const fr = {
     choisirDepart: 'Choisir le départ',
     choisirDestination: 'Choisir la destination',
     chercherVille: 'Chercher une ville',
+    chercherQuartier: 'Chercher un quartier — Yoff, SICAP, Plateau…',
     aucuneVille: 'Aucune ville ne correspond.',
 
     // Le repère est fixe, c'est la carte qui bouge dessous.

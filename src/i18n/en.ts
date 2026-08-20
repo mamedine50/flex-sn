@@ -63,6 +63,7 @@ export const en: Dictionnaire = {
     choisirDepart: 'Choose pickup',
     choisirDestination: 'Choose destination',
     chercherVille: 'Search a city',
+    chercherQuartier: 'Search a district — Yoff, SICAP, Plateau…',
     aucuneVille: 'No city matches.',
 
     reperePosition: 'Move the map to place the pin',

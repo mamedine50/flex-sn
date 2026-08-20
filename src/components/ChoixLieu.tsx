@@ -11,6 +11,7 @@ import {
 
 import { useT } from '../i18n';
 import { communesPour, useCommunes, type Commune } from '../lib/communes';
+import { communeCorrespond } from '../lib/recherche';
 import { noterMesure } from '../lib/gabarit';
 import { useTheme } from '../theme/ThemeProvider';
 import type { EtatCarte } from './CarteFond';
@@ -42,12 +43,26 @@ export type Lieu = {
   libelle: string;
 };
 
+/**
+ * Rayon visible au premier affichage. Un cadrage plus serré oblige à dézoomer
+ * pour se situer — on ne reconnaît pas un quartier à trois rues près.
+ */
+const RAYON_INITIAL_M = 1000;
+
+/** 1° de latitude ≈ 111,32 km. Le delta couvre le DIAMÈTRE, d'où le facteur 2. */
+const DELTA_INITIAL = (2 * RAYON_INITIAL_M) / 111320;
+
 const REGION_DEFAUT = {
   latitude: 14.6928,
   longitude: -17.4467,
-  latitudeDelta: 0.02,
-  longitudeDelta: 0.02,
+  latitudeDelta: DELTA_INITIAL,
+  longitudeDelta: DELTA_INITIAL,
 };
+
+/** Une recherche vide ou blanche ne propose rien. */
+function normaliserVide(texte: string): boolean {
+  return texte.trim() === '';
+}
 
 type Props = {
   visible: boolean;
@@ -99,6 +114,24 @@ function SurCarte({
   const [libelle, setLibelle] = useState('');
   const [etatCarte, setEtatCarte] = useState<EtatCarte>('attente');
 
+  // La recherche DÉPLACE la carte ; elle ne choisit pas le point. Le point reste
+  // celui du repère au moment de Confirmer — sinon on rendrait un centroïde de
+  // commune, exactement ce que cet écran existe pour éviter.
+  const [recherche, setRecherche] = useState('');
+  const [recentrage, setRecentrage] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
+  const communes = useCommunes();
+
+
+  const suggestions = useMemo(() => {
+    if (normaliserVide(recherche)) return [];
+    return communes.communes
+      .filter((c) => communeCorrespond(c, recherche))
+      .slice(0, 6);
+  }, [communes.communes, recherche]);
+
   const surEtat = useCallback((etat: Exclude<EtatCarte, 'attente'>) => {
     setEtatCarte(etat);
   }, []);
@@ -107,7 +140,12 @@ function SurCarte({
     <Modal visible animationType="slide" onRequestClose={onFermer}>
       <View className="flex-1 bg-map">
         <Suspense fallback={null}>
-          <CarteFond region={region} onEtat={surEtat} onCentre={setCentre} />
+          <CarteFond
+            region={region}
+            centrerSur={recentrage}
+            onEtat={surEtat}
+            onCentre={setCentre}
+          />
         </Suspense>
 
         {/* Le repère ne bouge JAMAIS. Il est posé au centre géométrique de
@@ -128,18 +166,57 @@ function SurCarte({
           </View>
         ) : null}
 
-        <View
-          className="absolute left-0 right-0 top-0 flex-row items-center justify-between bg-card px-16 pb-12 pt-48"
-        >
-          <Text className="text-[17px] font-extrabold text-ink">{titre}</Text>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('commun.fermer')}
-            onPress={onFermer}
-            className="min-h-touch justify-center px-12"
-          >
-            <Text className="text-[15px] font-bold text-accInk">{t('commun.fermer')}</Text>
-          </Pressable>
+        <View className="absolute left-0 right-0 top-0 bg-card px-16 pb-12 pt-48">
+          <View className="flex-row items-center justify-between">
+            <Text className="text-[17px] font-extrabold text-ink">{titre}</Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('commun.fermer')}
+              onPress={onFermer}
+              className="min-h-touch justify-center px-12"
+            >
+              <Text className="text-[15px] font-bold text-accInk">
+                {t('commun.fermer')}
+              </Text>
+            </Pressable>
+          </View>
+
+          {/* Recherche par quartier, filtrée EN LOCAL sur la table communes.
+              Aucun appel réseau, aucun service de géocodage. */}
+          <TextInput
+            value={recherche}
+            onChangeText={setRecherche}
+            placeholder={t('prix.chercherQuartier')}
+            placeholderTextColor={couleurs.muted}
+            className="mt-8 min-h-touch rounded-field bg-card2 px-16 text-[15px] font-semibold text-ink"
+            autoCorrect={false}
+            autoCapitalize="none"
+            returnKeyType="search"
+          />
+
+          {suggestions.length > 0 ? (
+            <View className="mt-8 overflow-hidden rounded-field bg-card2">
+              {suggestions.map((c) => (
+                <Pressable
+                  key={c.code}
+                  accessibilityRole="button"
+                  onPress={() => {
+                    // On recentre, on ne choisit pas : l'utilisateur affine
+                    // ensuite au repère.
+                    setRecentrage({ latitude: c.lat, longitude: c.lon });
+                    setRecherche('');
+                  }}
+                  className="min-h-touch justify-center px-16 py-8"
+                  style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+                >
+                  <Text className="text-[14px] font-bold text-ink">{c.nom}</Text>
+                  <Text className="text-[11px] font-semibold text-muted">
+                    {c.region}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          ) : null}
         </View>
 
         <View className="absolute bottom-0 left-0 right-0 rounded-t-sheet bg-card px-16 pb-32 pt-16">

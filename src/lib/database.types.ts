@@ -63,6 +63,7 @@ export type Database = {
       }
       communes: {
         Row: {
+          alias: string[]
           code: string
           geo: unknown
           lat: number
@@ -71,6 +72,7 @@ export type Database = {
           region: string
         }
         Insert: {
+          alias?: string[]
           code: string
           geo?: unknown
           lat: number
@@ -79,6 +81,7 @@ export type Database = {
           region: string
         }
         Update: {
+          alias?: string[]
           code?: string
           geo?: unknown
           lat?: number

@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 
 import { supabase } from './supabase';
 
+export { communeCorrespond, normaliser } from './recherche';
+
 /**
  * La liste des communes, lue en base.
  *
@@ -18,6 +20,7 @@ export type Commune = {
   region: string;
   lat: number;
   lon: number;
+  alias: string[];
 };
 
 export type EtatCommunes =
@@ -34,7 +37,7 @@ export function useCommunes(): EtatCommunes {
     void (async () => {
       const { data, error } = await supabase
         .from('communes')
-        .select('code, nom, region, lat, lon')
+        .select('code, nom, region, lat, lon, alias')
         .order('nom');
 
       if (vivant.annule) return;
