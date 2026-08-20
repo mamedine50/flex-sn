@@ -115,7 +115,7 @@ export default function DevenirConducteur() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('commun.retour')}
-            onPress={() => router.back()}
+            onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
             className="min-h-touch justify-center pl-16"
             onLayout={(e) => noterMesure('action', e.nativeEvent.layout.height)}
           >

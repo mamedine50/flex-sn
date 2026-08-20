@@ -30,7 +30,13 @@ export type EtatOffres = {
   resynchronise: boolean;
 };
 
+let compteurCanal = 0;
+
 export function useOffres(demandeId: string | null) {
+  const [numeroCanal] = useState(() => {
+    compteurCanal += 1;
+    return compteurCanal;
+  });
   const [etat, setEtat] = useState<EtatOffres>({
     statut: 'chargement',
     offres: [],
@@ -68,7 +74,10 @@ export function useOffres(demandeId: string | null) {
     void relire(marqueur);
 
     const canal = supabase
-      .channel(`offres:${demandeId}`)
+      // Même règle que pour la course : le nom d'un canal est unique par
+      // instance, sinon un second montage ajoute un `.on()` après le
+      // `.subscribe()` du premier et l'application plante.
+      .channel(`offres:${demandeId}:${numeroCanal}`)
       .on(
         'postgres_changes',
         {
@@ -102,7 +111,7 @@ export function useOffres(demandeId: string | null) {
       abonnement.remove();
       void supabase.removeChannel(canal);
     };
-  }, [demandeId, relire]);
+  }, [demandeId, numeroCanal, relire]);
 
   return { ...etat, relire: () => void relire(null) };
 }

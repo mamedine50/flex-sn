@@ -95,6 +95,15 @@ export default function OffresRecues() {
       }
 
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
+      // Accepter, c'est verrouiller une course. Rester sur la liste laisserait
+      // le passager devant des offres devenues caduques pendant que sa voiture
+      // roule vers lui.
+      if (action === 'accepter') {
+        router.replace('/course');
+        return;
+      }
+
       offres.relire();
       demandeEnCours.relire();
     },
@@ -113,7 +122,7 @@ export default function OffresRecues() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t('commun.retour')}
-          onPress={() => router.back()}
+          onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
           onLongPress={__DEV__ ? () => setPanneauOuvert(true) : undefined}
           className="min-h-touch justify-center px-12"
         >

@@ -181,7 +181,11 @@ export default function FixerPrix() {
 
     void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setEnvoi({ statut: 'envoye' });
-    router.push('/offres');
+    // `replace` et non `push` : la proposition est partie, revenir au
+    // formulaire ne mènerait qu'à `demande_deja_ouverte`. L'écran des offres
+    // porte lui-même la confirmation — l'afficher ici aussi, c'est la dire deux
+    // fois et laisser l'utilisateur sur un écran qui n'a plus rien à faire.
+    router.replace('/offres');
   }, [depart, destination, prix, service, suggere]);
 
   const envoiPossible =
@@ -207,7 +211,7 @@ export default function FixerPrix() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('commun.retour')}
-            onPress={() => router.back()}
+            onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
             onLongPress={__DEV__ ? () => setPanneauOuvert(true) : undefined}
             className="min-h-touch justify-center px-12"
           >
@@ -216,7 +220,6 @@ export default function FixerPrix() {
         </View>
 
         {horsLigne ? <Bandeau texte={t('prix.horsLigne')} /> : null}
-        {envoi.statut === 'envoye' ? <Bandeau texte={t('offres.attente')} /> : null}
 
         <Champ
           nom="champDepart"

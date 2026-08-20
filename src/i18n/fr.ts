@@ -36,6 +36,10 @@ export const fr = {
   },
 
   accueil: {
+    reprendreCourse: 'Course en cours',
+    reprendreCourseSous: 'Revenir au suivi',
+    reprendreOffres: 'Proposition en cours',
+    reprendreOffresSous: 'Voir les réponses',
     ou: 'Où allez-vous ?',
     urbain: 'Trajet urbain',
     urbainSous: 'Fixez votre prix',

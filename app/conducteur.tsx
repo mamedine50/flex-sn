@@ -16,6 +16,7 @@ import {
   useEstConducteur,
   type DemandeProche,
 } from '../src/lib/conducteur';
+import { useCourse } from '../src/lib/course';
 import { cleErreur } from '../src/lib/erreursServeur';
 import { arrondirAuPas, formatXof, PAS_XOF } from '../src/lib/format';
 import { configurerGabarit, noterMesure } from '../src/lib/gabarit';
@@ -59,6 +60,16 @@ export default function ModeConducteur() {
   const { enLigne: enLigneBase, setEnLigne } = useEnLigne();
   const enLigne = enLigneBase === true;
   const file = useDemandesProches(enLigne);
+
+  // Une offre acceptée verrouille une course, et le conducteur ne l'apprend
+  // que par la base : `submit_offer()` rend la main sans savoir si le passager
+  // dira oui. Sans cette bascule, il resterait sur une file de demandes alors
+  // qu'il a déjà quelqu'un qui l'attend.
+  const course = useCourse();
+  const courseActive = course.course?.id ?? null;
+  useEffect(() => {
+    if (courseActive) router.replace('/course');
+  }, [courseActive]);
 
   const [ecartees, setEcartees] = useState<string[]>([]);
   const [action, setAction] = useState<EtatAction>({ statut: 'repos' });
@@ -142,7 +153,7 @@ export default function ModeConducteur() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t('commun.retour')}
-          onPress={() => router.back()}
+          onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
           onLongPress={__DEV__ ? () => setPanneauOuvert(true) : undefined}
           className="min-h-touch justify-center px-12"
         >

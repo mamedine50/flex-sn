@@ -65,7 +65,20 @@ export type EtatCourse = {
   resynchronise: boolean;
 };
 
+/**
+ * Un canal Realtime est identifié par son NOM. Deux `useCourse()` montés en même
+ * temps — l'accueil qui propose de reprendre, et l'écran En route — demandaient
+ * le même nom, et le second `.on()` arrivait après le `.subscribe()` du premier :
+ * l'application plantait au montage. Chaque instance porte donc son propre
+ * numéro.
+ */
+let compteurCanal = 0;
+
 export function useCourse(courseId?: string | null) {
+  const [numeroCanal] = useState(() => {
+    compteurCanal += 1;
+    return compteurCanal;
+  });
   const [etat, setEtat] = useState<EtatCourse>({
     statut: 'chargement',
     course: null,
@@ -102,7 +115,7 @@ export function useCourse(courseId?: string | null) {
     void relire(marqueur);
 
     const canal = supabase
-      .channel(`course:${courseId ?? 'active'}`)
+      .channel(`course:${courseId ?? 'active'}:${numeroCanal}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'rides' },
@@ -126,7 +139,7 @@ export function useCourse(courseId?: string | null) {
       abonnement.remove();
       void supabase.removeChannel(canal);
     };
-  }, [courseId, relire]);
+  }, [courseId, numeroCanal, relire]);
 
   return { ...etat, relire: () => void relire(null) };
 }

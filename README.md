@@ -182,7 +182,11 @@ Toute autre remontée est un vrai défaut et se corrige.
 ## Gardes
 
 ```bash
-pnpm tokens:check   # échoue si une paire texte/fond passe sous 4,5:1, dans les deux thèmes
+pnpm tokens:check          # échoue si une paire texte/fond passe sous 4,5:1, dans les deux thèmes
 pnpm typecheck
 pnpm lint
+supabase test db --local   # 259 assertions pgTAP
+node scripts/parcours-v1.mjs   # le parcours complet sur le DISTANT, deux sessions
 ```
+
+Le parcours de bout en bout est décrit écran par écran dans `docs/parcours-v1.md`.

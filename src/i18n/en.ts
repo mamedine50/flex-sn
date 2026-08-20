@@ -35,6 +35,10 @@ export const en: Dictionnaire = {
   },
 
   accueil: {
+    reprendreCourse: 'Ride in progress',
+    reprendreCourseSous: 'Back to tracking',
+    reprendreOffres: 'Offer pending',
+    reprendreOffresSous: 'See the replies',
     ou: 'Where are you going?',
     urbain: 'City ride',
     urbainSous: 'Set your price',

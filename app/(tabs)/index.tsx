@@ -20,7 +20,9 @@ import {
 } from '../../src/components/IllustrationsTuiles';
 import PanneauDev, { type EtatForce } from '../../src/components/PanneauDev';
 import { useT } from '../../src/i18n';
+import { useCourse } from '../../src/lib/course';
 import { configurerGabarit, noterMesure } from '../../src/lib/gabarit';
+import { useDemandeEnCours } from '../../src/lib/offres';
 import { useLocalisation, type EtatLocalisation } from '../../src/lib/localisation';
 import { useTheme } from '../../src/theme/ThemeProvider';
 
@@ -92,11 +94,6 @@ export default function Accueil() {
 
   // La carte n'est montée qu'une fois le premier rendu peint et le fil libre.
   // `requestIdleCallback` plutôt qu'`InteractionManager`, déprécié depuis SDK 57.
-  configurerGabarit('accueil', {
-    feuille: HAUTEUR_FEUILLE_HORS_MARGE + marges.bottom,
-    tuile0: FEUILLE.tuile,
-    tuile1: FEUILLE.tuile,
-  });
 
   useEffect(() => {
     const tache = requestIdleCallback(() => setMonterCarte(true), { timeout: 500 });
@@ -122,6 +119,35 @@ export default function Accueil() {
   const surEtatCarte = useCallback((etat: Exclude<EtatCarte, 'attente'>) => {
     setEtatCarte(etat);
   }, []);
+
+  // Reprendre où on en était. On ne redirige PAS d'autorité : quelqu'un qui
+  // ouvre l'application pendant sa course peut vouloir regarder la carte. On
+  // pose une reprise visible, il décide.
+  const course = useCourse();
+  const demande = useDemandeEnCours();
+  const reprise = course.course
+    ? {
+        titre: t('accueil.reprendreCourse'),
+        sous: t('accueil.reprendreCourseSous'),
+        vers: '/course' as const,
+      }
+    : demande.demande?.statut === 'ouverte'
+      ? {
+          titre: t('accueil.reprendreOffres'),
+          sous: t('accueil.reprendreOffresSous'),
+          vers: '/offres' as const,
+        }
+      : null;
+
+  // Variante : la bande de reprise n'existe qu'avec une course ou une
+  // proposition en cours. Le nom change pour que l'assertion ne s'arrête pas à
+  // attendre une mesure qui ne viendra jamais.
+  configurerGabarit(reprise ? 'accueil+reprise' : 'accueil', {
+    feuille: HAUTEUR_FEUILLE_HORS_MARGE + marges.bottom,
+    tuile0: FEUILLE.tuile,
+    tuile1: FEUILLE.tuile,
+    ...(reprise ? { reprise: FEUILLE.barre } : {}),
+  });
 
   const etatsPosition: EtatLocalisation[] = [
     'jamais_demandee',
@@ -241,6 +267,20 @@ export default function Accueil() {
         }}
       >
         <View className="mb-12 h-4 w-[36px] self-center rounded-pill bg-line" />
+
+        {reprise ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`${reprise.titre}. ${reprise.sous}`}
+            onPress={() => router.push(reprise.vers)}
+            onLayout={(e) => noterMesure('reprise', e.nativeEvent.layout.height)}
+            className="mb-12 min-h-driving justify-center rounded-card bg-accFill px-16 py-12"
+            style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+          >
+            <Text className="text-[16px] font-extrabold text-onAcc">{reprise.titre}</Text>
+            <Text className="text-[12px] font-semibold text-onAcc">{reprise.sous}</Text>
+          </Pressable>
+        ) : null}
 
         <View className="flex-row gap-12">
           <Tuile
