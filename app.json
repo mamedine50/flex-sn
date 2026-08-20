@@ -12,7 +12,8 @@
       "bundleIdentifier": "sn.flex.app",
       "config": {
         "googleMapsApiKey": "$EXPO_PUBLIC_GOOGLE_MAPS_KEY_IOS"
-      }
+      },
+      "buildNumber": "1"
     },
     "android": {
       "package": "sn.flex.app",
@@ -24,8 +25,14 @@
       },
       "permissions": [
         "android.permission.ACCESS_COARSE_LOCATION",
-        "android.permission.ACCESS_FINE_LOCATION"
-      ]
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.CAMERA"
+      ],
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icone-adaptative.png",
+        "backgroundColor": "#0B7A5F"
+      }
     },
     "plugins": [
       "expo-router",
@@ -35,7 +42,27 @@
           "locationWhenInUsePermission": "Flex utilise votre position pour proposer votre point de départ aux conducteurs proches."
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash.png",
+          "imageWidth": 180,
+          "resizeMode": "contain",
+          "backgroundColor": "#F8FAFC",
+          "dark": {
+            "backgroundColor": "#0E1C2C"
+          }
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Flex accède à vos photos pour envoyer votre pièce d’identité, votre permis, votre carte grise et votre photo de profil.",
+          "cameraPermission": "Flex utilise l’appareil photo pour le selfie qui sera comparé à votre pièce d’identité."
+        }
+      ],
+      "expo-dev-client"
     ],
     "experiments": {
       "typedRoutes": true
@@ -45,6 +72,7 @@
       "eas": {
         "projectId": "afa3a344-8ed0-47f7-b3a5-65806e9f71a2"
       }
-    }
+    },
+    "icon": "./assets/icone.png"
   }
 }
