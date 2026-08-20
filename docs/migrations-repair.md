@@ -75,6 +75,7 @@ supabase migration list   # local et distant doivent afficher les mêmes version
 | (course) | 20260820100000 → 20260820100400 (cinq fichiers) |
 | (alias) | 20260820110000_alias_communes.sql |
 | (suivi) | 20260820120000_suivi_direct.sql |
+| (lieux) | 20260820130000_lieux.sql + 20260820140000_centroides_osm.sql |
 
 ## Tant que ce n'est pas fait
 

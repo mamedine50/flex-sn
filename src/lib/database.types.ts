@@ -223,6 +223,36 @@ export type Database = {
           },
         ]
       }
+      lieux: {
+        Row: {
+          alias: string[]
+          categorie: Database["public"]["Enums"]["categorie_lieu"]
+          code: string
+          geo: unknown
+          lat: number
+          lon: number
+          nom: string
+        }
+        Insert: {
+          alias?: string[]
+          categorie: Database["public"]["Enums"]["categorie_lieu"]
+          code: string
+          geo?: unknown
+          lat: number
+          lon: number
+          nom: string
+        }
+        Update: {
+          alias?: string[]
+          categorie?: Database["public"]["Enums"]["categorie_lieu"]
+          code?: string
+          geo?: unknown
+          lat?: number
+          lon?: number
+          nom?: string
+        }
+        Relationships: []
+      }
       offers: {
         Row: {
           conducteur_id: string
@@ -1144,6 +1174,19 @@ export type Database = {
       taille_cellule_deg: { Args: never; Returns: number }
     }
     Enums: {
+      categorie_lieu:
+        | "quartier"
+        | "arret"
+        | "aeroport"
+        | "gare"
+        | "stade"
+        | "hotel"
+        | "hopital"
+        | "universite"
+        | "marche"
+        | "centre_commercial"
+        | "monument"
+        | "lieu_culte"
       role_utilisateur: "passager" | "conducteur"
       service_course: "urbain" | "interurbain"
       statut_course:
@@ -1292,6 +1335,20 @@ export const Constants = {
   },
   public: {
     Enums: {
+      categorie_lieu: [
+        "quartier",
+        "arret",
+        "aeroport",
+        "gare",
+        "stade",
+        "hotel",
+        "hopital",
+        "universite",
+        "marche",
+        "centre_commercial",
+        "monument",
+        "lieu_culte",
+      ],
       role_utilisateur: ["passager", "conducteur"],
       service_course: ["urbain", "interurbain"],
       statut_course: [

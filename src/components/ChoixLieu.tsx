@@ -11,7 +11,7 @@ import {
 
 import { useT } from '../i18n';
 import { communesPour, useCommunes, type Commune } from '../lib/communes';
-import { communeCorrespond } from '../lib/recherche';
+import { chercherLieux, GLYPHE, useLieux } from '../lib/lieux';
 import { noterMesure } from '../lib/gabarit';
 import { useTheme } from '../theme/ThemeProvider';
 import type { EtatCarte } from './CarteFond';
@@ -122,15 +122,12 @@ function SurCarte({
     latitude: number;
     longitude: number;
   } | null>(null);
-  const communes = useCommunes();
-
+  const lieux = useLieux();
 
   const suggestions = useMemo(() => {
     if (normaliserVide(recherche)) return [];
-    return communes.communes
-      .filter((c) => communeCorrespond(c, recherche))
-      .slice(0, 6);
-  }, [communes.communes, recherche]);
+    return chercherLieux(lieux, recherche);
+  }, [lieux, recherche]);
 
   const surEtat = useCallback((etat: Exclude<EtatCarte, 'attente'>) => {
     setEtatCarte(etat);
@@ -196,22 +193,25 @@ function SurCarte({
 
           {suggestions.length > 0 ? (
             <View className="mt-8 overflow-hidden rounded-field bg-card2">
-              {suggestions.map((c) => (
+              {suggestions.map((lieu) => (
                 <Pressable
-                  key={c.code}
+                  key={lieu.code}
                   accessibilityRole="button"
+                  accessibilityLabel={lieu.nom}
                   onPress={() => {
-                    // On recentre, on ne choisit pas : l'utilisateur affine
-                    // ensuite au repère.
-                    setRecentrage({ latitude: c.lat, longitude: c.lon });
+                    // On recentre, on ne CHOISIT pas : l'utilisateur affine
+                    // ensuite au repère, et c'est le repère qui fait foi.
+                    setRecentrage({ latitude: lieu.lat, longitude: lieu.lon });
                     setRecherche('');
                   }}
-                  className="min-h-touch justify-center px-16 py-8"
+                  className="min-h-touch flex-row items-center px-16 py-8"
                   style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
                 >
-                  <Text className="text-[14px] font-bold text-ink">{c.nom}</Text>
-                  <Text className="text-[11px] font-semibold text-muted">
-                    {c.region}
+                  <Text className="w-24 text-[13px] font-bold text-muted">
+                    {GLYPHE[lieu.categorie]}
+                  </Text>
+                  <Text className="flex-1 text-[14px] font-bold text-ink" numberOfLines={1}>
+                    {lieu.nom}
                   </Text>
                 </Pressable>
               ))}

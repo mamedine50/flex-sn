@@ -6,7 +6,7 @@
 begin;
 create extension if not exists pgtap with schema public;
 
-select plan(29);
+select plan(31);
 
 -- Les tests calculent leurs valeurs attendues avec ces utilitaires. Le PRODUIT
 -- ne les appelle que depuis des fonctions SECURITY DEFINER, qui n'ont pas besoin
@@ -121,6 +121,28 @@ select is(
    where destination_libelle = 'Rue Carnot 12, Plateau'),
   0,
   'le libellé du départ — une adresse — n''est nulle part dans la file'
+);
+
+-- La table `lieux` sert la RECHERCHE, jamais la file. Un passager qui part du
+-- Radisson doit apparaître « vers Almadies », pas « vers Radisson Blu ».
+select is(
+  (select count(*)::int from information_schema.columns
+   where table_schema = 'public' and table_name = 'demandes_ouvertes'
+     and column_name in ('lieu', 'lieu_nom', 'lieu_code', 'quartier', 'poi')),
+  0,
+  'aucun lieu fin ne franchit la frontière de la file — que la commune et la maille'
+);
+
+-- Et la vue ne joint pas `lieux`, même indirectement.
+select is(
+  (select count(*)::int
+   from pg_depend d
+   join pg_rewrite r on r.oid = d.objid
+   join pg_class v on v.oid = r.ev_class
+   join pg_class t on t.oid = d.refobjid
+   where v.relname = 'demandes_ouvertes' and t.relname = 'lieux'),
+  0,
+  'la vue des demandes ne dépend d''aucune façon de la table des lieux'
 );
 
 set local role postgres;

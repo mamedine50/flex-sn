@@ -7,7 +7,7 @@
 begin;
 create extension if not exists pgtap with schema public;
 
-select plan(6);
+select plan(8);
 
 select is(
   (select count(*)::int from public.communes),
@@ -40,21 +40,33 @@ select ok(
   'un point de Dakar rend toujours une commune'
 );
 
--- ------------------------------------------------------------------ dette --
--- 14,6928 / -17,4467 est le Plateau — le lieu le plus demandé de Dakar. Les
--- centroïdes saisis à la main le placent à Biscuiterie. Un conducteur à qui on
--- annonce la mauvaise commune décide mal : il refuse une course qu'il aurait
--- prise, ou il accepte et se plaint à l'arrivée. Une information fausse est pire
--- qu'aucune information.
+-- ------------------------------------------------ la dette, et sa résolution --
+-- Le `todo` de ce fichier attendait que 14,6928 / -17,4467 soit nommé
+-- « Plateau ». L'extraction OpenStreetMap a montré que L'ATTENTE était fausse,
+-- pas les centroïdes : ce point est à 292 m de Colobane et à 2 985 m de
+-- Dakar-Plateau, que OSM place à 14,6673. Il n'a jamais été dans le Plateau.
 --
--- Correction prévue : remplacer les centroïdes par les polygones réels des
--- communes (OpenStreetMap, extraction unique en seed, aucun appel réseau). La
--- signature de commune_la_plus_proche() ne bouge pas.
-select todo('polygones réels des communes pas encore en seed — centroïdes approximatifs', 1);
+-- On garde donc les deux assertions, avec les bonnes coordonnées cette fois :
+-- une par lieu, vérifiable sur une carte.
+select is(
+  public.commune_la_plus_proche(14.6673::double precision, -17.4380::double precision),
+  'Plateau',
+  'le vrai Plateau — celui d''OpenStreetMap — est bien nommé « Plateau »'
+);
+
 select is(
   public.commune_la_plus_proche(14.6928::double precision, -17.4467::double precision),
-  'Plateau',
-  'le Plateau est nommé « Plateau »'
+  'Gueule Tapée–Fass–Colobane',
+  'et le point qu''on croyait « Plateau » est à Colobane, sa vraie commune'
+);
+
+-- ------------------------------------------------------------ les lieux --
+-- « Scat Urbam » n'existe dans OSM que comme ARRÊT de BRT. C'est pourtant ce que
+-- tout Dakarois tape : à Dakar on se repère aux arrêts, pas aux limites
+-- administratives.
+select isnt_empty(
+  $$ select 1 from public.lieux where nom = 'Scat Urbam' $$,
+  'Scat Urbam se trouve — via l''arrêt, faute de quartier dans OSM'
 );
 
 select * from finish();

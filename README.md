@@ -168,6 +168,9 @@ Toute autre remontée est un vrai défaut et se corrige.
   leaked password protection). Signalée par les advisors. La production passe par OTP
   téléphone, mais tant que l'authentification par mot de passe reste ouverte, elle
   doit l'être.
+- **Attribution OpenStreetMap.** La table `lieux` vient d'une extraction OSM sous
+  ODbL : la mention « © contributeurs OpenStreetMap » doit apparaître dans
+  l'application avant publication. Voir `docs/extraction-lieux.md`.
 - **Supprimer le compte `dev@flex.test`** du projet distant. Il sert au panneau de
   développement pour ouvrir une session sans OTP ; son mot de passe est en clair dans
   `src/lib/sessionDev.ts`. Il n'a rien à faire sur une base ouverte au public.

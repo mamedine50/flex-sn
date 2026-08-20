@@ -1,3 +1,4 @@
+import { chercherLieux } from '../lieuxOrdre';
 import { communeCorrespond, normaliser } from '../recherche';
 
 /** La forme minimale que la recherche compare — pas besoin du reste. */
@@ -56,5 +57,20 @@ describe('communeCorrespond', () => {
 
   it('une recherche vide laisse tout passer', () => {
     expect(communeCorrespond(sicap, '   ')).toBe(true);
+  });
+});
+
+describe('ordre des résultats', () => {
+  it('classe ce qui SITUE avant les points de repère', () => {
+    const trouves = chercherLieux(
+      [
+        { code: 'h', nom: 'Yoff Beach Hotel', alias: [], categorie: 'hotel', lat: 0, lon: 0 },
+        { code: 'q', nom: 'Yoff', alias: [], categorie: 'quartier', lat: 0, lon: 0 },
+        { code: 'a', nom: 'Yoff Tonghor', alias: [], categorie: 'arret', lat: 0, lon: 0 },
+      ],
+      'yoff',
+    );
+    // Quelqu'un qui tape « yoff » cherche le quartier, pas l'hôtel.
+    expect(trouves.map((l) => l.code)).toEqual(['q', 'a', 'h']);
   });
 });

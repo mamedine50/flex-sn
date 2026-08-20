@@ -72,7 +72,10 @@ schema_paths = []
 enabled = true
 # Specifies an ordered list of seed files to load during db reset.
 # Supports glob patterns relative to supabase directory: "./seeds/*.sql"
-sql_paths = ["./seed.sql"]
+#
+# `seed/lieux.sql` est produit par `scripts/extraire-lieux-osm.mjs` — extraction
+# UNIQUE depuis OpenStreetMap, versionnée, jamais rejouée au runtime.
+sql_paths = ["./seed/*.sql"]
 
 [db.network_restrictions]
 # Enable management of network restrictions.
