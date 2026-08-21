@@ -7,6 +7,7 @@ import Avatar from '../../src/components/Avatar';
 import { Pastille, type NomIcone } from '../../src/components/Icones';
 import PanneauDev, { type EtatForce } from '../../src/components/PanneauDev';
 import { useI18n, useT } from '../../src/i18n';
+import { useEstAdmin, useFileDossiers } from '../../src/lib/admin';
 import { useEstConducteur } from '../../src/lib/conducteur';
 import { useFavoris } from '../../src/lib/favoris';
 import { formatXof } from '../../src/lib/format';
@@ -46,6 +47,12 @@ export default function Profil() {
 
   const capacite = useEstConducteur();
   const conducteur = capacite === 'oui';
+
+  // L'administration n'existe que pour qui la porte. Le filtre réel est en base
+  // — `dossiers_en_attente` porte son `est_admin()` — mais on ne montre pas non
+  // plus une porte fermée.
+  const admin = useEstAdmin() === 'oui';
+  const fileAdmin = useFileDossiers();
 
   const { profil, relire: relireProfil } = useMonProfil();
   const [photoEnCours, setPhotoEnCours] = useState(false);
@@ -235,6 +242,23 @@ export default function Profil() {
             </Text>
           </Pressable>
         )}
+
+        {/* ─────────────────────────────────────────── administration ─── */}
+        {admin ? (
+          <>
+            <Section titre={t('admin.section')} />
+            <Ligne
+              icone="documents"
+              titre={t('admin.file')}
+              sous={
+                fileAdmin.dossiers.length === 1
+                  ? t('admin.fileSous', { n: fileAdmin.dossiers.length })
+                  : t('admin.fileSousPluriel', { n: fileAdmin.dossiers.length })
+              }
+              onPress={() => router.push('/admin')}
+            />
+          </>
+        ) : null}
 
         {/* ─────────────────────────────────────────────────── compte ─── */}
         <Section titre={t('profil.compte')} />

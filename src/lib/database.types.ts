@@ -91,6 +91,79 @@ export type Database = {
         }
         Relationships: []
       }
+      decisions_documents: {
+        Row: {
+          decide_le: string
+          decide_par: string
+          id: string
+          motif: string | null
+          profil_id: string
+          type: Database["public"]["Enums"]["type_document"]
+          valide: boolean
+        }
+        Insert: {
+          decide_le?: string
+          decide_par: string
+          id?: string
+          motif?: string | null
+          profil_id: string
+          type: Database["public"]["Enums"]["type_document"]
+          valide: boolean
+        }
+        Update: {
+          decide_le?: string
+          decide_par?: string
+          id?: string
+          motif?: string | null
+          profil_id?: string
+          type?: Database["public"]["Enums"]["type_document"]
+          valide?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "decisions_documents_decide_par_fkey"
+            columns: ["decide_par"]
+            isOneToOne: false
+            referencedRelation: "dossiers_en_attente"
+            referencedColumns: ["profil_id"]
+          },
+          {
+            foreignKeyName: "decisions_documents_decide_par_fkey"
+            columns: ["decide_par"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "decisions_documents_decide_par_fkey"
+            columns: ["decide_par"]
+            isOneToOne: false
+            referencedRelation: "profils_publics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "decisions_documents_profil_id_fkey"
+            columns: ["profil_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers_en_attente"
+            referencedColumns: ["profil_id"]
+          },
+          {
+            foreignKeyName: "decisions_documents_profil_id_fkey"
+            columns: ["profil_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "decisions_documents_profil_id_fkey"
+            columns: ["profil_id"]
+            isOneToOne: false
+            referencedRelation: "profils_publics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       documents_conducteur: {
         Row: {
           chemin: string
@@ -120,6 +193,13 @@ export type Database = {
           type?: Database["public"]["Enums"]["type_document"]
         }
         Relationships: [
+          {
+            foreignKeyName: "documents_conducteur_profil_id_fkey"
+            columns: ["profil_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers_en_attente"
+            referencedColumns: ["profil_id"]
+          },
           {
             foreignKeyName: "documents_conducteur_profil_id_fkey"
             columns: ["profil_id"]
@@ -166,6 +246,13 @@ export type Database = {
             foreignKeyName: "evaluations_auteur_id_fkey"
             columns: ["auteur_id"]
             isOneToOne: false
+            referencedRelation: "dossiers_en_attente"
+            referencedColumns: ["profil_id"]
+          },
+          {
+            foreignKeyName: "evaluations_auteur_id_fkey"
+            columns: ["auteur_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -175,6 +262,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profils_publics"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evaluations_cible_id_fkey"
+            columns: ["cible_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers_en_attente"
+            referencedColumns: ["profil_id"]
           },
           {
             foreignKeyName: "evaluations_cible_id_fkey"
@@ -337,6 +431,13 @@ export type Database = {
             foreignKeyName: "lieux_favoris_proprietaire_fkey"
             columns: ["proprietaire"]
             isOneToOne: false
+            referencedRelation: "dossiers_en_attente"
+            referencedColumns: ["profil_id"]
+          },
+          {
+            foreignKeyName: "lieux_favoris_proprietaire_fkey"
+            columns: ["proprietaire"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -387,6 +488,13 @@ export type Database = {
           vehicule_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "offers_conducteur_id_fkey"
+            columns: ["conducteur_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers_en_attente"
+            referencedColumns: ["profil_id"]
+          },
           {
             foreignKeyName: "offers_conducteur_id_fkey"
             columns: ["conducteur_id"]
@@ -464,6 +572,13 @@ export type Database = {
             foreignKeyName: "positions_conducteurs_conducteur_id_fkey"
             columns: ["conducteur_id"]
             isOneToOne: true
+            referencedRelation: "dossiers_en_attente"
+            referencedColumns: ["profil_id"]
+          },
+          {
+            foreignKeyName: "positions_conducteurs_conducteur_id_fkey"
+            columns: ["conducteur_id"]
+            isOneToOne: true
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -480,6 +595,7 @@ export type Database = {
         Row: {
           cree_le: string
           documents_valides_le: string | null
+          est_admin: boolean
           id: string
           langue: string
           nb_notes: number
@@ -493,6 +609,7 @@ export type Database = {
         Insert: {
           cree_le?: string
           documents_valides_le?: string | null
+          est_admin?: boolean
           id: string
           langue?: string
           nb_notes?: number
@@ -506,6 +623,7 @@ export type Database = {
         Update: {
           cree_le?: string
           documents_valides_le?: string | null
+          est_admin?: boolean
           id?: string
           langue?: string
           nb_notes?: number
@@ -581,6 +699,13 @@ export type Database = {
             foreignKeyName: "ride_requests_passager_id_fkey"
             columns: ["passager_id"]
             isOneToOne: false
+            referencedRelation: "dossiers_en_attente"
+            referencedColumns: ["profil_id"]
+          },
+          {
+            foreignKeyName: "ride_requests_passager_id_fkey"
+            columns: ["passager_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -641,6 +766,13 @@ export type Database = {
             foreignKeyName: "rides_annulee_par_fkey"
             columns: ["annulee_par"]
             isOneToOne: false
+            referencedRelation: "dossiers_en_attente"
+            referencedColumns: ["profil_id"]
+          },
+          {
+            foreignKeyName: "rides_annulee_par_fkey"
+            columns: ["annulee_par"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -650,6 +782,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profils_publics"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rides_conducteur_id_fkey"
+            columns: ["conducteur_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers_en_attente"
+            referencedColumns: ["profil_id"]
           },
           {
             foreignKeyName: "rides_conducteur_id_fkey"
@@ -692,6 +831,13 @@ export type Database = {
             isOneToOne: true
             referencedRelation: "offres_recues"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rides_passager_id_fkey"
+            columns: ["passager_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers_en_attente"
+            referencedColumns: ["profil_id"]
           },
           {
             foreignKeyName: "rides_passager_id_fkey"
@@ -756,6 +902,13 @@ export type Database = {
             foreignKeyName: "vehicles_conducteur_id_fkey"
             columns: ["conducteur_id"]
             isOneToOne: false
+            referencedRelation: "dossiers_en_attente"
+            referencedColumns: ["profil_id"]
+          },
+          {
+            foreignKeyName: "vehicles_conducteur_id_fkey"
+            columns: ["conducteur_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -793,6 +946,13 @@ export type Database = {
             foreignKeyName: "ride_requests_passager_id_fkey"
             columns: ["passager_id"]
             isOneToOne: false
+            referencedRelation: "dossiers_en_attente"
+            referencedColumns: ["profil_id"]
+          },
+          {
+            foreignKeyName: "ride_requests_passager_id_fkey"
+            columns: ["passager_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -804,6 +964,23 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      dossiers_en_attente: {
+        Row: {
+          couleur: string | null
+          depuis: string | null
+          modele: string | null
+          nom_complet: string | null
+          photo_url: string | null
+          pieces_en_attente: number | null
+          pieces_refusees: number | null
+          pieces_validees: number | null
+          plaque: string | null
+          prenom: string | null
+          profil_id: string | null
+          telephone: string | null
+        }
+        Relationships: []
       }
       evaluations_visibles: {
         Row: {
@@ -819,6 +996,13 @@ export type Database = {
             foreignKeyName: "evaluations_auteur_id_fkey"
             columns: ["auteur_id"]
             isOneToOne: false
+            referencedRelation: "dossiers_en_attente"
+            referencedColumns: ["profil_id"]
+          },
+          {
+            foreignKeyName: "evaluations_auteur_id_fkey"
+            columns: ["auteur_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -828,6 +1012,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profils_publics"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evaluations_cible_id_fkey"
+            columns: ["cible_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers_en_attente"
+            referencedColumns: ["profil_id"]
           },
           {
             foreignKeyName: "evaluations_cible_id_fkey"
@@ -882,6 +1073,13 @@ export type Database = {
             foreignKeyName: "rides_conducteur_id_fkey"
             columns: ["profil_id"]
             isOneToOne: false
+            referencedRelation: "dossiers_en_attente"
+            referencedColumns: ["profil_id"]
+          },
+          {
+            foreignKeyName: "rides_conducteur_id_fkey"
+            columns: ["profil_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -915,6 +1113,13 @@ export type Database = {
           vehicule_modele: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "offers_conducteur_id_fkey"
+            columns: ["conducteur_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers_en_attente"
+            referencedColumns: ["profil_id"]
+          },
           {
             foreignKeyName: "offers_conducteur_id_fkey"
             columns: ["conducteur_id"]
@@ -1012,6 +1217,13 @@ export type Database = {
           modele?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "vehicles_conducteur_id_fkey"
+            columns: ["conducteur_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers_en_attente"
+            referencedColumns: ["profil_id"]
+          },
           {
             foreignKeyName: "vehicles_conducteur_id_fkey"
             columns: ["conducteur_id"]
@@ -1251,6 +1463,24 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      dossier_du_candidat: {
+        Args: { p_profil: string }
+        Returns: {
+          chemin: string
+          cree_le: string
+          decide_le: string | null
+          motif_refus: string | null
+          profil_id: string
+          statut: Database["public"]["Enums"]["statut_document"]
+          type: Database["public"]["Enums"]["type_document"]
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "documents_conducteur"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       duree_demande: {
         Args: { p_service: Database["public"]["Enums"]["service_course"] }
         Returns: string
@@ -1286,6 +1516,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      est_admin: { Args: { p_profil?: string }; Returns: boolean }
       est_conducteur: { Args: { p_profil: string }; Returns: boolean }
       est_nouveau_conducteur: { Args: { p_profil: string }; Returns: boolean }
       expire_stale: {
@@ -1300,6 +1531,7 @@ export type Database = {
         Returns: {
           cree_le: string
           documents_valides_le: string | null
+          est_admin: boolean
           id: string
           langue: string
           nb_notes: number
@@ -1345,6 +1577,7 @@ export type Database = {
         Returns: {
           cree_le: string
           documents_valides_le: string | null
+          est_admin: boolean
           id: string
           langue: string
           nb_notes: number

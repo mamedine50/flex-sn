@@ -105,9 +105,10 @@ select is(
      and p.proname <> all (array[
        -- Les RPC métier.
        'accept_offer', 'annuler_course', 'annuler_demande', 'avancer_course',
+       'decider_document', 'dossier_du_candidat',
        'commune_la_plus_proche', 'create_ride_request', 'declarer_vehicule',
        'demandes_proches',
-       'enregistrer_lieu_favori', 'est_conducteur', 'maj_photo_profil',
+       'enregistrer_lieu_favori', 'est_admin', 'est_conducteur', 'maj_photo_profil',
        'maj_position', 'maj_profil',
        'noter_course', 'prix_suggere', 'refuse_offer', 'soumettre_document',
        'submit_offer', 'supprimer_lieu_favori',

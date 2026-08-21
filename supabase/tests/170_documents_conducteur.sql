@@ -76,6 +76,11 @@ select is_empty(
 set local role postgres;
 
 -- =============================================================== décider --
+-- `decider_document()` refuse désormais un appelant qui n'est pas admin. Ces
+-- décisions-ci sont celles de `service_role` : on efface donc la revendication
+-- JWT posée plus haut, sinon `auth.uid()` reste le candidat.
+select set_config('request.jwt.claims', '', true);
+
 select throws_ok(
   format($$ select public.decider_document(%L, 'permis'::public.type_document, false) $$,
          (select candidat from f)),
@@ -100,6 +105,7 @@ select ok(
   'redéposer efface le motif du refus précédent'
 );
 set local role postgres;
+select set_config('request.jwt.claims', '', true);
 
 -- ================================================ les quatre, et alors --
 select public.decider_document((select candidat from f), 'piece_identite'::public.type_document, true);

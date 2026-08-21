@@ -37,6 +37,7 @@ const CORRESPONDANCE: Record<string, CleTraduction> = {
   deja_note: 'erreurs.dejaNote',
   etape_invalide: 'erreurs.etapeInvalide',
   demande_indisponible: 'erreurs.demandeIndisponible',
+  reserve_admin: 'erreurs.reserveAdmin',
   libelle_requis: 'erreurs.libelleRequis',
   trop_de_favoris: 'erreurs.tropDeFavoris',
   favori_introuvable: 'erreurs.favoriIntrouvable',

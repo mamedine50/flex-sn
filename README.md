@@ -14,8 +14,8 @@ bout **sur le projet distant, avec deux vraies sessions** — voir `docs/parcour
 
 | | |
 |---|---|
-| Écrans | Accroche · Connexion (pays, numéro, code, prénom) · Accueil · Fixez votre prix · Offres reçues · Mode conducteur · En route · Profil · Mon profil · Mes lieux · Mes courses · Mes avis · Affichage · Conduire avec Flex · À propos · Conditions · Confidentialité |
-| Base | 45 migrations, **293 assertions pgTAP**, RLS sur chaque table, logique métier en RPC |
+| Écrans | Accroche · Connexion (pays, numéro, code, prénom) · Accueil · Fixez votre prix · Offres reçues · Mode conducteur · En route · Profil · Mon profil · Mes lieux · Mes courses · Mes avis · Affichage · Conduire avec Flex · À propos · Conditions · Confidentialité · Administration (file + dossier) |
+| Base | 46 migrations, **304 assertions pgTAP**, RLS sur chaque table, logique métier en RPC |
 | Gardes | `pnpm typecheck` · `pnpm lint` · `pnpm test` · `pnpm tokens:check` (44 paires) · `supabase test db` · `node scripts/parcours-v1.mjs` |
 | Étiquette | `v1.0.0-dev` |
 
@@ -32,7 +32,7 @@ publie pas.
 | **Fournisseur SMS (Twilio)** | L'authentification est en OTP téléphone. Sans fournisseur configuré dans Auth → Providers → Phone, personne n'ouvre de session en production. | Console Supabase |
 | **Geo Permissions Twilio : Sénégal à activer** | Twilio refuse l'envoi vers le +221 (erreur 21408). Un testeur sénégalais tape son numéro et ne reçoit jamais de code — l'application s'ouvrant sur la connexion, il ne voit rien du tout. La vague 1 de testeurs est donc en +1. Se règle côté Twilio, pas dans le code. | Console Twilio |
 | ~~Supprimer `dev@flex.test` et `essai-route@flex.test`~~ | **Fait.** Les deux comptes sont supprimés du distant, l'outillage passe désormais par des comptes éphémères créés en LOCAL par l'API admin — voir `scripts/session-locale.mjs`. La garde `garde-compte-dev` reste en place et détecte une résurrection. | ✔ |
-| **Back-office de modération** | `decider_document()` est réservée à `service_role` : valider une pièce se fait aujourd'hui par une requête SQL. Tenable pour les dix premiers conducteurs, pas au-delà. | Premier chantier après-V1 |
+| **Back-office de modération (web)** | La validation des dossiers se fait désormais **dans l'application**, par un profil `est_admin` — file d'attente, comparaison selfie/pièce, motif de refus, journal des décisions. Tenable pour les premiers conducteurs. Le back-office web reste nécessaire pour le support, le retrait d'un avis et le blocage. | Après-V1 |
 | **Vérification humaine des dossiers** | Le selfie doit être comparé à la pièce par quelqu'un. Le schéma le permet, personne ne le fait encore. | Opérations |
 | **Empreinte SHA-1 de développement (Google Maps)** | La clé Android est restreinte au SHA-1 du keystore de production. En dev, Expo signe avec un keystore de debug : carte grise sur Android tant que la seconde empreinte n'est pas ajoutée. | Console Google Cloud |
 | **Protection contre les mots de passe compromis** | Signalée par les advisors. La production passe par OTP, mais tant que l'authentification par mot de passe reste ouverte, elle doit l'être. | Auth → Policies |
@@ -65,8 +65,11 @@ Dans cet ordre, et pas avant :
    ne peut plus changer sans publier une version. Le chantier paiement embarque la
    commission d'office — la greffer après coup demanderait de rouvrir les mêmes
    fonctions. Après l'entité et le compte marchand, pas avant.
-6. **Notifications push** — une offre qui arrive quand l'application est fermée. Impose
-   une dépendance native et une reconstruction du client.
+6. **Notifications push** — premier cas d'usage : **la décision sur un dossier
+   conducteur**. Aujourd'hui le candidat découvre le verdict en rouvrant « Conduire avec
+   Flex » ; un refus peut donc dormir des jours avant d'être vu, et c'est du temps de
+   conducteur perdu des deux côtés. Vient ensuite l'offre qui arrive quand l'application
+   est fermée. Impose une dépendance native et une reconstruction du client.
 
 ### Les pages au backlog
 
@@ -253,7 +256,7 @@ s'il ne le sait pas.
 pnpm tokens:check          # échoue si une paire texte/fond passe sous 4,5:1, dans les deux thèmes
 pnpm typecheck
 pnpm lint
-supabase test db --local   # 293 assertions pgTAP
+supabase test db --local   # 304 assertions pgTAP
 node scripts/parcours-v1.mjs   # le parcours complet sur le DISTANT, deux sessions
 ```
 
