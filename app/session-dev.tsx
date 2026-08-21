@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
 
 import { marquerAccrocheVue } from '../src/lib/accroche';
+import { basculer } from '../src/lib/monde';
 import { seDeconnecter } from '../src/lib/deconnexion';
 import { supabase } from '../src/lib/supabase';
 
@@ -24,13 +25,17 @@ import { supabase } from '../src/lib/supabase';
  * déconnexion depuis le monde conducteur en ligne ne laisse pas de fantôme.
  */
 export default function SessionDev() {
-  const { jeton, sortir } = useLocalSearchParams<{ jeton?: string; sortir?: string }>();
+  const { jeton, sortir, monde } = useLocalSearchParams<{
+    jeton?: string;
+    sortir?: string;
+    monde?: string;
+  }>();
   const [erreurServeur, setErreurServeur] = useState<string | null>(null);
 
   // L'absence de jeton se DÉDUIT des props : la garder en état obligerait à
   // l'écrire depuis l'effet, c'est-à-dire un rendu de plus pour rien.
   const echec =
-    jeton || sortir
+    jeton || sortir || monde
       ? erreurServeur
       : 'Aucun jeton. Lancez `node scripts/session-locale.mjs`.';
 
@@ -39,6 +44,17 @@ export default function SessionDev() {
       router.replace('/');
       return;
     }
+    // `?monde=conducteur` entre dans le monde conducteur sans passer par le
+    // geste. Un démarrage à froid revient TOUJOURS au passager — c'est la règle,
+    // et elle est juste — mais elle rend le monde conducteur inatteignable sans
+    // une main. Même raison d'être que `?sortir=1` : éprouver et capturer un
+    // état qu'aucun lien ne mène.
+    if (monde === 'conducteur' || monde === 'passager') {
+      basculer(monde);
+      router.replace('/');
+      return;
+    }
+
     if (sortir === '1') {
       // Une installation dont l'utilisateur se déconnecte a forcément déjà vu le
       // tour. Sans cette marque, la sortie retomberait dessus et on ne pourrait
@@ -62,7 +78,7 @@ export default function SessionDev() {
       }
       router.replace('/');
     })();
-  }, [jeton, sortir]);
+  }, [jeton, sortir, monde]);
 
   // Cet écran ne passe pas par `src/i18n` : c'est de l'outillage, il ne sera
   // jamais traduit — même règle que le panneau de développement.
