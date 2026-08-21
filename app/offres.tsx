@@ -6,6 +6,8 @@ import { FlatList, Modal, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import Avatar from '../src/components/Avatar';
+import MinuteurCirculaire from '../src/components/MinuteurCirculaire';
+import RadarAttente from '../src/components/RadarAttente';
 import PanneauDev, { type EtatForce } from '../src/components/PanneauDev';
 import { useT } from '../src/i18n';
 import { cleErreur } from '../src/lib/erreursServeur';
@@ -33,8 +35,9 @@ import { chiffresTabulaires } from '../src/theme/typographie';
  */
 
 // L'entête est une rangée de zone tactile : 48, comme toute action qui ne se
-// fait pas au volant. Les deux boutons par offre suivent la même règle.
-const GABARIT = { entete: 48, action: 48 };
+// fait pas au volant. Les deux boutons par offre suivent la même règle. Le
+// rappel porte le minuteur : sous 62 il le rognerait.
+const GABARIT = { entete: 48, rappel: 62, action: 48 };
 
 export default function OffresRecues() {
   const t = useT();
@@ -65,10 +68,11 @@ export default function OffresRecues() {
     offres.offres.length > 0
       ? {
           entete: GABARIT.entete,
+          rappel: GABARIT.rappel,
           accepter: GABARIT.action,
           refuser: GABARIT.action,
         }
-      : { entete: GABARIT.entete },
+      : { entete: GABARIT.entete, rappel: GABARIT.rappel },
   );
 
   const horsLigne =
@@ -134,6 +138,36 @@ export default function OffresRecues() {
 
   const enAttente = offres.offres.filter((o) => o.statut === 'en_attente');
 
+  // LE TRI SE FAIT À L'AFFICHAGE, pas en base : la vue sert les offres, elle ne
+  // décide pas de l'ordre dans lequel on les compare. La moins chère en haut,
+  // parce que c'est la question que le passager se pose en premier.
+  const triees = [...offres.offres].sort(
+    (a, b) => (a.prix_xof ?? 0) - (b.prix_xof ?? 0),
+  );
+
+  // La meilleure offre est la moins chère PARMI CELLES QU'ON PEUT ENCORE
+  // ACCEPTER. Décerner le badge à une offre caduque enverrait le passager vers
+  // un bouton éteint.
+  const meilleureId =
+    enAttente.length > 0
+      ? enAttente.reduce((moins, o) =>
+          (o.prix_xof ?? 0) < (moins.prix_xof ?? 0) ? o : moins,
+        ).id
+      : null;
+
+  // Le total sert à remplir l'anneau. Il se déduit de la demande elle-même —
+  // aucune constante en dur : le délai d'expiration vit en base, et il changera.
+  const dureeTotaleS = demande
+    ? Math.max(
+        1,
+        Math.round(
+          (new Date(demande.expires_at).getTime() -
+            new Date(demande.cree_le).getTime()) /
+            1000,
+        ),
+      )
+    : 1;
+
   const retirer = useCallback(async () => {
     if (!demande) return;
     setAnnulation('envoi');
@@ -196,46 +230,84 @@ export default function OffresRecues() {
         />
       ) : (
         <>
-          <View className="px-16 pt-12">
-            <Text className="text-[15px] font-bold text-ink">
-              {enAttente.length === 0
-                ? t('offres.attente')
-                : enAttente.length === 1
-                  ? t('offres.nombre', { n: enAttente.length })
-                  : t('offres.nombrePluriel', { n: enAttente.length })}
-            </Text>
-            <Text className="mt-4 text-[13px] font-semibold text-muted">
-              {t('offres.votrePrix', { prix: formatXof(demande.prix_xof) })} ·{' '}
-              {secondesRestantes >= 60
-                ? t('offres.encoreMinutes', {
-                    minutes: Math.ceil(secondesRestantes / 60),
-                  })
-                : t('offres.encore', { secondes: secondesRestantes })}
-            </Text>
+          {/* LE RAPPEL. Ce que j'ai proposé, où je vais, et combien de temps
+              il reste — le tout sans quitter des yeux la liste. Le minuteur est
+              circulaire parce qu'« encore 4 min » ne dit pas s'il en restait
+              dix ou cinq : c'est un chiffre sans échelle, et c'est justement
+              l'échelle qu'on regarde quand on hésite à accepter. */}
+          <View
+            className="mx-16 mt-12 flex-row items-center rounded-card bg-card px-16 py-12"
+            onLayout={(e) => noterMesure('rappel', e.nativeEvent.layout.height)}
+          >
+            <View className="flex-1 pr-12">
+              <Text className="text-[13px] font-bold text-ink">
+                {t('offres.propositionPartie')}
+              </Text>
+              <Text
+                className="mt-2 text-[12px] font-semibold text-muted"
+                numberOfLines={1}
+              >
+                {t('offres.votrePrix', { prix: '' }).trim()}{' '}
+                <Text className="font-extrabold text-moneyInk" style={chiffresTabulaires}>
+                  {formatXof(demande.prix_xof)}
+                </Text>
+                {` · ${demande.depart_libelle} → ${demande.destination_libelle}`}
+              </Text>
+            </View>
+            <MinuteurCirculaire
+              secondesRestantes={secondesRestantes}
+              secondesTotal={dureeTotaleS}
+            />
           </View>
 
           {offres.statut === 'chargement' ? (
             <Squelettes />
-          ) : offres.offres.length === 0 ? (
-            <Vide texte={t('offres.vide')} />
+          ) : triees.length === 0 ? (
+            /* PAS UN GRAND BLANC. C'est l'état où l'écran passe le plus de
+               temps : entre la proposition et la première réponse. Un vide à
+               cet instant se lit comme une panne. */
+            <View className="flex-1 items-center justify-center px-24">
+              <RadarAttente />
+              <Text className="mt-24 text-center text-[15px] font-bold text-ink">
+                {t('offres.chercheChauffeurs')}
+              </Text>
+              <Text className="mt-8 max-w-[240px] text-center text-[13px] font-semibold text-muted">
+                {t('offres.chercheChauffeursAide')}
+              </Text>
+            </View>
           ) : (
-            <FlatList
-              data={offres.offres}
-              keyExtractor={(o) => o.id ?? ''}
-              className="mt-12"
-              contentContainerClassName="px-16"
-              contentContainerStyle={{ paddingBottom: marges.bottom + 24 }}
-              renderItem={({ item }) => (
-                <CarteOffre
-                  offre={item}
-                  prixDemande={demande.prix_xof}
-                  occupe={enAction === item.id}
-                  desactive={horsLigne || enAction !== null}
-                  onAccepter={() => void agir(item, 'accepter')}
-                  onRefuser={() => void agir(item, 'refuser')}
-                />
-              )}
-            />
+            <>
+              {/* Le compteur ne compte que ce qu'on peut ENCORE accepter. La
+                  liste, elle, garde les offres résolues — « ce conducteur a pris
+                  une autre course » vaut mieux qu'une carte qui disparaît sous
+                  le doigt. D'où la condition : sans offre en attente, un
+                  « 0 offres » posé au-dessus de cartes visibles se lit comme un
+                  bogue de comptage. */}
+              {enAttente.length > 0 ? (
+                <Text className="px-16 pt-12 text-[12px] font-bold text-accInk">
+                  {enAttente.length === 1
+                    ? t('offres.compteur', { n: enAttente.length })
+                    : t('offres.compteurPluriel', { n: enAttente.length })}
+                </Text>
+              ) : null}
+              <FlatList
+                data={triees}
+                keyExtractor={(o) => o.id ?? ''}
+                className="mt-8"
+                contentContainerClassName="px-16"
+                contentContainerStyle={{ paddingBottom: marges.bottom + 24 }}
+                renderItem={({ item }) => (
+                  <CarteOffre
+                    offre={item}
+                    meilleure={item.id === meilleureId}
+                    occupe={enAction === item.id}
+                    desactive={horsLigne || enAction !== null}
+                    onAccepter={() => void agir(item, 'accepter')}
+                    onRefuser={() => void agir(item, 'refuser')}
+                  />
+                )}
+              />
+            </>
           )}
 
           {/* Sobre, en bas, en `danger` : c'est une sortie, pas une action du
@@ -325,14 +397,14 @@ export default function OffresRecues() {
 
 function CarteOffre({
   offre,
-  prixDemande,
+  meilleure,
   occupe,
   desactive,
   onAccepter,
   onRefuser,
 }: {
   offre: Offre;
-  prixDemande: number;
+  meilleure: boolean;
   occupe: boolean;
   desactive: boolean;
   onAccepter: () => void;
@@ -341,61 +413,96 @@ function CarteOffre({
   const t = useT();
   const contreOffre = offre.type === 'contre_offre';
   const disponible = offre.statut === 'en_attente';
+  const prix = offre.prix_xof ?? 0;
 
   return (
-    <View className="mb-12 rounded-card bg-card p-16">
+    <View
+      className={`mb-12 rounded-card bg-card p-16 ${
+        meilleure ? 'border-2 border-accInk' : ''
+      }`}
+    >
+      {/* LE BADGE NE SORT QUE SUR LA MOINS CHÈRE. Le mettre partout ne dirait
+          plus rien ; le contour de 2 px le double pour qui ne lit pas les
+          majuscules. */}
+      {meilleure ? (
+        <View className="mb-12 self-start rounded-full bg-accFill px-12 py-4">
+          <Text className="text-[10px] font-extrabold text-onAcc">
+            {t('offres.meilleurPrix')}
+          </Text>
+        </View>
+      ) : null}
+
       <View className="flex-row items-center">
-        <Avatar
-          prenom={offre.conducteur_prenom}
-          photo={offre.conducteur_photo}
-        />
+        <Avatar prenom={offre.conducteur_prenom} photo={offre.conducteur_photo} />
 
         <View className="ml-12 flex-1">
-          <Text className="text-[15px] font-bold text-ink">
+          <Text className="text-[15px] font-extrabold text-ink" numberOfLines={1}>
             {offre.conducteur_prenom}
           </Text>
-          {/* Deux lignes : en français la ligne déborde, et la note tronquée
-              retire au passager l'élément sur lequel il choisit. */}
-          <Text
-            className="text-[12px] font-semibold text-muted"
-            numberOfLines={2}
-          >
-            {t('offres.minutes', { n: offre.delai_arrivee_min ?? 0 })} ·{' '}
-            {offre.vehicule_modele} {offre.vehicule_couleur} ·{' '}
-            {/* Sous cinq courses, on dit ce qu'on sait — « nouveau » — plutôt
-                qu'une moyenne sur deux avis, qui est du bruit présenté comme un
-                chiffre. */}
+          <Text className="mt-2 text-[12px] font-semibold text-muted" numberOfLines={1}>
+            {/* Sous cinq courses au volant, on dit ce qu'on sait — « nouveau » —
+                plutôt qu'une moyenne sur deux avis, qui est du bruit présenté
+                comme un chiffre. */}
             {offre.conducteur_est_nouveau || offre.conducteur_note === null
               ? t('profil.nouveauConducteur')
-              : t('offres.note', {
+              : `${t('offres.note', {
                   note: String(offre.conducteur_note).replace('.', ','),
-                })}
+                })} · ${t('offres.coursesAuVolant', {
+                  n: offre.conducteur_nb_courses ?? 0,
+                })}`}
+          </Text>
+          <Text className="mt-1 text-[12px] font-semibold text-muted" numberOfLines={1}>
+            {offre.vehicule_modele} {offre.vehicule_couleur}
           </Text>
         </View>
 
-        <View className="items-end">
-          {/* Le montant en moneyInk et en chiffres tabulaires. La mention de
-              statut en accInk — l'ambre appartient aux montants, jamais aux
-              statuts. */}
+        <View className="items-end pl-8">
+          {/* Le montant en moneyInk et en chiffres tabulaires : l'ambre
+              appartient aux montants. */}
           <Text
-            className="text-[19px] font-extrabold text-moneyInk"
+            className="text-[20px] font-extrabold text-moneyInk"
             style={chiffresTabulaires}
           >
-            {formatXof(offre.prix_xof ?? 0)}
+            {formatXof(prix)}
           </Text>
-          <Text className="text-[11px] font-bold text-accInk">
-            {contreOffre
-              ? t('offres.contreOffre')
-              : t('offres.votrePrixMention')}
+          {/* LA DISTINCTION QUI FAIT TOUT LE MODÈLE. « votre prix ✓ » quand le
+              conducteur a accepté ce qu'on proposait ; « contre-offre » quand
+              il en demande un autre. Deux couleurs, parce que deux décisions
+              différentes : l'une se confirme, l'autre se pèse. */}
+          <Text
+            className={`mt-1 text-[10px] font-bold ${
+              contreOffre ? 'text-danger' : 'text-accInk'
+            }`}
+          >
+            {contreOffre ? t('offres.contreOffre') : t('offres.votrePrixCoche')}
           </Text>
         </View>
       </View>
 
+      {/* Entre deux filets : le délai d'approche et le temps qu'il reste à
+          CETTE offre. La maquette portait une distance à la place du second —
+          elle n'existe pas dans les données, et elle ne doit pas exister : la
+          position d'un conducteur n'est servie qu'APRÈS acceptation. */}
+      <View className="my-12 border-y border-line py-8">
+        <Text className="text-[12px] font-semibold text-muted">
+          <Text className="font-bold text-ink">
+            {t('offres.minutes', { n: offre.delai_arrivee_min ?? 0 })}
+          </Text>
+          {` ${t('offres.delaiApproche')}`}
+        </Text>
+      </View>
+
       {disponible ? (
-        <View className="mt-12 flex-row gap-12">
+        <View className="flex-row gap-8">
           <Action
             nom="accepter"
-            texte={t('offres.accepter')}
+            /* Le montant sur le bouton quand il DIFFÈRE de ce qu'on a proposé :
+               c'est la dernière occasion de voir ce qu'on accepte. */
+            texte={
+              contreOffre
+                ? t('offres.accepterA', { prix: formatXof(prix) })
+                : t('offres.accepter')
+            }
             principale
             desactive={desactive}
             occupe={occupe}
@@ -403,14 +510,15 @@ function CarteOffre({
           />
           <Action
             nom="refuser"
-            texte={t('offres.refuser')}
+            texte="✕"
+            etroit
             desactive={desactive}
             occupe={occupe}
             onPress={onRefuser}
           />
         </View>
       ) : (
-        <Text className="mt-12 text-[13px] font-semibold text-muted">
+        <Text className="text-[13px] font-semibold text-muted">
           {offre.statut === 'caduque'
             ? t('offres.caduque')
             : offre.statut === 'refusee'
@@ -420,8 +528,6 @@ function CarteOffre({
                 : t('offres.demandeExpiree')}
         </Text>
       )}
-
-      {prixDemande !== offre.prix_xof && contreOffre ? null : null}
     </View>
   );
 }
@@ -430,6 +536,7 @@ function Action({
   nom,
   texte,
   principale = false,
+  etroit = false,
   desactive,
   occupe,
   onPress,
@@ -437,6 +544,8 @@ function Action({
   nom: string;
   texte: string;
   principale?: boolean;
+  /** Le refus. Étroit, sans texte : il ne doit pas concurrencer l'accepter. */
+  etroit?: boolean;
   desactive: boolean;
   occupe: boolean;
   onPress: () => void;
@@ -450,14 +559,14 @@ function Action({
       onPress={onPress}
       onLayout={(e) => noterMesure(nom, e.nativeEvent.layout.height)}
       // Un état désactivé change de COULEUR, pas seulement d'opacité.
-      className={`min-h-touch flex-1 items-center justify-center rounded-field ${
-        actif ? (principale ? 'bg-accFill' : 'bg-card2') : 'bg-card2'
-      }`}
+      className={`min-h-touch items-center justify-center rounded-field ${
+        etroit ? 'w-48 border-2 border-line' : 'flex-1'
+      } ${actif && principale ? 'bg-accFill' : etroit ? '' : 'bg-card2'}`}
       style={({ pressed }) => ({ opacity: pressed && actif ? 0.7 : 1 })}
     >
       <Text
         className={`text-[14px] font-bold ${
-          actif ? (principale ? 'text-onAcc' : 'text-ink') : 'text-muted'
+          actif ? (principale ? 'text-onAcc' : 'text-muted') : 'text-muted'
         }`}
       >
         {texte}

@@ -100,6 +100,17 @@ export const en: Dictionnaire = {
   },
 
   offres: {
+    delaiApproche: 'until pickup',
+    propositionPartie: 'Your offer is out',
+    chercheChauffeurs: 'Looking for drivers near you',
+    chercheChauffeursAide: 'Offers appear here. You pick the one you like.',
+    compteur: '{n} offer — cheapest first',
+    compteurPluriel: '{n} offers — cheapest first',
+    meilleurPrix: 'BEST PRICE',
+    votrePrixCoche: 'your price ✓',
+    accepterA: 'Accept {prix}',
+    expireDans: 'expires in {n} min',
+    coursesAuVolant: '{n} rides',
     annulerDemande: 'Cancel my request',
     confirmerAnnulation: 'Withdraw your request?',
     confirmerAnnulationAide: 'Drivers will stop seeing it, and pending offers fall away.',

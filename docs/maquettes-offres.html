@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flex — Offres reçues</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root[data-theme="dark"]{
+  --bg:#0E1C2C; --card:#12253A; --card2:#1A3049; --line:#1E3752;
+  --ink:#F1F6FA; --muted:#8CA3B8;
+  --accFill:#D6F9EB; --onAcc:#0E1C2C; --accInk:#9FE8CE;
+  --moneyInk:#FBBF24; --ok:#34D399; --danger:#FF7A7A;
+}
+:root[data-theme="light"]{
+  --bg:#F8FAFC; --card:#FFFFFF; --card2:#EEF3F7; --line:#E2E9F0;
+  --ink:#0E1C2C; --muted:#5B7186;
+  --accFill:#0B7A5F; --onAcc:#FFFFFF; --accInk:#0A6B53;
+  --moneyInk:#8A5A05; --ok:#0B7A55; --danger:#C2352B;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Inter",-apple-system,sans-serif;background:var(--bg);color:var(--ink);padding:22px 16px 64px;-webkit-font-smoothing:antialiased}
+.hd{max-width:1040px;margin:0 auto 16px;text-align:center}
+.hd h1{font-size:32px;font-weight:800;letter-spacing:-.04em}
+.hd h1 em{font-style:normal;color:var(--accInk)}
+.hd p{color:var(--muted);font-size:14px;font-weight:500;margin-top:6px}
+.bar{max-width:1040px;margin:0 auto 26px;display:flex;gap:10px;justify-content:center}
+.seg{display:flex;background:var(--card);border-radius:14px;padding:4px}
+.seg button{border:0;background:none;color:var(--muted);font:700 13px/1 "Inter";padding:9px 18px;border-radius:10px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accFill);color:var(--onAcc)}
+
+.grid{max-width:1040px;margin:0 auto;display:flex;flex-wrap:wrap;gap:30px;justify-content:center}
+.cell{width:320px}
+.cap{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:10px;text-align:center}
+.phone{width:320px;height:680px;border-radius:34px;background:var(--bg);overflow:hidden;display:flex;flex-direction:column;box-shadow:0 0 0 1px var(--line)}
+.st{height:34px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;font-size:11px;font-weight:700;flex:0 0 auto}
+.st .r{color:var(--muted);font-weight:600}
+.body{flex:1;display:flex;flex-direction:column;padding:6px 16px 14px;overflow:hidden;position:relative}
+
+.top{display:flex;align-items:center;justify-content:space-between;padding:6px 2px 4px}
+.top h2{font-size:24px;font-weight:800;letter-spacing:-.03em}
+.top .bk{font-size:14px;font-weight:700;color:var(--accInk)}
+
+/* rappel proposition */
+.recap{background:var(--card);border-radius:16px;padding:13px 15px;margin:12px 0 14px;display:flex;align-items:center;gap:12px}
+.recap .mine{flex:1}
+.recap .t{font-size:13.5px;font-weight:700;letter-spacing:-.01em}
+.recap .s{font-size:11.5px;color:var(--muted);font-weight:500;margin-top:3px}
+.recap .s b{color:var(--moneyInk);font-variant-numeric:tabular-nums}
+.timer{width:46px;height:46px;border-radius:99px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:var(--accInk);position:relative}
+.timer svg{position:absolute;inset:0;transform:rotate(-90deg)}
+.timer span{position:relative;font-variant-numeric:tabular-nums}
+
+/* état vide animé */
+.empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding-bottom:40px}
+.radar{width:120px;height:120px;position:relative}
+.radar .dot{position:absolute;left:50%;top:50%;width:14px;height:14px;border-radius:99px;background:var(--accInk);transform:translate(-50%,-50%);z-index:2}
+.radar .ring{position:absolute;inset:0;border-radius:99px;border:2px solid var(--accInk);opacity:0;animation:ping 2.4s ease-out infinite}
+.radar .ring:nth-child(2){animation-delay:.8s}
+.radar .ring:nth-child(3){animation-delay:1.6s}
+@keyframes ping{0%{transform:scale(.3);opacity:.7}100%{transform:scale(1);opacity:0}}
+.empty .msg{text-align:center}
+.empty .msg .t{font-size:15px;font-weight:700}
+.empty .msg .s{font-size:12.5px;color:var(--muted);font-weight:500;margin-top:5px;max-width:220px}
+
+/* liste offres */
+.count{font-size:12px;font-weight:700;color:var(--accInk);padding:2px 2px 10px}
+.offers{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:11px;padding-bottom:8px}
+.offer{background:var(--card);border-radius:18px;padding:14px;box-shadow:0 1px 0 var(--line)}
+.offer.best{box-shadow:0 0 0 2px var(--accInk)}
+.offer .flag{font-size:9.5px;font-weight:800;color:var(--onAcc);background:var(--accInk);border-radius:99px;padding:3px 9px;display:inline-block;margin-bottom:10px;letter-spacing:.03em}
+.offer .head{display:flex;align-items:center;gap:11px}
+.offer .av{width:46px;height:46px;border-radius:99px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-weight:800;color:#0E1C2C;font-size:18px}
+.offer .who{flex:1;min-width:0}
+.offer .nm{font-size:15px;font-weight:800;letter-spacing:-.01em}
+.offer .rt{font-size:11.5px;color:var(--muted);font-weight:600;margin-top:2px}
+.offer .car{font-size:11.5px;color:var(--muted);font-weight:500;margin-top:1px}
+.offer .price{text-align:right;flex:0 0 auto}
+.offer .price .v{font-size:20px;font-weight:800;color:var(--moneyInk);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.offer .price .k{font-size:10px;color:var(--muted);font-weight:600;margin-top:1px}
+.offer .price .k.counter{color:var(--danger)}
+.offer .meta{display:flex;gap:14px;margin:11px 0;padding:9px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.offer .meta .m{font-size:11.5px;color:var(--muted);font-weight:600;display:flex;align-items:center;gap:5px}
+.offer .meta .m b{color:var(--ink);font-weight:700}
+.offer .acts{display:flex;gap:8px}
+.ob{flex:1;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:13.5px;font-weight:800;letter-spacing:-.01em}
+.ob.acc{background:var(--accFill);color:var(--onAcc)}
+.ob.ref{background:transparent;color:var(--muted);box-shadow:inset 0 0 0 2px var(--line);flex:0 0 52px}
+
+.cancel{padding-top:10px;flex:0 0 auto}
+.cancel button{width:100%;height:50px;border:0;background:none;color:var(--danger);font:800 14px/1 "Inter";border-radius:14px}
+</style>
+</head>
+<body>
+
+<div class="hd">
+  <h1>Offres reçues — Fle<em>x</em></h1>
+  <p data-fr="Deux états : l'attente (vivante, pas un grand blanc) et les offres (cartes riches à comparer)"
+     data-en="Two states: waiting (alive, not a blank) and offers (rich cards to compare)">Deux états : l'attente (vivante, pas un grand blanc) et les offres (cartes riches à comparer)</p>
+</div>
+
+<div class="bar">
+  <div class="seg" id="theme">
+    <button aria-pressed="false" data-t="dark" data-fr="Sombre" data-en="Dark">Sombre</button>
+    <button aria-pressed="true" data-t="light" data-fr="Clair" data-en="Light">Clair</button>
+  </div>
+  <div class="seg" id="lang">
+    <button aria-pressed="true" data-l="fr">FR</button>
+    <button aria-pressed="false" data-l="en">EN</button>
+  </div>
+</div>
+
+<div class="grid">
+
+  <!-- ÉTAT VIDE -->
+  <div class="cell">
+    <div class="cap" data-fr="1 · En attente (animé)" data-en="1 · Waiting (animated)">1 · En attente (animé)</div>
+    <div class="phone">
+      <div class="st"><span>6:15</span><span class="r">4G ▮</span></div>
+      <div class="body">
+        <div class="top">
+          <h2 data-fr="Offres reçues" data-en="Offers received">Offres reçues</h2>
+          <span class="bk" data-fr="Retour" data-en="Back">Retour</span>
+        </div>
+
+        <div class="recap">
+          <div class="mine">
+            <div class="t" data-fr="Votre proposition est partie" data-en="Your offer is out">Votre proposition est partie</div>
+            <div class="s"><span data-fr="Vous avez proposé" data-en="You proposed">Vous avez proposé</span> <b>3 300 F</b> · HLM → Ouakam</div>
+          </div>
+          <div class="timer">
+            <svg viewBox="0 0 46 46"><circle cx="23" cy="23" r="20" fill="none" stroke="var(--line)" stroke-width="3"/><circle cx="23" cy="23" r="20" fill="none" stroke="var(--accInk)" stroke-width="3" stroke-linecap="round" stroke-dasharray="126" stroke-dashoffset="30"/></svg>
+            <span>5:00</span>
+          </div>
+        </div>
+
+        <div class="empty">
+          <div class="radar">
+            <div class="ring"></div><div class="ring"></div><div class="ring"></div>
+            <div class="dot"></div>
+          </div>
+          <div class="msg">
+            <div class="t" data-fr="On cherche des chauffeurs près de vous" data-en="Looking for drivers near you">On cherche des chauffeurs près de vous</div>
+            <div class="s" data-fr="Les réponses arrivent ici. Vous choisissez celle qui vous convient." data-en="Offers appear here. You pick the one you like.">Les réponses arrivent ici. Vous choisissez celle qui vous convient.</div>
+          </div>
+        </div>
+
+        <div class="cancel">
+          <button data-fr="Annuler ma demande" data-en="Cancel my request">Annuler ma demande</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ÉTAT PLEIN -->
+  <div class="cell">
+    <div class="cap" data-fr="2 · Offres reçues (le vrai usage)" data-en="2 · Offers in (the real use)">2 · Offres reçues (le vrai usage)</div>
+    <div class="phone">
+      <div class="st"><span>6:16</span><span class="r">4G ▮</span></div>
+      <div class="body">
+        <div class="top">
+          <h2 data-fr="Offres reçues" data-en="Offers received">Offres reçues</h2>
+          <span class="bk" data-fr="Retour" data-en="Back">Retour</span>
+        </div>
+
+        <div class="recap">
+          <div class="mine">
+            <div class="t"><span data-fr="Vous avez proposé" data-en="You proposed">Vous avez proposé</span> <b style="color:var(--moneyInk)">3 300 F</b></div>
+            <div class="s">HLM → Ouakam · <span data-fr="encore" data-en="left">encore</span> 4:12</div>
+          </div>
+          <div class="timer"><span>4:12</span></div>
+        </div>
+
+        <div class="count">3 <span data-fr="offres — la moins chère d'abord" data-en="offers — cheapest first">offres — la moins chère d'abord</span></div>
+
+        <div class="offers">
+          <div class="offer best">
+            <span class="flag" data-fr="AU MEILLEUR PRIX" data-en="BEST PRICE">AU MEILLEUR PRIX</span>
+            <div class="head">
+              <span class="av" style="background:#D9B6F0">O</span>
+              <div class="who">
+                <div class="nm">Ousmane</div>
+                <div class="rt">★ 4,8 · 127 <span data-fr="courses" data-en="rides">courses</span></div>
+                <div class="car">Picanto grise</div>
+              </div>
+              <div class="price">
+                <div class="v">3 300 F</div>
+                <div class="k" data-fr="votre prix ✓" data-en="your price ✓">votre prix ✓</div>
+              </div>
+            </div>
+            <div class="meta">
+              <span class="m">🕒 <b data-fr="4 min" data-en="4 min">4 min</b></span>
+              <span class="m">📍 <span data-fr="à 1,2 km" data-en="1.2 km away">à 1,2 km</span></span>
+            </div>
+            <div class="acts">
+              <div class="ob acc" data-fr="Accepter" data-en="Accept">Accepter</div>
+              <div class="ob ref">✕</div>
+            </div>
+          </div>
+
+          <div class="offer">
+            <div class="head">
+              <span class="av" style="background:#A8D8F0">F</span>
+              <div class="who">
+                <div class="nm">Fatou</div>
+                <div class="rt">★ 4,9 · 63 <span data-fr="courses" data-en="rides">courses</span></div>
+                <div class="car">Yaris blanche</div>
+              </div>
+              <div class="price">
+                <div class="v">3 500 F</div>
+                <div class="k counter" data-fr="contre-offre" data-en="counter">contre-offre</div>
+              </div>
+            </div>
+            <div class="meta">
+              <span class="m">🕒 <b data-fr="6 min" data-en="6 min">6 min</b></span>
+              <span class="m">📍 <span data-fr="à 2,0 km" data-en="2.0 km away">à 2,0 km</span></span>
+            </div>
+            <div class="acts">
+              <div class="ob acc" data-fr="Accepter à 3 500 F" data-en="Accept 3,500 F">Accepter à 3 500 F</div>
+              <div class="ob ref">✕</div>
+            </div>
+          </div>
+
+          <div class="offer">
+            <div class="head">
+              <span class="av" style="background:#C9E8B8">M</span>
+              <div class="who">
+                <div class="nm">Mamadou</div>
+                <div class="rt"><span data-fr="Nouveau conducteur" data-en="New driver">Nouveau conducteur</span></div>
+                <div class="car">Logan grise</div>
+              </div>
+              <div class="price">
+                <div class="v">3 800 F</div>
+                <div class="k counter" data-fr="contre-offre" data-en="counter">contre-offre</div>
+              </div>
+            </div>
+            <div class="meta">
+              <span class="m">🕒 <b data-fr="3 min" data-en="3 min">3 min</b></span>
+              <span class="m">📍 <span data-fr="à 0,8 km" data-en="0.8 km away">à 0,8 km</span></span>
+            </div>
+            <div class="acts">
+              <div class="ob acc" data-fr="Accepter à 3 800 F" data-en="Accept 3,800 F">Accepter à 3 800 F</div>
+              <div class="ob ref">✕</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cancel">
+          <button data-fr="Annuler ma demande" data-en="Cancel my request">Annuler ma demande</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  var lang='fr';
+  function applyLang(){
+    document.querySelectorAll('[data-fr]').forEach(function(el){el.textContent=el.getAttribute('data-'+lang);});
+    document.documentElement.lang=lang;
+  }
+  document.getElementById('lang').addEventListener('click',function(e){
+    var b=e.target.closest('button'); if(!b)return;
+    lang=b.dataset.l;
+    this.querySelectorAll('button').forEach(function(x){x.setAttribute('aria-pressed',x===b);});
+    applyLang();
+  });
+  document.getElementById('theme').addEventListener('click',function(e){
+    var b=e.target.closest('button'); if(!b)return;
+    document.documentElement.setAttribute('data-theme',b.dataset.t);
+    this.querySelectorAll('button').forEach(function(x){x.setAttribute('aria-pressed',x===b);});
+  });
+</script>
+</body>
+</html>

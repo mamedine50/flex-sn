@@ -16,7 +16,12 @@ Règles permanentes de ce dépôt. À lire avant toute modification.
 - Aucun hex en dur dans un composant. Uniquement les jetons de `src/theme/tokens.ts`.
 - **Un jeton de remplissage n'est jamais un jeton d'encre.** `accFill` remplit, `accInk` écrit.
 - **L'ambre appartient aux montants.** Tout montant s'écrit en `moneyInk`. Un statut
-  (contre-offre, en attente, acceptée) s'écrit en `accInk` ou `ok`, jamais en ambre.
+  ne s'écrit JAMAIS en ambre. Il s'écrit en `accInk` ou `ok` — sauf « contre-offre »,
+  qui s'écrit en `danger`. L'exception est délibérée : sur l'écran des offres, la
+  seule question qui compte est « ce conducteur a-t-il accepté mon prix, ou en
+  demande-t-il un autre ? ». Deux nuances de vert ne la posent pas ; deux couleurs
+  opposées, si. Le rouge n'y dit pas « erreur », il dit « ce n'est pas ce que vous
+  aviez proposé » — et c'est la seule chose que l'œil doit attraper avant d'appuyer.
 - **Un aplat de couleur qui porte une information sur une carte ou une surface claire
   reçoit un contour de 2 px en `shapeOutline`.** Point de carte, marqueur, pastille de
   statut, badge de prix. L'ambre sur fond clair est à 1,95:1 : c'est le contour qui rend

@@ -108,6 +108,17 @@ export const fr = {
   },
 
   offres: {
+    delaiApproche: 'avant son arrivée',
+    propositionPartie: 'Votre proposition est partie',
+    chercheChauffeurs: 'On cherche des chauffeurs près de vous',
+    chercheChauffeursAide: 'Les réponses arrivent ici. Vous choisissez celle qui vous convient.',
+    compteur: '{n} offre — la moins chère d’abord',
+    compteurPluriel: '{n} offres — la moins chère d’abord',
+    meilleurPrix: 'AU MEILLEUR PRIX',
+    votrePrixCoche: 'votre prix ✓',
+    accepterA: 'Accepter à {prix}',
+    expireDans: 'expire dans {n} min',
+    coursesAuVolant: '{n} courses',
     annulerDemande: 'Annuler ma demande',
     confirmerAnnulation: 'Retirer votre demande ?',
     confirmerAnnulationAide: 'Les conducteurs cesseront de la voir, et les offres en attente tombent.',
