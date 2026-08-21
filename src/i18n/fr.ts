@@ -211,11 +211,17 @@ export const fr = {
     gainsSemaine: 'Cette semaine',
     gainsTotal: 'Total {montant}',
     gainsCommission: '0 % de commission. Vous gardez tout.',
+    commissionApres: 'Gratuit pendant 6 mois après le lancement. Ensuite, une commission réduite (~10 %) — toujours parmi les plus basses du marché.',
     gainsVide: 'Votre première course apparaîtra ici.',
     modifier: 'Modifier',
     mesLieux: 'Mes lieux',
     conducteur: 'Conducteur',
     affichage: 'Affichage',
+    affichageSous: 'Thème et langue',
+    mesCourses: 'Mes courses',
+    mesCoursesSous: 'Trajets terminés et annulés',
+    mesAvis: 'Mes avis',
+    mesAvisSous: 'Ce que les autres ont écrit',
     passerEnLigne: 'Passer en mode conducteur',
     passerEnLigneSous: 'Voir les demandes à proximité',
     vehiculeEtDocuments: 'Mon véhicule et mes documents',
@@ -427,6 +433,33 @@ export const fr = {
 
     dejaVrai: 'Ce qui est déjà vrai dans l’application',
     dejaVraiTexte: 'Avant acceptation, un conducteur ne voit ni votre nom complet, ni votre numéro, ni votre position exacte — seulement une zone arrondie et un nom de commune. Le nom de vos lieux enregistrés et vos précisions ne quittent jamais votre téléphone. Ces règles sont vérifiées par des tests automatisés à chaque modification.',
+  },
+
+  reglages: {
+    titre: 'Affichage',
+    theme: 'Thème',
+    themeAide: 'Clair, sombre, ou comme le téléphone.',
+    langue: 'Langue',
+    langueAide: 'Le wolof arrive.',
+  },
+
+  historique: {
+    titre: 'Mes courses',
+    vide: 'Aucune course terminée.',
+    videAide: 'Vos trajets apparaîtront ici, avec ce qu’ils ont coûté.',
+    commePassager: 'Passager',
+    commeConducteur: 'Conducteur',
+    annulee: 'Annulée',
+    illisible: 'Vos courses ne se chargent pas.',
+  },
+
+  avis: {
+    titre: 'Mes avis',
+    vide: 'Aucun avis pour le moment.',
+    videAide: 'Un avis apparaît quand les deux ont noté, ou après sept jours.',
+    anonyme: 'Les avis sont anonymes : vous ne saurez jamais qui a écrit quoi.',
+    sansCommentaire: 'Sans commentaire.',
+    illisible: 'Vos avis ne se chargent pas.',
   },
 
   erreurs: {

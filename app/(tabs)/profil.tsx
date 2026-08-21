@@ -1,12 +1,12 @@
-import { router } from 'expo-router';
-import { useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useRef, useState } from 'react';
 import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import Avatar from '../../src/components/Avatar';
 import { Pastille, type NomIcone } from '../../src/components/Icones';
 import PanneauDev, { type EtatForce } from '../../src/components/PanneauDev';
-import { LANGUES_DISPONIBLES, useI18n, useT, type Langue } from '../../src/i18n';
+import { useI18n, useT } from '../../src/i18n';
 import { useEstConducteur } from '../../src/lib/conducteur';
 import { useFavoris } from '../../src/lib/favoris';
 import { formatXof } from '../../src/lib/format';
@@ -18,7 +18,6 @@ import { useProfilPublic } from '../../src/lib/profilPublic';
 import { useSession } from '../../src/lib/session';
 import { supabase } from '../../src/lib/supabase';
 import { useVehicule } from '../../src/lib/vehicule';
-import { PREFERENCES, useTheme, type PreferenceTheme } from '../../src/theme/ThemeProvider';
 import { chiffresTabulaires } from '../../src/theme/typographie';
 
 /**
@@ -42,8 +41,7 @@ const GABARIT = { entete: 92, ligne: 50 };
 export default function Profil() {
   const t = useT();
   const marges = useSafeAreaInsets();
-  const { preference, definirPreference } = useTheme();
-  const { langue, definirLangue } = useI18n();
+  const { langue } = useI18n();
   const session = useSession();
 
   const capacite = useEstConducteur();
@@ -56,11 +54,25 @@ export default function Profil() {
   );
   const gains = useGains(conducteur);
   const auto = useVehicule();
-  const { favoris } = useFavoris();
+  const { favoris, relire: relireFavoris } = useFavoris();
 
   const [etatForce, setEtatForce] = useState<EtatForce>('aucun');
   const [panneauOuvert, setPanneauOuvert] = useState(false);
   const [confirmeDeconnexion, setConfirmeDeconnexion] = useState(false);
+
+  // Un lieu ajouté depuis « Mes lieux » doit apparaître ici au retour. Même
+  // raison que pour le profil : cet onglet reste monté pendant qu'on modifie
+  // ailleurs.
+  const premierRetour = useRef(true);
+  useFocusEffect(
+    useCallback(() => {
+      if (premierRetour.current) {
+        premierRetour.current = false;
+        return;
+      }
+      relireFavoris();
+    }, [relireFavoris]),
+  );
 
   configurerGabarit(conducteur ? 'profil+conducteur' : 'profil', GABARIT);
 
@@ -216,30 +228,36 @@ export default function Profil() {
             <Text className="mt-2 text-[12px] font-semibold text-onAcc">
               {t('profil.gainsCommission')}
             </Text>
+            {/* La suite, dite tout de suite. Ce qui tue la confiance d'un
+                conducteur, ce n'est pas le taux : c'est de le découvrir. */}
+            <Text className="mt-4 text-[11px] font-semibold text-onAcc">
+              {t('profil.commissionApres')}
+            </Text>
           </Pressable>
         )}
 
-        {/* ──────────────────────────────────────────────── affichage ─── */}
-        <Section titre={t('profil.affichage')} />
-        <View className="px-16">
-          <Choix
-            valeurs={PREFERENCES.map((p) => ({ cle: p, libelle: t(`theme.${p}`) }))}
-            actuelle={preference}
-            onChoisir={(v) => definirPreference(v as PreferenceTheme)}
-          />
-          <View className="h-8" />
-          <Choix
-            valeurs={LANGUES_DISPONIBLES.map((l) => ({
-              cle: l,
-              libelle: t(`langues.${l}`),
-            }))}
-            actuelle={langue}
-            onChoisir={(v) => definirLangue(v as Langue)}
-          />
-        </View>
-
         {/* ─────────────────────────────────────────────────── compte ─── */}
         <Section titre={t('profil.compte')} />
+        <Ligne
+          icone="documents"
+          titre={t('profil.mesCourses')}
+          sous={t('profil.mesCoursesSous')}
+          onPress={() => router.push('/historique')}
+        />
+        <Ligne
+          icone="gains"
+          titre={t('profil.mesAvis')}
+          sous={t('profil.mesAvisSous')}
+          onPress={() => router.push('/avis')}
+        />
+        {/* Thème et langue quittent le fil : six pastilles au milieu du chemin
+            pour des réglages qu'on touche une fois. */}
+        <Ligne
+          icone="theme"
+          titre={t('profil.affichage')}
+          sous={t('profil.affichageSous')}
+          onPress={() => router.push('/reglages')}
+        />
         <Ligne
           icone="bloque"
           titre={t('profil.personnesBloquees')}
@@ -419,46 +437,6 @@ function Gains({
           ? t('profil.gainsVide')
           : t('profil.gainsTotalLigne', { montant: formatXof(gains.total_xof) })}
       </Text>
-    </View>
-  );
-}
-
-/** Un choix parmi peu : des pastilles côte à côte, pas une liste déroulante. */
-function Choix({
-  valeurs,
-  actuelle,
-  onChoisir,
-}: {
-  valeurs: { cle: string; libelle: string }[];
-  actuelle: string;
-  onChoisir: (cle: string) => void;
-}) {
-  return (
-    <View className="flex-row gap-8">
-      {valeurs.map(({ cle, libelle }) => {
-        const choisi = cle === actuelle;
-        return (
-          <Pressable
-            key={cle}
-            accessibilityRole="button"
-            accessibilityState={{ selected: choisi }}
-            onPress={() => onChoisir(cle)}
-            className={`min-h-touch flex-1 items-center justify-center rounded-field px-8 py-8 ${
-              choisi ? 'bg-accFill' : 'bg-card'
-            }`}
-            style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
-          >
-            <Text
-              className={`text-center text-[13px] font-bold ${
-                choisi ? 'text-onAcc' : 'text-ink'
-              }`}
-              numberOfLines={2}
-            >
-              {libelle}
-            </Text>
-          </Pressable>
-        );
-      })}
     </View>
   );
 }

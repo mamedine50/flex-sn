@@ -2,7 +2,7 @@
 begin;
 create extension if not exists pgtap with schema public;
 
-select plan(27);
+select plan(28);
 
 grant execute on function public.duree_demande(public.service_course) to authenticated;
 
@@ -162,9 +162,18 @@ select is(
   1,
   'il voit sa propre évaluation'
 );
+-- `evaluations_visibles` est INTERNE depuis 20260820230000 : le client la lit
+-- par `mes_evaluations`, qui ne rend que ses propres avis reçus.
 select is_empty(
-  $$ select 1 from public.evaluations_visibles $$,
+  $$ select 1 from public.mes_evaluations $$,
   'rien n''est dévoilé tant que l''autre n''a pas noté'
+);
+
+select throws_ok(
+  $$ select 1 from public.evaluations_visibles $$,
+  '42501',
+  null,
+  'et la vue interne n''est plus lisible par un compte connecté'
 );
 select is(
   (select note_moyenne from public.profils_publics

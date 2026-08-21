@@ -203,11 +203,17 @@ export const en: Dictionnaire = {
     gainsSemaine: 'This week',
     gainsTotal: '{montant} in total',
     gainsCommission: '0 % commission. You keep it all.',
+    commissionApres: 'Free for 6 months after launch. Then a reduced commission (~10 %) — still among the lowest on the market.',
     gainsVide: 'Your first ride will show up here.',
     modifier: 'Edit',
     mesLieux: 'My places',
     conducteur: 'Driver',
     affichage: 'Display',
+    affichageSous: 'Theme and language',
+    mesCourses: 'My rides',
+    mesCoursesSous: 'Completed and cancelled trips',
+    mesAvis: 'My reviews',
+    mesAvisSous: 'What others wrote',
     passerEnLigne: 'Switch to driver mode',
     passerEnLigneSous: 'See nearby requests',
     vehiculeEtDocuments: 'My vehicle and documents',
@@ -412,6 +418,33 @@ export const en: Dictionnaire = {
 
     dejaVrai: 'What is already true in the app',
     dejaVraiTexte: 'Before a ride is accepted, a driver sees neither your full name, nor your number, nor your exact position — only a rounded area and a district name. The names of your saved places and your notes never leave your phone. These rules are checked by automated tests on every change.',
+  },
+
+  reglages: {
+    titre: 'Display',
+    theme: 'Theme',
+    themeAide: 'Light, dark, or follow the phone.',
+    langue: 'Language',
+    langueAide: 'Wolof is coming.',
+  },
+
+  historique: {
+    titre: 'My rides',
+    vide: 'No completed ride yet.',
+    videAide: 'Your trips will show up here, with what they cost.',
+    commePassager: 'Passenger',
+    commeConducteur: 'Driver',
+    annulee: 'Cancelled',
+    illisible: 'Your rides will not load.',
+  },
+
+  avis: {
+    titre: 'My reviews',
+    vide: 'No review yet.',
+    videAide: 'A review appears once both have rated, or after seven days.',
+    anonyme: 'Reviews are anonymous: you will never know who wrote what.',
+    sansCommentaire: 'No comment.',
+    illisible: 'Your reviews will not load.',
   },
 
   erreurs: {

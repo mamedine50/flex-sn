@@ -14,8 +14,8 @@ bout **sur le projet distant, avec deux vraies sessions** — voir `docs/parcour
 
 | | |
 |---|---|
-| Écrans | Accroche · Connexion (pays, numéro, code, prénom) · Accueil · Fixez votre prix · Offres reçues · Mode conducteur · En route · Profil · Mon profil · Mes lieux · Conduire avec Flex · À propos |
-| Base | 43 migrations, **287 assertions pgTAP**, RLS sur chaque table, logique métier en RPC |
+| Écrans | Accroche · Connexion (pays, numéro, code, prénom) · Accueil · Fixez votre prix · Offres reçues · Mode conducteur · En route · Profil · Mon profil · Mes lieux · Mes courses · Mes avis · Affichage · Conduire avec Flex · À propos · Conditions · Confidentialité |
+| Base | 45 migrations, **293 assertions pgTAP**, RLS sur chaque table, logique métier en RPC |
 | Gardes | `pnpm typecheck` · `pnpm lint` · `pnpm test` · `pnpm tokens:check` (44 paires) · `supabase test db` · `node scripts/parcours-v1.mjs` |
 | Étiquette | `v1.0.0-dev` |
 
@@ -59,7 +59,12 @@ Dans cet ordre, et pas avant :
 4. **Pricing interurbain** — corridors à prix d'usage. Un Dakar–Touba a un prix que tout
    le monde connaît, pas un prix au kilomètre. `events_prix` accumule déjà de quoi le
    calibrer.
-5. **Paiement** — après l'entité et le compte marchand, pas avant.
+5. **Paiement Wave — et le prélèvement de commission avec.** Période gratuite
+   **paramétrable par conducteur** (tout le monde ne démarre pas le même jour), date de
+   fin, et **taux en base, jamais en dur** : un taux écrit dans le code est un taux qu'on
+   ne peut plus changer sans publier une version. Le chantier paiement embarque la
+   commission d'office — la greffer après coup demanderait de rouvrir les mêmes
+   fonctions. Après l'entité et le compte marchand, pas avant.
 6. **Notifications push** — une offre qui arrive quand l'application est fermée. Impose
    une dépendance native et une reconstruction du client.
 
@@ -67,22 +72,15 @@ Dans cet ordre, et pas avant :
 
 Aucune n'empêche de se servir de l'application. Dans cet ordre :
 
-1. **Historique des courses.** `rides` n'est lu que pour la course active : ni le
-   passager ni le conducteur ne peuvent voir ce qu'ils ont fait. Côté conducteur c'est
-   le complément direct de la carte de gains — « 4 400 FCFA cette semaine » appelle
-   « lesquelles ».
-2. **Mes avis.** `evaluations_visibles` est construite, commentée, testée, avec sa règle
-   de double aveugle — et lue par aucun écran. La note s'affiche, les avis qui la
-   composent restent invisibles, y compris pour celui qui les a reçus.
-3. **Migration vers `expo-maps`.** C'est la seule façon de retrouver Google Maps sur
+1. **Migration vers `expo-maps`.** C'est la seule façon de retrouver Google Maps sur
    iOS, donc la palette Flex sur la carte des deux côtés. Chantier de composant, pas
    réglage : nouvelle dépendance native et reconstruction du client.
-4. **Passkeys.** Une connexion sans SMS, donc sans coût par message et sans
+2. **Passkeys.** Une connexion sans SMS, donc sans coût par message et sans
    dépendance à un fournisseur qui ferme des pays. Écartée de la V1 : l'OTP
    téléphone seul, parce qu'un passager dakarois change de téléphone plus souvent
    qu'il ne synchronise un trousseau, et qu'une seconde méthode double la surface
    d'authentification avant d'avoir prouvé la première.
-5. **Messagerie interne.** « Écrire » passe par le SMS du téléphone en V1 — les numéros
+3. **Messagerie interne.** « Écrire » passe par le SMS du téléphone en V1 — les numéros
    se voient donc entre passager et conducteur d'une course acceptée. C'est la seule
    exposition volontaire du produit, et elle est en contradiction avec tout le reste du
    schéma, qui ne sert un numéro qu'à la contrepartie d'une course active et jamais
@@ -123,6 +121,11 @@ Hors périmètre V1, à ne pas construire : colis, fret, moto, repas, abonnement
 - **Le conducteur voit le prix proposé avant d'accepter.** Aucun prix imposé par un algorithme.
 - **L'ambre est réservé aux montants.** Un statut ne s'écrit jamais en ambre.
 - **Chaque couleur d'accent a deux jetons** : un pour remplir, un pour écrire. Voir `docs/design.md`.
+- **Modèle de commission : 0 % pour les conducteurs pendant les 6 premiers mois après
+  le lancement du corridor, puis commission d'environ 10 % prélevée via le paiement
+  intégré (Wave).** Le taux exact sera confirmé avant la fin de la période gratuite.
+  Annoncé aux conducteurs **dès l'onboarding** — la transition surprise est ce qui tue
+  la confiance, pas le taux.
 - **Le paiement réel arrive en dernier.** Tant que le compte marchand n'existe pas, « Payer » passe sans transaction.
 - Cartes en affichage seul : jamais Places, Directions ni Geocoding facturés.
 - **La recommandation de prix est un MINIMUM, pas un milieu.** L'écran écrit
@@ -250,7 +253,7 @@ s'il ne le sait pas.
 pnpm tokens:check          # échoue si une paire texte/fond passe sous 4,5:1, dans les deux thèmes
 pnpm typecheck
 pnpm lint
-supabase test db --local   # 287 assertions pgTAP
+supabase test db --local   # 293 assertions pgTAP
 node scripts/parcours-v1.mjs   # le parcours complet sur le DISTANT, deux sessions
 ```
 

@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useFocusEffect } from 'expo-router';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import type { Database } from './database.types';
 import { supabase } from './supabase';
@@ -47,6 +48,29 @@ export function useMonProfil() {
   }, [tour]);
 
   const relire = useCallback(() => setTour((n) => n + 1), []);
+
+  /**
+   * On relit au RETOUR sur l'écran.
+   *
+   * Défaut trouvé sur l'appareil : une photo déposée depuis « Mon profil »
+   * n'apparaissait pas sur l'onglet Profil. L'onglet était monté avant, sa
+   * lecture datait d'avant le dépôt, et rien ne lui disait que la donnée avait
+   * bougé. Même règle que pour les courses — on relit au retour au premier
+   * plan, on ne fait pas confiance à un état accumulé.
+   *
+   * Le premier passage est ignoré : l'effet de montage vient déjà de lire.
+   */
+  const premiereMise = useRef(true);
+  useFocusEffect(
+    useCallback(() => {
+      if (premiereMise.current) {
+        premiereMise.current = false;
+        return;
+      }
+      setTour((n) => n + 1);
+    }, []),
+  );
+
   return { profil, statut, relire };
 }
 

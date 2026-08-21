@@ -1,0 +1,145 @@
+import { router } from 'expo-router';
+import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import { useI18n, useT } from '../src/i18n';
+import { formatXof } from '../src/lib/format';
+import { configurerGabarit, noterMesure } from '../src/lib/gabarit';
+import { useGardeSession } from '../src/lib/garde';
+import { useHistorique, type LigneHistorique } from '../src/lib/historique';
+import { chiffresTabulaires } from '../src/theme/typographie';
+
+/**
+ * Mes courses.
+ *
+ * Le complément direct de la carte de gains : « 4 400 FCFA cette semaine »
+ * appelle « lesquelles ». Et côté passager, c'est la seule trace de ce qu'on a
+ * dépensé.
+ *
+ * On montre AUSSI les courses annulées. Les cacher donnerait un historique qui
+ * ne colle pas au souvenir — et c'est précisément celles-là qu'on vient
+ * vérifier.
+ */
+
+const GABARIT = { ligne: 50 };
+
+export default function Historique() {
+  const t = useT();
+  const { langue } = useI18n();
+  useGardeSession('/historique');
+
+  const marges = useSafeAreaInsets();
+  const { courses, statut, moi } = useHistorique();
+
+  configurerGabarit('historique', GABARIT);
+
+  const date = (iso: string | null) =>
+    iso
+      ? new Date(iso).toLocaleDateString(langue === 'en' ? 'en-GB' : 'fr-FR', {
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric',
+        })
+      : '—';
+
+  return (
+    <View className="flex-1 bg-bg">
+      <View
+        className="flex-row items-center justify-between px-16"
+        style={{ paddingTop: marges.top + 8 }}
+      >
+        <Text className="text-[22px] font-extrabold text-ink">{t('historique.titre')}</Text>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('commun.retour')}
+          onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
+          className="min-h-touch justify-center pl-16"
+        >
+          <Text className="text-[15px] font-bold text-accInk">{t('commun.retour')}</Text>
+        </Pressable>
+      </View>
+
+      {statut === 'chargement' ? (
+        <View className="mt-24 items-center">
+          <ActivityIndicator />
+        </View>
+      ) : statut === 'erreur' ? (
+        <Vide titre={t('historique.illisible')} />
+      ) : courses.length === 0 ? (
+        <Vide titre={t('historique.vide')} aide={t('historique.videAide')} />
+      ) : (
+        <FlatList
+          data={courses}
+          keyExtractor={(c) => c.id}
+          className="mt-12"
+          contentContainerClassName="px-16"
+          contentContainerStyle={{ paddingBottom: marges.bottom + 24 }}
+          renderItem={({ item, index }) => (
+            <Ligne
+              nom={index === 0 ? 'ligne' : undefined}
+              course={item}
+              suisConducteur={item.conducteur_id === moi}
+              date={date(item.terminee_le ?? item.verrouillee_le)}
+            />
+          )}
+        />
+      )}
+    </View>
+  );
+}
+
+function Ligne({
+  nom,
+  course,
+  suisConducteur,
+  date,
+}: {
+  nom?: string;
+  course: LigneHistorique;
+  suisConducteur: boolean;
+  date: string;
+}) {
+  const t = useT();
+  const annulee = course.statut === 'annulee';
+
+  return (
+    <View
+      className="mb-8 min-h-[50px] flex-row items-center rounded-card bg-card p-16"
+      onLayout={nom ? (e) => noterMesure(nom, e.nativeEvent.layout.height) : undefined}
+    >
+      <View className="flex-1 pr-12">
+        <Text className="text-[15px] font-bold text-ink" numberOfLines={1}>
+          {course.demande?.destination_libelle ?? '—'}
+        </Text>
+        <Text className="mt-2 text-[12px] font-semibold text-muted" numberOfLines={1}>
+          {date} ·{' '}
+          {suisConducteur
+            ? t('historique.commeConducteur')
+            : t('historique.commePassager')}
+          {annulee ? ` · ${t('historique.annulee')}` : ''}
+        </Text>
+      </View>
+
+      {/* Un montant reste en `moneyInk` et en chiffres tabulaires, même barré :
+          une course annulée n'a rien coûté, et le montant doit le dire sans
+          disparaître — sinon on croit à une perte de données. */}
+      <Text
+        className={`text-[17px] font-extrabold ${annulee ? 'text-muted line-through' : 'text-moneyInk'}`}
+        style={chiffresTabulaires}
+      >
+        {formatXof(course.prix_convenu_xof)}
+      </Text>
+    </View>
+  );
+}
+
+function Vide({ titre, aide }: { titre: string; aide?: string }) {
+  return (
+    <View className="mx-16 mt-24 rounded-card bg-card p-16">
+      <Text className="text-[15px] font-bold text-ink">{titre}</Text>
+      {aide ? (
+        <Text className="mt-4 text-[13px] font-semibold text-muted">{aide}</Text>
+      ) : null}
+    </View>
+  );
+}

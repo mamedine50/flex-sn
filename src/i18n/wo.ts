@@ -30,4 +30,7 @@ export const wo: DictionnairePartiel = {
   localisation: {},
   couverture: {},
   legal: {},
+  reglages: {},
+  historique: {},
+  avis: {},
 };

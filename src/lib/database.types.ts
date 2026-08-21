@@ -852,6 +852,24 @@ export type Database = {
           },
         ]
       }
+      mes_evaluations: {
+        Row: {
+          commentaire: string | null
+          course_id: string | null
+          cree_le: string | null
+          note: number | null
+          terminee_le: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evaluations_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "rides"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mes_gains: {
         Row: {
           courses: number | null

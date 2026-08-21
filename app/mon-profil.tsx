@@ -110,6 +110,11 @@ export default function MonProfil() {
       );
       return;
     }
+    // La photo est enregistrée à l'instant même — `maj_photo_profil()` a
+    // répondu. Le bouton « Enregistrer » ne s'allume pas pour autant : il ne
+    // porte que le prénom et le nom. Sans cette confirmation, on croit qu'il
+    // ne s'est rien passé et on cherche un bouton qui ne viendra pas.
+    setFait(true);
     relire();
   };
 

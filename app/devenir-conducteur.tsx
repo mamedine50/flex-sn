@@ -133,6 +133,18 @@ export default function DevenirConducteur() {
           {t('dossier.intro')}
         </Text>
 
+        {/* Le modèle économique, annoncé AVANT que la personne envoie sa pièce
+            d'identité. C'est le moment où elle s'engage — pas six mois plus
+            tard, quand la commission tombe. */}
+        <View className="mt-12 rounded-card bg-card p-16">
+          <Text className="text-[14px] font-bold text-ok">
+            {t('profil.gainsCommission')}
+          </Text>
+          <Text className="mt-4 text-[12px] font-semibold text-muted">
+            {t('profil.commissionApres')}
+          </Text>
+        </View>
+
         {horsLigne ? <Bandeau texte={t('dossier.horsLigne')} /> : null}
 
         {statut === 'chargement' ? (
