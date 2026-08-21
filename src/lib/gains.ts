@@ -12,7 +12,13 @@ import { supabase } from './supabase';
  */
 export type Gains = Database['public']['Views']['mes_gains']['Row'];
 
-export const GAINS_VIDES = { courses: 0, total_xof: 0, semaine_xof: 0 };
+export const GAINS_VIDES = {
+  courses: 0,
+  total_xof: 0,
+  semaine_xof: 0,
+  jour_xof: 0,
+  courses_jour: 0,
+};
 
 export function useGains(actif: boolean) {
   const [gains, setGains] = useState<typeof GAINS_VIDES | null>(null);
@@ -24,13 +30,15 @@ export function useGains(actif: boolean) {
     void (async () => {
       const { data, error } = await supabase
         .from('mes_gains')
-        .select('courses, total_xof, semaine_xof')
+        .select('courses, total_xof, semaine_xof, jour_xof, courses_jour')
         .maybeSingle();
       if (vivant.annule || error) return;
       setGains({
         courses: data?.courses ?? 0,
         total_xof: Number(data?.total_xof ?? 0),
         semaine_xof: Number(data?.semaine_xof ?? 0),
+        jour_xof: Number(data?.jour_xof ?? 0),
+        courses_jour: data?.courses_jour ?? 0,
       });
     })();
 

@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flex — Monde conducteur</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root[data-theme="dark"]{
+  --bg:#0E1C2C; --card:#12253A; --card2:#1A3049; --line:#1E3752;
+  --ink:#F1F6FA; --muted:#8CA3B8;
+  --accFill:#D6F9EB; --onAcc:#0E1C2C; --accInk:#9FE8CE;
+  --moneyInk:#FBBF24; --ok:#34D399; --danger:#FF7A7A; --dangerFill:#3A1E24;
+  --map:#16283C; --mapline:#22344A; --water:#123047;
+}
+:root[data-theme="light"]{
+  --bg:#F8FAFC; --card:#FFFFFF; --card2:#EEF3F7; --line:#E2E9F0;
+  --ink:#0E1C2C; --muted:#5B7186;
+  --accFill:#0B7A5F; --onAcc:#FFFFFF; --accInk:#0A6B53;
+  --moneyInk:#8A5A05; --ok:#0B7A55; --danger:#C2352B; --dangerFill:#FBEAE8;
+  --map:#E7EEF3; --mapline:#D3DEE7; --water:#CFE4EF;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Inter",-apple-system,sans-serif;background:var(--bg);color:var(--ink);padding:22px 16px 64px;-webkit-font-smoothing:antialiased}
+.hd{max-width:1240px;margin:0 auto 16px;text-align:center}
+.hd h1{font-size:32px;font-weight:800;letter-spacing:-.04em}
+.hd h1 em{font-style:normal;color:var(--accInk)}
+.hd p{color:var(--muted);font-size:14px;font-weight:500;margin-top:6px}
+.bar{max-width:1240px;margin:0 auto 26px;display:flex;gap:10px;justify-content:center}
+.seg{display:flex;background:var(--card);border-radius:14px;padding:4px}
+.seg button{border:0;background:none;color:var(--muted);font:700 13px/1 "Inter";padding:9px 18px;border-radius:10px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accFill);color:var(--onAcc)}
+
+.grid{max-width:1240px;margin:0 auto;display:flex;flex-wrap:wrap;gap:26px;justify-content:center}
+.cell{width:280px}
+.cap{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:10px;text-align:center}
+.phone{width:280px;height:600px;border-radius:32px;background:var(--bg);overflow:hidden;display:flex;flex-direction:column;box-shadow:0 0 0 1px var(--line);position:relative}
+.st{height:32px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;font-size:11px;font-weight:700;flex:0 0 auto;z-index:5;position:relative}
+.st .r{color:var(--muted);font-weight:600}
+
+/* carte */
+.map{position:absolute;inset:0;background:var(--map);overflow:hidden}
+.map .road{position:absolute;background:var(--mapline);border-radius:2px}
+.map .water{position:absolute;background:var(--water);border-radius:40%}
+.me{position:absolute;width:20px;height:20px;border-radius:99px;background:var(--accInk);box-shadow:0 0 0 6px color-mix(in srgb,var(--accInk) 25%,transparent);left:50%;top:42%;transform:translate(-50%,-50%);z-index:2}
+.car{position:absolute;width:26px;height:26px;border-radius:8px;background:var(--ink);display:flex;align-items:center;justify-content:center;font-size:13px;z-index:2}
+
+/* barre haut monde conducteur */
+.dtop{position:absolute;top:38px;left:14px;right:14px;display:flex;align-items:center;gap:8px;z-index:4}
+.pass{background:var(--card);border-radius:99px;padding:8px 13px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px;box-shadow:0 4px 16px rgba(0,0,0,.25)}
+.pass .go{color:var(--muted)}
+.today{margin-left:auto;background:var(--card);border-radius:99px;padding:8px 13px;font-size:12px;font-weight:700;box-shadow:0 4px 16px rgba(0,0,0,.25)}
+.today .v{color:var(--moneyInk);font-variant-numeric:tabular-nums}
+.today .k{color:var(--muted);font-size:10px;font-weight:600}
+
+/* bouton GO */
+.gowrap{position:absolute;left:0;right:0;bottom:26px;display:flex;flex-direction:column;align-items:center;gap:12px;z-index:4}
+.gomsg{font-size:12px;font-weight:600;color:var(--ink);background:var(--card);padding:8px 15px;border-radius:99px;box-shadow:0 4px 16px rgba(0,0,0,.25)}
+.go-btn{width:96px;height:96px;border-radius:99px;background:var(--accFill);color:var(--onAcc);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;letter-spacing:-.02em;box-shadow:0 8px 30px color-mix(in srgb,var(--accFill) 45%,transparent)}
+.go-btn.online{box-shadow:0 0 0 0 color-mix(in srgb,var(--accInk) 55%,transparent);animation:pulse 2s infinite}
+.go-btn.small{font-size:16px}
+@keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accInk) 50%,transparent)}70%{box-shadow:0 0 0 22px transparent}100%{box-shadow:0 0 0 0 transparent}}
+.go-btn.off{background:var(--card2);color:var(--muted);box-shadow:none}
+
+/* feuille demandes */
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--card);border-radius:22px 22px 0 0;padding:14px 14px 18px;z-index:6;box-shadow:0 -8px 30px rgba(0,0,0,.3)}
+.grab{width:38px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 12px}
+.sh-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.sh-h .t{font-size:14px;font-weight:800}
+.sh-h .n{font-size:11px;font-weight:700;color:var(--accInk)}
+.req{background:var(--card2);border-radius:14px;padding:12px;margin-bottom:9px}
+.req .top{display:flex;align-items:center;gap:9px;margin-bottom:10px}
+.req .av{width:34px;height:34px;border-radius:99px;background:#D9B6F0;display:flex;align-items:center;justify-content:center;font-weight:800;color:#0E1C2C;font-size:13px}
+.req .who{flex:1}
+.req .nm{font-size:13px;font-weight:700}
+.req .rt{font-size:11px;color:var(--muted);font-weight:600}
+.req .price{font-size:18px;font-weight:800;color:var(--moneyInk);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.req .route{font-size:11.5px;color:var(--muted);font-weight:500;margin-bottom:11px}
+.req .route b{color:var(--ink)}
+.req .acts{display:flex;gap:7px}
+.rb{flex:1;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:800;text-align:center;line-height:1.1}
+.rb.acc{background:var(--accFill);color:var(--onAcc)}
+.rb.cnt{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 2px var(--line)}
+.rb.ref{background:transparent;color:var(--muted);box-shadow:inset 0 0 0 2px var(--line);flex:0 0 44px}
+
+/* en course */
+.ride{position:absolute;left:0;right:0;bottom:0;background:var(--card);border-radius:22px 22px 0 0;padding:16px 14px 18px;z-index:6}
+.ride .status{font-size:11px;font-weight:800;color:var(--accInk);letter-spacing:.04em;margin-bottom:8px}
+.ride .row{display:flex;align-items:center;gap:11px;margin-bottom:14px}
+.ride .av{width:44px;height:44px;border-radius:99px;background:#A8D8F0;display:flex;align-items:center;justify-content:center;font-weight:800;color:#0E1C2C;font-size:17px}
+.ride .nm{font-size:15px;font-weight:800}
+.ride .pl{font-size:12px;color:var(--muted);font-weight:600;margin-top:2px}
+.ride .pr{margin-left:auto;text-align:right}
+.ride .pr .v{font-size:19px;font-weight:800;color:var(--moneyInk);font-variant-numeric:tabular-nums}
+.ride .pr .k{font-size:10px;color:var(--muted);font-weight:600}
+.ride .call{display:flex;gap:8px;margin-bottom:12px}
+.cb{flex:1;height:44px;border-radius:12px;background:var(--card2);display:flex;align-items:center;justify-content:center;gap:7px;font-size:13px;font-weight:700}
+.big{width:100%;height:54px;border-radius:15px;background:var(--accFill);color:var(--onAcc);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800}
+
+/* notation */
+.rate{position:absolute;inset:0;background:var(--bg);z-index:8;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
+.rate .av{width:76px;height:76px;border-radius:99px;background:#A8D8F0;display:flex;align-items:center;justify-content:center;font-weight:800;color:#0E1C2C;font-size:30px;margin-bottom:16px}
+.rate .q{font-size:19px;font-weight:800;letter-spacing:-.02em;margin-bottom:4px}
+.rate .s{font-size:12.5px;color:var(--muted);font-weight:500;margin-bottom:22px}
+.stars{display:flex;gap:10px;margin-bottom:26px}
+.stars span{font-size:34px;color:var(--moneyInk)}
+.stars span.off{color:var(--line)}
+.rate .next{position:absolute;bottom:22px;left:24px;right:24px;height:52px;border-radius:15px;background:var(--card2);color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800}
+.rate .hint{position:absolute;bottom:84px;left:24px;right:24px;font-size:11px;color:var(--muted);font-weight:500}
+
+.tabs{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:space-around;padding:10px 12px 6px;background:var(--card);z-index:7;border-top:1px solid var(--line)}
+.tb{font-size:9.5px;font-weight:700;color:var(--muted);text-align:center}
+.tb.on{color:var(--accInk)}
+.tb i{display:block;width:20px;height:20px;border-radius:7px;background:var(--card2);margin:0 auto 4px}
+.tb.on i{background:var(--accFill)}
+</style>
+</head>
+<body>
+
+<div class="hd">
+  <h1>Monde conducteur — Fle<em>x</em></h1>
+  <p data-fr="La maison du conducteur : jamais « Où allez-vous ». GO → en ligne → demandes → course → note → retour en ligne."
+     data-en="The driver's home: never « Where to ». GO → online → requests → ride → rating → back online.">La maison du conducteur : jamais « Où allez-vous ». GO → en ligne → demandes → course → note → retour en ligne.</p>
+</div>
+
+<div class="bar">
+  <div class="seg" id="theme">
+    <button aria-pressed="true" data-t="dark" data-fr="Sombre" data-en="Dark">Sombre</button>
+    <button aria-pressed="false" data-t="light" data-fr="Clair" data-en="Light">Clair</button>
+  </div>
+  <div class="seg" id="lang">
+    <button aria-pressed="true" data-l="fr">FR</button>
+    <button aria-pressed="false" data-l="en">EN</button>
+  </div>
+</div>
+
+<div class="grid">
+
+  <!-- 1 HORS LIGNE -->
+  <div class="cell">
+    <div class="cap" data-fr="1 · Hors ligne" data-en="1 · Offline">1 · Hors ligne</div>
+    <div class="phone">
+      <div class="map">
+        <div class="road" style="top:30%;left:-5%;width:110%;height:8px;transform:rotate(-8deg)"></div>
+        <div class="road" style="top:55%;left:-5%;width:110%;height:6px;transform:rotate(4deg)"></div>
+        <div class="road" style="top:0;left:38%;width:7px;height:100%;transform:rotate(6deg)"></div>
+        <div class="water" style="bottom:-10%;right:-10%;width:55%;height:35%"></div>
+        <div class="me"></div>
+      </div>
+      <div class="st"><span>9:41</span><span class="r">4G ▮</span></div>
+      <div class="dtop">
+        <div class="pass"><span data-fr="Mode passager" data-en="Passenger mode">Mode passager</span><span class="go">›</span></div>
+        <div class="today"><span class="v">12 400 F</span> <span class="k" data-fr="aujourd'hui" data-en="today">aujourd'hui</span></div>
+      </div>
+      <div class="gowrap">
+        <div class="gomsg" data-fr="Appuyez sur GO pour recevoir des demandes" data-en="Tap GO to receive requests">Appuyez sur GO pour recevoir des demandes</div>
+        <div class="go-btn">GO</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2 EN LIGNE -->
+  <div class="cell">
+    <div class="cap" data-fr="2 · En ligne, en attente" data-en="2 · Online, waiting">2 · En ligne, en attente</div>
+    <div class="phone">
+      <div class="map">
+        <div class="road" style="top:30%;left:-5%;width:110%;height:8px;transform:rotate(-8deg)"></div>
+        <div class="road" style="top:55%;left:-5%;width:110%;height:6px;transform:rotate(4deg)"></div>
+        <div class="road" style="top:0;left:38%;width:7px;height:100%;transform:rotate(6deg)"></div>
+        <div class="water" style="bottom:-10%;right:-10%;width:55%;height:35%"></div>
+        <div class="me"></div>
+      </div>
+      <div class="st"><span>9:41</span><span class="r">4G ▮</span></div>
+      <div class="dtop">
+        <div class="pass"><span data-fr="Mode passager" data-en="Passenger mode">Mode passager</span><span class="go">›</span></div>
+        <div class="today"><span class="v">12 400 F</span> <span class="k" data-fr="aujourd'hui" data-en="today">aujourd'hui</span></div>
+      </div>
+      <div class="gowrap">
+        <div class="gomsg" data-fr="À l'écoute des demandes autour de vous" data-en="Listening for requests near you">À l'écoute des demandes autour de vous</div>
+        <div class="go-btn online small" data-fr="EN LIGNE" data-en="ONLINE">EN LIGNE</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3 DEMANDES -->
+  <div class="cell">
+    <div class="cap" data-fr="3 · Demandes (négociation)" data-en="3 · Requests (negotiation)">3 · Demandes (négociation)</div>
+    <div class="phone">
+      <div class="map">
+        <div class="road" style="top:22%;left:-5%;width:110%;height:8px;transform:rotate(-8deg)"></div>
+        <div class="road" style="top:0;left:38%;width:7px;height:60%;transform:rotate(6deg)"></div>
+        <div class="me" style="top:24%"></div>
+        <div class="car" style="left:26%;top:16%">🚗</div>
+        <div class="car" style="right:22%;top:30%">🚗</div>
+      </div>
+      <div class="st"><span>9:41</span><span class="r">4G ▮</span></div>
+      <div class="sheet">
+        <div class="grab"></div>
+        <div class="sh-h"><span class="t" data-fr="Demandes autour de vous" data-en="Requests near you">Demandes autour de vous</span><span class="n">2</span></div>
+        <div class="req">
+          <div class="top">
+            <span class="av">A</span>
+            <div class="who"><div class="nm">Awa</div><div class="rt">★ 4,9 · 23 <span data-fr="courses" data-en="rides">courses</span></div></div>
+            <span class="price">2 500 F</span>
+          </div>
+          <div class="route"><span data-fr="Départ" data-en="From">Départ</span> HLM · <b data-fr="vers Ouakam" data-en="to Ouakam">vers Ouakam</b> · <span data-fr="à 4 min" data-en="4 min away">à 4 min</span></div>
+          <div class="acts">
+            <div class="rb acc" data-fr="Accepter à 2 500 F" data-en="Accept at 2,500 F">Accepter à 2 500 F</div>
+            <div class="rb cnt" data-fr="Proposer" data-en="Offer">Proposer</div>
+            <div class="rb ref">✕</div>
+          </div>
+        </div>
+        <div class="req" style="opacity:.6">
+          <div class="top">
+            <span class="av" style="background:#C9E8B8">M</span>
+            <div class="who"><div class="nm">Mamadou</div><div class="rt">★ 4,7 · 61 <span data-fr="courses" data-en="rides">courses</span></div></div>
+            <span class="price">1 800 F</span>
+          </div>
+          <div class="route"><span data-fr="Départ" data-en="From">Départ</span> Fann · <b data-fr="vers Plateau" data-en="to Plateau">vers Plateau</b> · <span data-fr="à 7 min" data-en="7 min away">à 7 min</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4 EN COURSE -->
+  <div class="cell">
+    <div class="cap" data-fr="4 · En course" data-en="4 · In ride">4 · En course</div>
+    <div class="phone">
+      <div class="map">
+        <div class="road" style="top:40%;left:-5%;width:110%;height:8px;transform:rotate(-8deg)"></div>
+        <div class="me" style="top:60%;left:30%"></div>
+        <div class="car" style="left:55%;top:34%">🚗</div>
+      </div>
+      <div class="st"><span>9:41</span><span class="r">4G ▮</span></div>
+      <div class="ride">
+        <div class="status" data-fr="EN ROUTE VERS LE PASSAGER" data-en="HEADING TO PASSENGER">EN ROUTE VERS LE PASSAGER</div>
+        <div class="row">
+          <span class="av">A</span>
+          <div><div class="nm">Awa</div><div class="pl" data-fr="Devant la pharmacie, HLM" data-en="By the pharmacy, HLM">Devant la pharmacie, HLM</div></div>
+          <div class="pr"><div class="v">2 500 F</div><div class="k" data-fr="convenu" data-en="agreed">convenu</div></div>
+        </div>
+        <div class="call">
+          <div class="cb">📞 <span data-fr="Appeler" data-en="Call">Appeler</span></div>
+          <div class="cb">💬 <span data-fr="Écrire" data-en="Message">Écrire</span></div>
+        </div>
+        <div class="big" data-fr="Je suis arrivé" data-en="I've arrived">Je suis arrivé</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5 NOTATION -->
+  <div class="cell">
+    <div class="cap" data-fr="5 · Note → retour en ligne" data-en="5 · Rate → back online">5 · Note → retour en ligne</div>
+    <div class="phone">
+      <div class="st"><span>9:41</span><span class="r">4G ▮</span></div>
+      <div class="rate">
+        <div class="av">A</div>
+        <div class="q" data-fr="Comment était Awa ?" data-en="How was Awa?">Comment était Awa ?</div>
+        <div class="s" data-fr="Votre note reste secrète jusqu'à la sienne" data-en="Your rating stays hidden until theirs">Votre note reste secrète jusqu'à la sienne</div>
+        <div class="stars"><span>★</span><span>★</span><span>★</span><span>★</span><span class="off">★</span></div>
+        <div class="hint" data-fr="Notez pour voir la prochaine demande — 3 en attente." data-en="Rate to see the next request — 3 waiting.">Notez pour voir la prochaine demande — 3 en attente.</div>
+        <div class="next" data-fr="Envoyer et continuer" data-en="Submit and continue">Envoyer et continuer</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  var lang='fr';
+  function applyLang(){
+    document.querySelectorAll('[data-fr]').forEach(function(el){el.textContent=el.getAttribute('data-'+lang);});
+    document.documentElement.lang=lang;
+  }
+  document.getElementById('lang').addEventListener('click',function(e){
+    var b=e.target.closest('button'); if(!b)return;
+    lang=b.dataset.l;
+    this.querySelectorAll('button').forEach(function(x){x.setAttribute('aria-pressed',x===b);});
+    applyLang();
+  });
+  document.getElementById('theme').addEventListener('click',function(e){
+    var b=e.target.closest('button'); if(!b)return;
+    document.documentElement.setAttribute('data-theme',b.dataset.t);
+    this.querySelectorAll('button').forEach(function(x){x.setAttribute('aria-pressed',x===b);});
+  });
+</script>
+</body>
+</html>

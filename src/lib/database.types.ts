@@ -1160,6 +1160,8 @@ export type Database = {
       mes_gains: {
         Row: {
           courses: number | null
+          courses_jour: number | null
+          jour_xof: number | null
           profil_id: string | null
           semaine_xof: number | null
           total_xof: number | null

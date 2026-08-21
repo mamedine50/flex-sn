@@ -138,6 +138,31 @@ export function useEnLigne() {
 }
 
 /** Se mettre en ligne ou hors ligne, en publiant sa position. */
+/**
+ * Se déclarer hors ligne sans position connue.
+ *
+ * `maj_position()` porte la position ET l'état : il faut donc des coordonnées
+ * pour changer l'état. Plutôt que d'en inventer — un centre de Dakar écrit dans
+ * la base est un mensonge stocké, et il servirait la file si `en_ligne`
+ * repassait à vrai — on relit la DERNIÈRE position connue. C'est la seule
+ * valeur qui reste vraie.
+ */
+export async function quitterLaLigne() {
+  const { data: session } = await supabase.auth.getUser();
+  const id = session.user?.id;
+  if (!id) return { error: null };
+
+  const { data } = await supabase
+    .from('positions_conducteurs')
+    .select('lat, lon')
+    .eq('conducteur_id', id)
+    .maybeSingle();
+
+  if (!data) return { error: null };
+
+  return majEnLigne({ latitude: data.lat, longitude: data.lon }, false);
+}
+
 export async function majEnLigne(
   position: { latitude: number; longitude: number },
   enLigne: boolean,

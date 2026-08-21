@@ -37,6 +37,7 @@ export const fr = {
 
   accueil: {
     passerEnLigne: 'Passer en ligne',
+    modePassager: 'Mode passager',
     reprendreCourse: 'Course en cours',
     reprendreCourseSous: 'Revenir au suivi',
     reprendreOffres: 'Proposition en cours',
@@ -513,6 +514,30 @@ export const fr = {
     motif: 'Pourquoi ? (facultatif)',
     motifIndice: 'Pour vous en souvenir. Personne d’autre ne le lit.',
     faitTitre: 'C’est fait.',
+  },
+
+  maison: {
+    go: 'GO',
+    passerEnLigne: 'Passer en ligne',
+    enLigne: 'EN LIGNE',
+    invite: 'Appuyez sur GO pour recevoir des demandes.',
+    ecoute: 'À l’écoute des demandes autour de vous.',
+    aujourdhui: 'Aujourd’hui',
+    course: '{n} course',
+    coursePluriel: '{n} courses',
+    modePassager: 'Mode passager',
+
+    sansPosition: 'Activez la localisation pour passer en ligne.',
+    horsZone: 'Vous êtes hors de la zone desservie. Flex couvre la région de Dakar.',
+    confirmerHorsLigne: 'Passer hors ligne ?',
+    confirmerHorsLigneAide: 'Vous ne recevrez plus de demandes.',
+    resterEnLigne: 'Rester en ligne',
+    passerHorsLigne: 'Passer hors ligne',
+
+    enCourse: 'Course en cours',
+    enCourseAide: 'Terminez-la avant d’en accepter une autre.',
+    apresVotreCourse: 'Après votre course en cours',
+    noterAvant: 'Notez votre passager pour continuer.',
   },
 
   erreurs: {

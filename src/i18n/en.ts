@@ -36,6 +36,7 @@ export const en: Dictionnaire = {
 
   accueil: {
     passerEnLigne: 'Go online',
+    modePassager: 'Passenger mode',
     reprendreCourse: 'Ride in progress',
     reprendreCourseSous: 'Back to tracking',
     reprendreOffres: 'Offer pending',
@@ -498,6 +499,30 @@ export const en: Dictionnaire = {
     motif: 'Why? (optional)',
     motifIndice: 'For your own memory. Nobody else reads it.',
     faitTitre: 'Done.',
+  },
+
+  maison: {
+    go: 'GO',
+    passerEnLigne: 'Go online',
+    enLigne: 'ONLINE',
+    invite: 'Tap GO to start receiving requests.',
+    ecoute: 'Listening for requests around you.',
+    aujourdhui: 'Today',
+    course: '{n} ride',
+    coursePluriel: '{n} rides',
+    modePassager: 'Passenger mode',
+
+    sansPosition: 'Turn on location to go online.',
+    horsZone: 'You are outside the served area. Flex covers the Dakar region.',
+    confirmerHorsLigne: 'Go offline?',
+    confirmerHorsLigneAide: 'You will stop receiving requests.',
+    resterEnLigne: 'Stay online',
+    passerHorsLigne: 'Go offline',
+
+    enCourse: 'Ride in progress',
+    enCourseAide: 'Finish it before accepting another.',
+    apresVotreCourse: 'After your current ride',
+    noterAvant: 'Rate your passenger to continue.',
   },
 
   erreurs: {
