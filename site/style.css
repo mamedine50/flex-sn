@@ -1,0 +1,58 @@
+/* Flex — feuille commune aux pages légales publiées.
+   Aucune ressource externe : ces pages doivent s'ouvrir sur un téléphone en 3G,
+   et sur le réseau de bureau d'un examinateur Apple, sans rien télécharger. */
+:root {
+  --bg: #F8FAFC;
+  --card: #FFFFFF;
+  --ink: #0E1C2C;
+  --muted: #55657A;
+  --acc: #0B7A5F;
+  --line: #DDE4EC;
+  --danger: #B42318;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0E1C2C;
+    --card: #16283C;
+    --ink: #F1F5F9;
+    --muted: #9DB0C4;
+    --acc: #3FBF97;
+    --line: #24384F;
+    --danger: #FF8A80;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 24px 16px 64px;
+  background: var(--bg);
+  color: var(--ink);
+  font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+main { max-width: 44rem; margin: 0 auto; }
+h1 { font-size: 1.75rem; line-height: 1.25; margin: 0 0 8px; }
+h2 { font-size: 1.125rem; margin: 32px 0 8px; }
+p, li { color: var(--ink); }
+.intro { color: var(--muted); font-size: 1.0625rem; margin: 0 0 24px; }
+.marque { display: inline-block; font-weight: 800; color: var(--acc); text-decoration: none; margin-bottom: 24px; }
+.avis {
+  border: 2px solid var(--danger);
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin: 0 0 24px;
+}
+.avis strong { color: var(--danger); }
+.avis p { margin: 4px 0 0; color: var(--muted); font-size: 0.9375rem; }
+.encart {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px;
+  margin: 32px 0 0;
+}
+.encart h2 { margin-top: 0; }
+footer { margin-top: 48px; border-top: 1px solid var(--line); padding-top: 16px; color: var(--muted); font-size: 0.875rem; }
+a { color: var(--acc); }
+table { width: 100%; border-collapse: collapse; margin: 8px 0 0; font-size: 0.9375rem; }
+th, td { text-align: left; padding: 8px 8px 8px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--muted); font-weight: 700; }
