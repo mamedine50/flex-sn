@@ -34,4 +34,5 @@ export const wo: DictionnairePartiel = {
   historique: {},
   avis: {},
   admin: {},
+  blocages: {},
 };

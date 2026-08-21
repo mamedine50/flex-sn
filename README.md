@@ -15,7 +15,7 @@ bout **sur le projet distant, avec deux vraies sessions** — voir `docs/parcour
 | | |
 |---|---|
 | Écrans | Accroche · Connexion (pays, numéro, code, prénom) · Accueil · Fixez votre prix · Offres reçues · Mode conducteur · En route · Profil · Mon profil · Mes lieux · Mes courses · Mes avis · Affichage · Conduire avec Flex · À propos · Conditions · Confidentialité · Administration (file + dossier) |
-| Base | 46 migrations, **304 assertions pgTAP**, RLS sur chaque table, logique métier en RPC |
+| Base | 47 migrations, **316 assertions pgTAP**, RLS sur chaque table, logique métier en RPC |
 | Gardes | `pnpm typecheck` · `pnpm lint` · `pnpm test` · `pnpm tokens:check` (44 paires) · `supabase test db` · `node scripts/parcours-v1.mjs` |
 | Étiquette | `v1.0.0-dev` |
 
@@ -38,7 +38,7 @@ publie pas.
 | **Protection contre les mots de passe compromis** | Signalée par les advisors. La production passe par OTP, mais tant que l'authentification par mot de passe reste ouverte, elle doit l'être. | Auth → Policies |
 | **Conditions d'utilisation et politique de confidentialité** | L'écran d'accroche annonce que continuer vaut acceptation. Sans les deux documents et leurs URL (`EXPO_PUBLIC_URL_CONDITIONS`, `EXPO_PUBLIC_URL_CONFIDENTIALITE`), la phrase reste en texte simple, sans lien — et Apple exige l'URL de confidentialité avant toute publication, TestFlight externe compris. | Juridique + hébergement |
 | **Entité sénégalaise (NINEA + RCCM)** | Obligatoire pour tout compte marchand. Bloque le paiement, donc la monétisation. | Hors code |
-| **Blocage réciproque entre utilisateurs** | Rien ne permet à quelqu'un de ne plus jamais croiser quelqu'un d'autre. | Schéma + écran |
+| ~~Blocage réciproque entre utilisateurs~~ | **Fait.** Table `blocages`, RPC `bloquer`/`debloquer`, écran « Personnes bloquées », et surtout : la règle tient DANS l'appariement — les deux vues filtrent et deux déclencheurs refusent l'offre et la course. Un blocage qui ne ferait que cacher l'interface serait du théâtre. | ✔ |
 | **Évaluations en double aveugle, retrait d'un avis abusif** | Le double aveugle existe en base ; le retrait d'un avis, non. | Back-office |
 
 Deux points **ne sont pas** des bloquants, et sont documentés comme voulus : les
@@ -256,7 +256,7 @@ s'il ne le sait pas.
 pnpm tokens:check          # échoue si une paire texte/fond passe sous 4,5:1, dans les deux thèmes
 pnpm typecheck
 pnpm lint
-supabase test db --local   # 304 assertions pgTAP
+supabase test db --local   # 316 assertions pgTAP
 node scripts/parcours-v1.mjs   # le parcours complet sur le DISTANT, deux sessions
 ```
 

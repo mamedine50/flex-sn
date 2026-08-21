@@ -105,6 +105,7 @@ select is(
      and p.proname <> all (array[
        -- Les RPC métier.
        'accept_offer', 'annuler_course', 'annuler_demande', 'avancer_course',
+       'bloquer', 'debloquer',
        'decider_document', 'dossier_du_candidat',
        'commune_la_plus_proche', 'create_ride_request', 'declarer_vehicule',
        'demandes_proches',
@@ -116,7 +117,7 @@ select is(
        -- policies RLS ou DEPUIS des vues, et Postgres vérifie ces appels contre
        -- celui qui interroge — pas contre le propriétaire. Sans le droit, la
        -- lecture échoue en « permission denied for function ».
-       'course_active', 'course_en_deplacement', 'arrondir_zone',
+       'course_active', 'course_en_deplacement', 'arrondir_zone', 'est_bloque',
        'taille_cellule_deg', 'delai_double_aveugle', 'seuil_nouveau_conducteur',
        'courses_terminees', 'courses_comme_conducteur',
        'est_nouveau_conducteur'

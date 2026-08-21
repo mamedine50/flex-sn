@@ -34,6 +34,70 @@ export type Database = {
   }
   public: {
     Tables: {
+      blocages: {
+        Row: {
+          bloque: string
+          bloqueur: string
+          cree_le: string
+          motif: string | null
+        }
+        Insert: {
+          bloque: string
+          bloqueur: string
+          cree_le?: string
+          motif?: string | null
+        }
+        Update: {
+          bloque?: string
+          bloqueur?: string
+          cree_le?: string
+          motif?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blocages_bloque_fkey"
+            columns: ["bloque"]
+            isOneToOne: false
+            referencedRelation: "dossiers_en_attente"
+            referencedColumns: ["profil_id"]
+          },
+          {
+            foreignKeyName: "blocages_bloque_fkey"
+            columns: ["bloque"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "blocages_bloque_fkey"
+            columns: ["bloque"]
+            isOneToOne: false
+            referencedRelation: "profils_publics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "blocages_bloqueur_fkey"
+            columns: ["bloqueur"]
+            isOneToOne: false
+            referencedRelation: "dossiers_en_attente"
+            referencedColumns: ["profil_id"]
+          },
+          {
+            foreignKeyName: "blocages_bloqueur_fkey"
+            columns: ["bloqueur"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "blocages_bloqueur_fkey"
+            columns: ["bloqueur"]
+            isOneToOne: false
+            referencedRelation: "profils_publics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bornes_prix: {
         Row: {
           facteur_detour: number
@@ -1043,6 +1107,38 @@ export type Database = {
           },
         ]
       }
+      mes_blocages: {
+        Row: {
+          cree_le: string | null
+          motif: string | null
+          photo_url: string | null
+          prenom: string | null
+          profil_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blocages_bloque_fkey"
+            columns: ["profil_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers_en_attente"
+            referencedColumns: ["profil_id"]
+          },
+          {
+            foreignKeyName: "blocages_bloque_fkey"
+            columns: ["profil_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "blocages_bloque_fkey"
+            columns: ["profil_id"]
+            isOneToOne: false
+            referencedRelation: "profils_publics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mes_evaluations: {
         Row: {
           commentaire: string | null
@@ -1343,6 +1439,21 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      bloquer: {
+        Args: { p_motif?: string; p_profil: string }
+        Returns: {
+          bloque: string
+          bloqueur: string
+          cree_le: string
+          motif: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "blocages"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       commune_la_plus_proche: {
         Args: { p_lat: number; p_lon: number; p_rayon_max_m?: number }
         Returns: string
@@ -1395,6 +1506,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      debloquer: { Args: { p_profil: string }; Returns: undefined }
       decider_document: {
         Args: {
           p_motif?: string
@@ -1517,6 +1629,7 @@ export type Database = {
         }
       }
       est_admin: { Args: { p_profil?: string }; Returns: boolean }
+      est_bloque: { Args: { p_autre: string; p_un: string }; Returns: boolean }
       est_conducteur: { Args: { p_profil: string }; Returns: boolean }
       est_nouveau_conducteur: { Args: { p_profil: string }; Returns: boolean }
       expire_stale: {

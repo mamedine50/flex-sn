@@ -2,7 +2,7 @@ import * as Haptics from 'expo-haptics';
 import { useNetworkState } from 'expo-network';
 import { router } from 'expo-router';
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
-import { Linking, Modal, Pressable, ScrollView, Text, View } from 'react-native';
+import { Linking, Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { Marker } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -24,6 +24,7 @@ import { cleErreur } from '../src/lib/erreursServeur';
 import { formatXof } from '../src/lib/format';
 import { useGardeSession } from '../src/lib/garde';
 import { configurerGabarit, noterMesure } from '../src/lib/gabarit';
+import { bloquer } from '../src/lib/blocages';
 import { useProfilPublic } from '../src/lib/profilPublic';
 import { useSession } from '../src/lib/session';
 import {
@@ -484,8 +485,28 @@ function Contrepartie({
   const t = useT();
   const profil = useProfilPublic(id);
 
+  // Bloquer se décide ICI : c'est le seul écran où l'on voit la personne. La
+  // course en cours va à son terme — on ne fait pas disparaître un conducteur
+  // qui a déjà quelqu'un dans sa voiture.
+  const [confirme, setConfirme] = useState(false);
+  const [motifBlocage, setMotifBlocage] = useState('');
+  const [bloqueFait, setBloqueFait] = useState(false);
+  const [echecBlocage, setEchecBlocage] = useState<string | null>(null);
+
+  const poserBlocage = async () => {
+    const { error } = await bloquer(id, motifBlocage);
+    setConfirme(false);
+    setMotifBlocage('');
+    if (error) {
+      setEchecBlocage(t(cleErreur(error)));
+      return;
+    }
+    setBloqueFait(true);
+  };
+
   return (
-    <View className="mt-12 flex-row items-center rounded-card bg-card p-16">
+    <>
+      <View className="mt-12 flex-row items-center rounded-card bg-card p-16">
       <Avatar prenom={prenom} photo={photo} />
       <View className="ml-12 flex-1">
         <Text className="text-[15px] font-bold text-ink">{prenom}</Text>
@@ -526,8 +547,76 @@ function Contrepartie({
           </Pressable>
         </View>
       ) : null}
-      {suisConducteur ? null : null}
-    </View>
+      </View>
+
+      {bloqueFait ? (
+        <View className="mt-8 rounded-field bg-card px-16 py-12">
+          <Text className="text-[13px] font-bold text-ok">{t('blocages.faitTitre')}</Text>
+        </View>
+      ) : (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`${t('blocages.bloquer')} ${prenom}`}
+          onPress={() => setConfirme(true)}
+          className="mt-8 min-h-touch items-center justify-center rounded-field bg-card"
+          style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+        >
+          <Text className="text-[13px] font-bold text-danger">{t('blocages.bloquer')}</Text>
+        </Pressable>
+      )}
+
+      {echecBlocage ? (
+        <Text className="mt-8 text-[13px] font-bold text-danger">{echecBlocage}</Text>
+      ) : null}
+
+      <Modal visible={confirme} transparent animationType="fade">
+        <Pressable
+          className="flex-1 items-center justify-center bg-bg/70 px-24"
+          onPress={() => setConfirme(false)}
+        >
+          <Pressable className="w-full rounded-card bg-card p-16">
+            <Text className="text-[17px] font-extrabold text-ink">
+              {t('blocages.confirmer', { prenom })}
+            </Text>
+            <Text className="mt-8 text-[13px] font-semibold text-muted">
+              {t('blocages.confirmerAide')}
+            </Text>
+
+            <Text className="mt-16 text-[12px] font-bold uppercase tracking-wider text-muted">
+              {t('blocages.motif')}
+            </Text>
+            <TextInput
+              value={motifBlocage}
+              onChangeText={(v) => setMotifBlocage(v.slice(0, 300))}
+              placeholder={t('blocages.motifIndice')}
+              accessibilityLabel={t('blocages.motif')}
+              className="mt-4 min-h-touch rounded-field bg-card2 px-12 text-[14px] font-semibold text-ink"
+            />
+
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => void poserBlocage()}
+              className="mt-16 min-h-driving items-center justify-center rounded-button bg-card2"
+              style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+            >
+              <Text className="text-[15px] font-extrabold text-danger">
+                {t('blocages.bloquer')}
+              </Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => setConfirme(false)}
+              className="mt-8 min-h-driving items-center justify-center rounded-button bg-accFill"
+              style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+            >
+              <Text className="text-[15px] font-extrabold text-onAcc">
+                {t('commun.annuler')}
+              </Text>
+            </Pressable>
+          </Pressable>
+        </Pressable>
+      </Modal>
+    </>
   );
 }
 

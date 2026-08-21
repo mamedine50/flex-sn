@@ -286,7 +286,7 @@ export default function Profil() {
           icone="bloque"
           titre={t('profil.personnesBloquees')}
           sous={t('profil.personnesBloqueesSous')}
-          inactive
+          onPress={() => router.push('/bloques')}
         />
         <Ligne icone="aide" titre={t('profil.aide')} sous={t('profil.aideSous')} inactive />
         <Ligne
