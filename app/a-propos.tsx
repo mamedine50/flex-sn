@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useT } from '../src/i18n';
 import { configurerGabarit, noterMesure } from '../src/lib/gabarit';
+import { ouvrirDocument } from '../src/lib/legal';
 
 /**
  * À propos.
@@ -99,11 +100,11 @@ export default function APropos() {
 
         <Lien
           titre={t('legal.conditionsTitre')}
-          onPress={() => router.push('/conditions')}
+          onPress={() => ouvrirDocument('conditions')}
         />
         <Lien
           titre={t('legal.confidentialiteTitre')}
-          onPress={() => router.push('/confidentialite')}
+          onPress={() => ouvrirDocument('confidentialite')}
         />
       </ScrollView>
     </View>

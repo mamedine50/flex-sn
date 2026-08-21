@@ -18,6 +18,7 @@ import {
 } from '../src/components/IllustrationsAccroche';
 import { useT } from '../src/i18n';
 import { marquerAccrocheVue } from '../src/lib/accroche';
+import { ouvrirDocument } from '../src/lib/legal';
 import { configurerGabarit, noterMesure } from '../src/lib/gabarit';
 
 /**
@@ -216,9 +217,9 @@ function Carte({
  * Elle vit sur la DERNIÈRE carte, collée au bouton qui vaut acceptation. La
  * poser ailleurs reviendrait à faire consentir plus tôt qu'on ne s'engage.
  *
- * Les liens mènent aux pages internes — pas à une URL qui n'existe pas encore.
- * Le texte de ces pages est PROVISOIRE et le dit : le contenu juridique vient
- * d'un juriste, pas d'ici.
+ * Les liens mènent au texte HÉBERGÉ — celui qu'Apple lit et qu'un juriste
+ * corrigera sans qu'on republie l'application. Voir `src/lib/legal.ts` pour le
+ * repli quand aucune URL n'est configurée.
  */
 function MentionLegale() {
   const t = useT();
@@ -240,7 +241,7 @@ function MentionLegale() {
             accessibilityRole="link"
             className="font-bold text-accInk underline"
             onPress={() =>
-              router.push(conditions ? '/conditions' : '/confidentialite')
+              ouvrirDocument(conditions ? 'conditions' : 'confidentialite')
             }
           >
             {t(conditions ? 'accroche.conditions' : 'accroche.confidentialite')}
