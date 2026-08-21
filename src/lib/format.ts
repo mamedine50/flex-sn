@@ -1,3 +1,5 @@
+import type { CleTraduction } from '../i18n/types';
+
 /**
  * Formatage des montants. Une seule fonction, un seul rendu, toutes langues
  * confondues : `2 500 FCFA`.
@@ -44,4 +46,20 @@ export function formatXof(montant: number): string {
 /** Arrondit au pas de 100 F. Utilisé par les boutons − / + et les bornes. */
 export function arrondirAuPas(montant: number, pas: number = PAS_XOF): number {
   return Math.round(montant / pas) * pas;
+}
+
+/**
+ * « août 2026 », dans la langue de l'interface.
+ *
+ * PAS `toLocaleDateString`. Hermes n'embarque pas les données ICU des autres
+ * langues : sur un téléphone, `toLocaleDateString('fr-FR', { month: 'long' })`
+ * rend « August ». Le défaut ne se voit jamais sur un simulateur de
+ * développement, qui a l'ICU complet — il se voit sur TestFlight, en français,
+ * avec un mois anglais au milieu d'une phrase française.
+ *
+ * Le nom du mois vient donc de `src/i18n`, comme tout le reste de l'interface.
+ * Douze chaînes par langue, et plus aucune dépendance au moteur.
+ */
+export function cleMois(date: Date): CleTraduction {
+  return `mois.m${date.getMonth() + 1}` as CleTraduction;
 }

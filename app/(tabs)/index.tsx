@@ -2,6 +2,7 @@ import AccueilPassager from '../../src/components/AccueilPassager';
 import MaisonConducteur from '../../src/components/MaisonConducteur';
 import { useEstConducteur } from '../../src/lib/conducteur';
 import { useMonde } from '../../src/lib/monde';
+import { entrerMondeConducteur, revenirMondePassager } from '../../src/lib/mondeEntree';
 
 /**
  * L'onglet « Course » — et LE choix du monde.
@@ -16,7 +17,7 @@ import { useMonde } from '../../src/lib/monde';
  * est dans son monde, et Profil reste Profil.
  */
 export default function Onglet() {
-  const { monde, pret, basculer } = useMonde();
+  const { monde, pret } = useMonde();
   const capacite = useEstConducteur();
 
   // Tant qu'on ne sait pas, on montre le monde passager : c'est le défaut, et
@@ -25,8 +26,8 @@ export default function Onglet() {
   const conducteur = pret && monde === 'conducteur' && capacite === 'oui';
 
   return conducteur ? (
-    <MaisonConducteur onModePassager={() => basculer('passager')} />
+    <MaisonConducteur onModePassager={revenirMondePassager} />
   ) : (
-    <AccueilPassager onPasserEnLigne={() => basculer('conducteur')} />
+    <AccueilPassager onPasserEnLigne={entrerMondeConducteur} />
   );
 }

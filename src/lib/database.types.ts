@@ -933,6 +933,86 @@ export type Database = {
           },
         ]
       }
+      signalements: {
+        Row: {
+          auteur: string
+          cible: string
+          course_id: string
+          cree_le: string
+          id: string
+          motif: Database["public"]["Enums"]["motif_signalement"]
+          porte_sur_avis: boolean
+        }
+        Insert: {
+          auteur: string
+          cible: string
+          course_id: string
+          cree_le?: string
+          id?: string
+          motif: Database["public"]["Enums"]["motif_signalement"]
+          porte_sur_avis?: boolean
+        }
+        Update: {
+          auteur?: string
+          cible?: string
+          course_id?: string
+          cree_le?: string
+          id?: string
+          motif?: Database["public"]["Enums"]["motif_signalement"]
+          porte_sur_avis?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "signalements_auteur_fkey"
+            columns: ["auteur"]
+            isOneToOne: false
+            referencedRelation: "dossiers_en_attente"
+            referencedColumns: ["profil_id"]
+          },
+          {
+            foreignKeyName: "signalements_auteur_fkey"
+            columns: ["auteur"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "signalements_auteur_fkey"
+            columns: ["auteur"]
+            isOneToOne: false
+            referencedRelation: "profils_publics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "signalements_cible_fkey"
+            columns: ["cible"]
+            isOneToOne: false
+            referencedRelation: "dossiers_en_attente"
+            referencedColumns: ["profil_id"]
+          },
+          {
+            foreignKeyName: "signalements_cible_fkey"
+            columns: ["cible"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "signalements_cible_fkey"
+            columns: ["cible"]
+            isOneToOne: false
+            referencedRelation: "profils_publics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "signalements_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "rides"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vehicles: {
         Row: {
           actif: boolean
@@ -1280,6 +1360,48 @@ export type Database = {
           role?: Database["public"]["Enums"]["role_utilisateur"] | null
         }
         Relationships: []
+      }
+      signalements_recus: {
+        Row: {
+          cible: string | null
+          cible_prenom: string | null
+          course_id: string | null
+          cree_le: string | null
+          id: string | null
+          motif: Database["public"]["Enums"]["motif_signalement"] | null
+          porte_sur_avis: boolean | null
+          total_sur_la_cible: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "signalements_cible_fkey"
+            columns: ["cible"]
+            isOneToOne: false
+            referencedRelation: "dossiers_en_attente"
+            referencedColumns: ["profil_id"]
+          },
+          {
+            foreignKeyName: "signalements_cible_fkey"
+            columns: ["cible"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "signalements_cible_fkey"
+            columns: ["cible"]
+            isOneToOne: false
+            referencedRelation: "profils_publics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "signalements_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "rides"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       stats_routes: {
         Row: {
@@ -1762,6 +1884,14 @@ export type Database = {
         }
       }
       seuil_nouveau_conducteur: { Args: never; Returns: number }
+      signaler: {
+        Args: {
+          p_course_id: string
+          p_motif: Database["public"]["Enums"]["motif_signalement"]
+          p_porte_sur_avis?: boolean
+        }
+        Returns: undefined
+      }
       soumettre_document: {
         Args: {
           p_chemin: string
@@ -1809,7 +1939,9 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      suppression_possible: { Args: never; Returns: boolean }
       supprimer_lieu_favori: { Args: { p_id: string }; Returns: undefined }
+      supprimer_mon_compte: { Args: never; Returns: undefined }
       taille_cellule_deg: { Args: never; Returns: number }
     }
     Enums: {
@@ -1826,6 +1958,12 @@ export type Database = {
         | "centre_commercial"
         | "monument"
         | "lieu_culte"
+      motif_signalement:
+        | "insulte"
+        | "conduite_dangereuse"
+        | "fraude"
+        | "harcelement"
+        | "autre"
       role_utilisateur: "passager" | "conducteur"
       service_course: "urbain" | "interurbain"
       statut_course:
@@ -1990,6 +2128,13 @@ export const Constants = {
         "centre_commercial",
         "monument",
         "lieu_culte",
+      ],
+      motif_signalement: [
+        "insulte",
+        "conduite_dangereuse",
+        "fraude",
+        "harcelement",
+        "autre",
       ],
       role_utilisateur: ["passager", "conducteur"],
       service_course: ["urbain", "interurbain"],

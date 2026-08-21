@@ -114,8 +114,13 @@ select is(
        'demandes_proches',
        'enregistrer_lieu_favori', 'est_admin', 'est_conducteur', 'maj_photo_profil',
        'maj_position', 'maj_profil',
-       'noter_course', 'prix_suggere', 'refuse_offer', 'soumettre_document',
-       'submit_offer', 'supprimer_lieu_favori',
+       'noter_course', 'prix_suggere', 'refuse_offer', 'signaler',
+       'soumettre_document', 'submit_offer', 'supprimer_lieu_favori',
+       -- Fermer son compte et signaler quelqu'un sont des droits de la personne,
+       -- pas des privilèges : `suppression_possible` répond à une question sur
+       -- SOI, `supprimer_mon_compte` n'agit que sur `auth.uid()`, et `signaler`
+       -- exige une course commune. Aucune ne prend d'identifiant de cible.
+       'suppression_possible', 'supprimer_mon_compte',
        -- Ni RPC ni utilitaires internes : celles-ci sont appelées DEPUIS des
        -- policies RLS ou DEPUIS des vues, et Postgres vérifie ces appels contre
        -- celui qui interroge — pas contre le propriétaire. Sans le droit, la

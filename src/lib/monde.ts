@@ -1,31 +1,35 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
 import { AppState } from 'react-native';
 
 import { lire, ecrire, effacer } from './stockage';
 import { supabase } from './supabase';
 
 /**
- * Deux mondes, une bascule.
+ * Deux mondes, une bascule — et UN SEUL état pour toute l'application.
  *
- * Le passager par défaut. Le conducteur seulement pour qui en a la capacité, et
- * seulement APRÈS un geste : on n'ouvre jamais l'application directement en
- * ligne. Quelqu'un qui a fini sa journée hier et rouvre le matin ne doit pas se
- * retrouver à l'écoute sans l'avoir demandé.
+ * LE DÉFAUT QUI A IMPOSÉ CETTE FORME. Le monde vivait dans un `useState` par
+ * appelant. Le Profil et l'accueil en avaient donc chacun une copie. Basculer
+ * depuis le Profil changeait SA copie et écrivait au stockage ; l'onglet
+ * d'accueil, déjà monté — une barre d'onglets ne démonte pas ses écrans — gardait
+ * la sienne et ne relisait rien. « Passer en mode conducteur » ramenait donc à
+ * l'accueil passager, tandis que « Passer en ligne », qui basculait la copie de
+ * l'accueil lui-même, fonctionnait. Une entrée sur deux, et rien dans le code ne
+ * le disait : les deux lignes étaient identiques.
  *
- * D'où la règle de survie, qui n'est pas la même dans les deux sens :
+ * D'où un magasin de module et `useSyncExternalStore`. Il n'y a plus de copie à
+ * désynchroniser, donc plus d'entrée privilégiée : tout appelant lit la même
+ * valeur, dans le même rendu.
  *
- *   - un aller-retour au premier plan GARDE le monde — répondre à un appel ne
- *     doit pas faire perdre sa place ;
- *   - un démarrage À FROID revient au monde passager.
+ * LA RÈGLE DE SURVIE, elle, n'a pas changé. Le passager par défaut ; le
+ * conducteur seulement pour qui en a la capacité, et seulement APRÈS un geste :
+ * on n'ouvre jamais l'application directement en ligne. Un aller-retour au
+ * premier plan GARDE le monde — répondre à un appel ne fait pas perdre sa place ;
+ * un démarrage À FROID revient au monde passager. La marque est donc écrite avec
+ * l'instant et relue avec une péremption : sans horodatage, on ne distingue pas
+ * les deux cas, le stockage survit aux deux.
  *
- * La marque est donc écrite avec l'instant, et relue avec une péremption. Sans
- * horodatage, on ne distingue pas les deux cas : le stockage survit aux deux.
- *
- * ET LE MONDE MEURT AVEC LA SESSION. Une déconnexion l'efface, en mémoire comme
- * au stockage. Sans ça, deux défauts : le compte SUIVANT sur ce téléphone
- * démarrerait dans le monde conducteur d'un autre, et celui qui se reconnecte
- * lui-même se retrouverait au volant sans l'avoir demandé — alors que la règle
- * est de ne jamais ouvrir en ligne sans un geste.
+ * ET LE MONDE MEURT AVEC LA SESSION. Sans ça, le compte SUIVANT sur ce téléphone
+ * démarrerait dans le monde conducteur d'un autre.
  */
 const CLE = 'flex.monde';
 
@@ -34,46 +38,86 @@ const PEREMPTION_MS = 5 * 60 * 1000;
 
 export type Monde = 'passager' | 'conducteur';
 
-export function useMonde() {
-  const [monde, setMonde] = useState<Monde>('passager');
-  const [pret, setPret] = useState(false);
+let monde: Monde = 'passager';
+let pret = false;
+const abonnes = new Set<() => void>();
 
-  useEffect(() => {
-    void (async () => {
-      const brut = await lire(CLE);
-      const [valeur, instant] = (brut ?? '').split('|');
-      const frais = Number(instant) > Date.now() - PEREMPTION_MS;
-      if (valeur === 'conducteur' && frais) setMonde('conducteur');
-      setPret(true);
-    })();
-  }, []);
+function prevenir(): void {
+  abonnes.forEach((rappel) => rappel());
+}
+
+/** Change la valeur en mémoire et réveille tout le monde. Sans écriture. */
+function poser(suivant: Monde): void {
+  if (monde === suivant) return;
+  monde = suivant;
+  prevenir();
+}
+
+export function mondeCourant(): Monde {
+  return monde;
+}
+
+export function mondePret(): boolean {
+  return pret;
+}
+
+/** La bascule. Le seul chemin vers l'autre monde, quelle que soit l'entrée. */
+export function basculer(suivant: Monde): void {
+  poser(suivant);
+  void ecrire(CLE, `${suivant}|${Date.now()}`);
+}
+
+let demarre = false;
+
+/**
+ * Démarrage paresseux : à la PREMIÈRE souscription, pas à l'import. Un module
+ * qui pose des écouteurs en s'important les pose aussi sous les tests et dans
+ * les outils, où personne ne les enlève.
+ */
+function demarrer(): void {
+  if (demarre) return;
+  demarre = true;
+
+  void (async () => {
+    const brut = await lire(CLE);
+    const [valeur, instant] = (brut ?? '').split('|');
+    const frais = Number(instant) > Date.now() - PEREMPTION_MS;
+    if (valeur === 'conducteur' && frais) monde = 'conducteur';
+    pret = true;
+    prevenir();
+  })();
 
   // On repousse la péremption à chaque retour au premier plan : c'est ce qui
   // fait qu'une pause de deux minutes ne coûte pas sa session.
-  useEffect(() => {
-    const abonnement = AppState.addEventListener('change', (etat) => {
-      if (etat !== 'active') return;
-      setMonde((actuel) => {
-        if (actuel === 'conducteur') void ecrire(CLE, `conducteur|${Date.now()}`);
-        return actuel;
-      });
-    });
-    return () => abonnement.remove();
-  }, []);
+  AppState.addEventListener('change', (etat) => {
+    if (etat !== 'active') return;
+    if (monde === 'conducteur') void ecrire(CLE, `conducteur|${Date.now()}`);
+  });
 
-  useEffect(() => {
-    const { data: veille } = supabase.auth.onAuthStateChange((evenement) => {
-      if (evenement !== 'SIGNED_OUT') return;
-      setMonde('passager');
-      void effacer(CLE);
-    });
-    return () => veille.subscription.unsubscribe();
-  }, []);
+  supabase.auth.onAuthStateChange((evenement) => {
+    if (evenement !== 'SIGNED_OUT') return;
+    poser('passager');
+    void effacer(CLE);
+  });
+}
 
-  const basculer = useCallback((suivant: Monde) => {
-    setMonde(suivant);
-    void ecrire(CLE, `${suivant}|${Date.now()}`);
-  }, []);
+export function abonnerMonde(rappel: () => void): () => void {
+  demarrer();
+  abonnes.add(rappel);
+  return () => {
+    abonnes.delete(rappel);
+  };
+}
 
+/** Remise à zéro — pour les tests seulement. */
+export function reinitialiserMondePourTest(): void {
+  monde = 'passager';
+  pret = false;
+  abonnes.clear();
+}
+
+export function useMonde() {
+  const monde = useSyncExternalStore(abonnerMonde, mondeCourant);
+  const pret = useSyncExternalStore(abonnerMonde, mondePret);
   return { monde, pret, basculer };
 }

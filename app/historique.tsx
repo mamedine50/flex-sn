@@ -1,7 +1,9 @@
 import { router } from 'expo-router';
+import { useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import FeuilleSignalement from '../src/components/FeuilleSignalement';
 import { useI18n, useT } from '../src/i18n';
 import { formatXof } from '../src/lib/format';
 import { configurerGabarit, noterMesure } from '../src/lib/gabarit';
@@ -30,6 +32,8 @@ export default function Historique() {
 
   const marges = useSafeAreaInsets();
   const { courses, statut, moi } = useHistorique();
+  const [aSignaler, setASignaler] = useState<string | null>(null);
+  const [envoye, setEnvoye] = useState(false);
 
   configurerGabarit('historique', GABARIT);
 
@@ -80,10 +84,33 @@ export default function Historique() {
               course={item}
               suisConducteur={item.conducteur_id === moi}
               date={date(item.terminee_le ?? item.verrouillee_le)}
+              onSignaler={() => setASignaler(item.id)}
             />
           )}
         />
       )}
+
+      {aSignaler ? (
+        <FeuilleSignalement
+          courseId={aSignaler}
+          ouverte
+          onFermer={(envoi) => {
+            setASignaler(null);
+            setEnvoye(envoi);
+          }}
+        />
+      ) : null}
+
+      {envoye ? (
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => setEnvoye(false)}
+          className="absolute inset-x-16 rounded-card bg-card p-16"
+          style={{ bottom: marges.bottom + 16 }}
+        >
+          <Text className="text-[14px] font-bold text-ink">{t('signalement.envoye')}</Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -93,11 +120,13 @@ function Ligne({
   course,
   suisConducteur,
   date,
+  onSignaler,
 }: {
   nom?: string;
   course: LigneHistorique;
   suisConducteur: boolean;
   date: string;
+  onSignaler: () => void;
 }) {
   const t = useT();
   const annulee = course.statut === 'annulee';
@@ -118,6 +147,21 @@ function Ligne({
             : t('historique.commePassager')}
           {annulee ? ` · ${t('historique.annulee')}` : ''}
         </Text>
+
+        {/* Une course ANNULÉE n'a rien produit : il n'y a rien à signaler.
+            Le lien ne sort donc que sur une course qui a eu lieu. */}
+        {annulee ? null : (
+          <Pressable
+            accessibilityRole="button"
+            onPress={onSignaler}
+            className="min-h-touch justify-center self-start"
+            style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
+          >
+            <Text className="text-[12px] font-bold text-muted">
+              {t('signalement.signaler')}
+            </Text>
+          </Pressable>
+        )}
       </View>
 
       {/* Un montant reste en `moneyInk` et en chiffres tabulaires, même barré :

@@ -15,7 +15,7 @@ bout **sur le projet distant, avec deux vraies sessions** — voir `docs/parcour
 | | |
 |---|---|
 | Écrans | Accroche · Connexion (pays, numéro, code, prénom) · Accueil · Fixez votre prix · Offres reçues · Mode conducteur · En route · Profil · Mon profil · Mes lieux · Mes courses · Mes avis · Affichage · Maison du conducteur (GO, en ligne, file) · Conduire avec Flex · À propos · Conditions · Confidentialité · Administration (file + dossier) |
-| Base | 48 migrations, **325 assertions pgTAP**, RLS sur chaque table, logique métier en RPC |
+| Base | 50 migrations, **352 assertions pgTAP**, RLS sur chaque table, logique métier en RPC |
 | Gardes | `pnpm typecheck` · `pnpm lint` · `pnpm test` · `pnpm tokens:check` (44 paires) · `supabase test db` · `node scripts/parcours-v1.mjs` |
 | Étiquette | `v1.0.0-dev` |
 
@@ -32,6 +32,8 @@ publie pas.
 | **Fournisseur SMS (Twilio)** | L'authentification est en OTP téléphone. Sans fournisseur configuré dans Auth → Providers → Phone, personne n'ouvre de session en production. | Console Supabase |
 | **Geo Permissions Twilio : Sénégal à activer** | Twilio refuse l'envoi vers le +221 (erreur 21408). Un testeur sénégalais tape son numéro et ne reçoit jamais de code — l'application s'ouvrant sur la connexion, il ne voit rien du tout. La vague 1 de testeurs est donc en +1. Se règle côté Twilio, pas dans le code. | Console Twilio |
 | ~~Supprimer `dev@flex.test` et `essai-route@flex.test`~~ | **Fait.** Les deux comptes sont supprimés du distant, l'outillage passe désormais par des comptes éphémères créés en LOCAL par l'API admin — voir `scripts/session-locale.mjs`. La garde `garde-compte-dev` reste en place et détecte une résurrection. | ✔ |
+| ~~Suppression de compte dans l'application~~ | **Fait.** Profil → Compte → « Supprimer mon compte ». Règle App Store 5.1.1(v) : une adresse d'assistance ne vaut pas suppression. | ✔ |
+| ~~Signalement d'un avis ou d'un comportement~~ | **Fait.** Règle 1.2 : le filtre, le signalement, le blocage et le contact publié sont les quatre exigences, et les quatre sont en place. Voir `docs/publication.md`. | ✔ |
 | **Back-office de modération (web)** | La validation des dossiers se fait désormais **dans l'application**, par un profil `est_admin` — file d'attente, comparaison selfie/pièce, motif de refus, journal des décisions. Tenable pour les premiers conducteurs. Le back-office web reste nécessaire pour le support, le retrait d'un avis et le blocage. | Après-V1 |
 | **Vérification humaine des dossiers** | Le selfie doit être comparé à la pièce par quelqu'un. Le schéma le permet, personne ne le fait encore. | Opérations |
 | **Empreinte SHA-1 de développement (Google Maps)** | La clé Android est restreinte au SHA-1 du keystore de production. En dev, Expo signe avec un keystore de debug : carte grise sur Android tant que la seconde empreinte n'est pas ajoutée. | Console Google Cloud |
@@ -257,10 +259,13 @@ s'il ne le sait pas.
 pnpm tokens:check          # échoue si une paire texte/fond passe sous 4,5:1, dans les deux thèmes
 pnpm typecheck
 pnpm lint
-supabase test db --local   # 325 assertions pgTAP
+supabase test db --local   # 352 assertions pgTAP
 node scripts/parcours-v1.mjs          # le parcours passager, deux sessions
 node scripts/parcours-conducteur.mjs  # le parcours conducteur : GO → course → note
 ```
+
+**`docs/publication.md`** porte les comptes de test de la revue Apple, le SQL qui valide
+le compte conducteur, et les commandes de build et d'envoi.
 
 **`docs/parcours-complet.md` est la carte maîtresse** : le parcours de référence, de
 l'installation au cycle GO, transition par transition. Tout écran ajouté à Flex doit s'y

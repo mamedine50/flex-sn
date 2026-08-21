@@ -184,7 +184,22 @@ export const en: Dictionnaire = {
     illisibleAide: 'Nothing is lost — documents already sent are stored.',
   },
 
+  mois: {
+    m1: 'January', m2: 'February', m3: 'March', m4: 'April',
+    m5: 'May', m6: 'June', m7: 'July', m8: 'August',
+    m9: 'September', m10: 'October', m11: 'November', m12: 'December',
+  },
+
   profil: {
+    supprimerCompte: 'Delete my account',
+    supprimerCompteSous: 'Erases your data. This cannot be undone.',
+    supprimerCompteTitre: 'Delete your account?',
+    supprimerCompteTexte: 'Your places, documents, photo and the reviews you received will be erased. Your past trips stay visible to the other person, without your name or number. This cannot be undone.',
+    supprimerCompteConfirmer: 'Yes, delete my account',
+    supprimerCompteCourseActive: 'You have a trip in progress. Finish it before deleting your account.',
+    supprimerCompteEchecFichiers: 'Your documents could not be erased. Nothing was deleted. Check your connection and try again.',
+    supprimerCompteEchec: 'Deletion did not go through. Try again in a moment.',
+    aideAdresse: 'Write to us at this address. Press and hold to copy it.',
     deconnexionRatee: 'Could not take you offline. Check your connection and try again.',
     titre: 'Profile',
     apparence: 'Appearance',
@@ -428,6 +443,19 @@ export const en: Dictionnaire = {
 
     dejaVrai: 'What is already true in the app',
     dejaVraiTexte: 'Before a ride is accepted, a driver sees neither your full name, nor your number, nor your exact position — only a rounded area and a district name. The names of your saved places and your notes never leave your phone. These rules are checked by automated tests on every change.',
+  },
+
+  signalement: {
+    signaler: 'Report',
+    titre: 'Report',
+    texte: 'What happened?',
+    insulte: 'Insulting language',
+    conduite_dangereuse: 'Dangerous driving',
+    fraude: 'Fraud or price not honoured',
+    harcelement: 'Harassment',
+    autre: 'Other',
+    envoye: 'Report sent. We are looking into it.',
+    echec: 'The report did not go through. Try again.',
   },
 
   reglages: {

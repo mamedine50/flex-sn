@@ -114,7 +114,33 @@ application pour vérifier si son dossier est passé. Il conclurait qu'on l'a
 refusé sans le lui dire. `useEstAdmin` suit la même règle, et se relit en plus
 au changement de session : sinon le drapeau d'un compte survivrait au suivant.
 
-### 8. La bascule des deux mondes
+### 8. Les DEUX entrées vers le monde conducteur
+
+Il n'y a qu'une route — `/`, l'onglet Course — mais **deux entrées** côté
+interface, et elles doivent aboutir au même endroit : la maison du conducteur,
+hors ligne, carte plein écran et bouton GO. Jamais « Où allez-vous ».
+
+| Entrée | Où | Appelle |
+|---|---|---|
+| « Passer en ligne » | Accueil passager, pour qui a la capacité | `entrerMondeConducteur()` |
+| « Passer en mode conducteur » | Profil → Conducteur | `entrerMondeConducteur()` |
+
+Le retour est unique lui aussi : « Mode passager », depuis la maison du
+conducteur, appelle `revenirMondePassager()` — quelle qu'ait été l'entrée.
+
+**ELLES ONT DIVERGÉ UNE FOIS, ET C'EST INSTRUCTIF.** Les deux lignes de code
+étaient identiques — `basculer('conducteur')` — et pourtant une seule
+fonctionnait. Le monde vivait dans un `useState` par appelant : le Profil
+changeait SA copie, l'onglet d'accueil, déjà monté — une barre d'onglets ne
+démonte pas ses écrans — gardait la sienne. Rien dans le code ne le disait.
+
+Le monde est donc devenu un magasin de module (`src/lib/monde.ts`), lu par
+`useSyncExternalStore` : il n'y a plus de copie à désynchroniser. Et les deux
+entrées passent par la MÊME fonction (`src/lib/mondeEntree.ts`), pour qu'aucune
+ne puisse re-diverger. `src/lib/__tests__/monde.test.ts` éprouve exactement le
+défaut : un second abonné, qui n'a pas touché la bascule, est prévenu.
+
+### 9. La bascule elle-même
 
 Un geste, jamais un démarrage : on n'ouvre jamais l'application directement en
 ligne. Un aller-retour au premier plan **garde** le monde ; un démarrage à froid
@@ -127,7 +153,7 @@ marque, en mémoire comme au stockage. Sans ça, deux défauts : le compte suiva
 sur ce téléphone démarrerait dans le monde conducteur d'un autre, et celui qui
 se reconnecte se retrouverait au volant sans l'avoir demandé.
 
-### 9. La déconnexion
+### 10. La déconnexion
 
 **Hors ligne d'abord, session ensuite** (`src/lib/deconnexion.ts`). L'ordre n'est
 pas négociable : `en_ligne` vit en base, et une déconnexion qui ne ferait que
@@ -155,6 +181,9 @@ On repart de l'accueil, pas de la connexion.
 | Grille ouverte à `anon`, et rien d'autre | `supabase/tests/120_tarifs_publics.sql`, 7 assertions |
 | Relecture au premier plan | Journal Metro : `CAPACITE ↻` après arrière-plan → premier plan |
 | Déconnexion en ligne | `en_ligne` passe de `true` à `false` en base, par le chemin du bouton |
+| Les deux entrées mènent au même monde | `src/lib/__tests__/monde.test.ts` — un abonné qui n'a pas basculé est prévenu |
+| Suppression de compte | `supabase/tests/260_supprimer_mon_compte.sql`, 17 assertions |
+| Signalement | `supabase/tests/270_signalements.sql`, 10 assertions |
 | Retour passager après reconnexion | Capture : accueil passager + « Passer en ligne », pour un conducteur validé |
 
 **Ce qui n'a pas été mesuré :** les appuis eux-mêmes. Le simulateur ne reçoit pas

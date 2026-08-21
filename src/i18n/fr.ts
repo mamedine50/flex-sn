@@ -192,7 +192,22 @@ export const fr = {
     illisibleAide: 'Rien n’est perdu : les pièces déjà envoyées sont en base.',
   },
 
+  mois: {
+    m1: 'janvier', m2: 'février', m3: 'mars', m4: 'avril',
+    m5: 'mai', m6: 'juin', m7: 'juillet', m8: 'août',
+    m9: 'septembre', m10: 'octobre', m11: 'novembre', m12: 'décembre',
+  },
+
   profil: {
+    supprimerCompte: 'Supprimer mon compte',
+    supprimerCompteSous: 'Efface vos données. Cette action est irréversible.',
+    supprimerCompteTitre: 'Supprimer votre compte ?',
+    supprimerCompteTexte: 'Vos lieux, vos documents, votre photo et vos avis reçus seront effacés. Vos courses passées restent visibles pour l’autre personne, sans votre nom ni votre numéro. Cette action est irréversible.',
+    supprimerCompteConfirmer: 'Oui, supprimer mon compte',
+    supprimerCompteCourseActive: 'Vous avez une course en cours. Terminez-la avant de supprimer votre compte.',
+    supprimerCompteEchecFichiers: 'Vos documents n’ont pas pu être effacés. Rien n’a été supprimé. Vérifiez le réseau et réessayez.',
+    supprimerCompteEchec: 'La suppression n’a pas abouti. Réessayez dans un instant.',
+    aideAdresse: 'Écrivez-nous à cette adresse. Appuyez longuement pour la copier.',
     deconnexionRatee: 'Impossible de vous mettre hors ligne. Vérifiez le réseau et réessayez.',
     titre: 'Profil',
     apparence: 'Apparence',
@@ -443,6 +458,19 @@ export const fr = {
 
     dejaVrai: 'Ce qui est déjà vrai dans l’application',
     dejaVraiTexte: 'Avant acceptation, un conducteur ne voit ni votre nom complet, ni votre numéro, ni votre position exacte — seulement une zone arrondie et un nom de commune. Le nom de vos lieux enregistrés et vos précisions ne quittent jamais votre téléphone. Ces règles sont vérifiées par des tests automatisés à chaque modification.',
+  },
+
+  signalement: {
+    signaler: 'Signaler',
+    titre: 'Signaler',
+    texte: 'Que s’est-il passé ?',
+    insulte: 'Propos insultants',
+    conduite_dangereuse: 'Conduite dangereuse',
+    fraude: 'Fraude ou prix non respecté',
+    harcelement: 'Harcèlement',
+    autre: 'Autre',
+    envoye: 'Signalement envoyé. Nous l’examinons.',
+    echec: 'Le signalement n’est pas parti. Réessayez.',
   },
 
   reglages: {

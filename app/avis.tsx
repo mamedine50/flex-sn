@@ -3,7 +3,9 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import FeuilleSignalement from '../src/components/FeuilleSignalement';
 import { useI18n, useT } from '../src/i18n';
+import { masquerGrossieretes } from '../src/lib/filtreMots';
 import type { Database } from '../src/lib/database.types';
 import { configurerGabarit, noterMesure } from '../src/lib/gabarit';
 import { useGardeSession } from '../src/lib/garde';
@@ -33,6 +35,8 @@ export default function Avis() {
   const marges = useSafeAreaInsets();
   const [avis, setAvis] = useState<AvisRecu[]>([]);
   const [statut, setStatut] = useState<'chargement' | 'pret' | 'erreur'>('chargement');
+  const [aSignaler, setASignaler] = useState<string | null>(null);
+  const [envoye, setEnvoye] = useState(false);
 
   configurerGabarit('avis', GABARIT);
 
@@ -124,12 +128,58 @@ export default function Avis() {
                   item.commentaire ? 'font-semibold text-ink' : 'font-semibold text-muted'
                 }`}
               >
-                {item.commentaire ?? t('avis.sansCommentaire')}
+                {/* Le texte est enregistré tel quel et masqué À L'AFFICHAGE :
+                    refuser à l'écriture apprend à contourner et fait disparaître
+                    la preuve dont l'équipe a besoin pour traiter un
+                    signalement. */}
+                {item.commentaire
+                  ? masquerGrossieretes(item.commentaire)
+                  : t('avis.sansCommentaire')}
               </Text>
+
+              {/* Signaler l'avis ne dit jamais QUI l'a écrit : la feuille
+                  n'envoie que la course, le serveur déduit l'autre bout. Le
+                  double aveugle tiendrait mal s'il fallait nommer quelqu'un
+                  pour le dénoncer. */}
+              {item.course_id ? (
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => setASignaler(item.course_id)}
+                  className="mt-8 min-h-touch justify-center self-start"
+                  style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
+                >
+                  <Text className="text-[13px] font-bold text-muted">
+                    {t('signalement.signaler')}
+                  </Text>
+                </Pressable>
+              ) : null}
             </View>
           )}
         />
       )}
+
+      {aSignaler ? (
+        <FeuilleSignalement
+          courseId={aSignaler}
+          porteSurAvis
+          ouverte
+          onFermer={(envoi) => {
+            setASignaler(null);
+            setEnvoye(envoi);
+          }}
+        />
+      ) : null}
+
+      {envoye ? (
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => setEnvoye(false)}
+          className="absolute inset-x-16 rounded-card bg-card p-16"
+          style={{ bottom: marges.bottom + 16 }}
+        >
+          <Text className="text-[14px] font-bold text-ink">{t('signalement.envoye')}</Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
