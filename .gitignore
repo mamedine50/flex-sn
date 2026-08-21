@@ -23,3 +23,7 @@ supabase/.branches/
 *.jks
 *.keystore
 credentials.json
+
+# Métadonnées App Store — porte le contact personnel de la revue.
+# Le gabarit versionné est store.config.example.json.
+store.config.json
