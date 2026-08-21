@@ -383,6 +383,14 @@ export const fr = {
   },
 
   accroche: {
+    titreUn: 'Proposez votre prix',
+    sousUn: 'Vous fixez ce que vous voulez payer. C’est votre offre, pas un tarif imposé.',
+    titreDeux: 'Les chauffeurs répondent',
+    sousDeux: 'Offres et contre-offres arrivent. Vous choisissez la vôtre.',
+    titreTrois: 'Bienvenue sur Flex',
+    sousTrois: 'Le prix, c’est vous qui le dites.',
+    passer: 'Passer',
+    carte: 'Carte {n} sur {total}',
     titre: 'Le prix, c’est vous qui le dites',
     sous: 'Proposez votre prix, un chauffeur vous répond.',
     continuer: 'Continuer',

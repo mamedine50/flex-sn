@@ -368,6 +368,14 @@ export const en: Dictionnaire = {
   },
 
   accroche: {
+    titreUn: 'Name your price',
+    sousUn: 'You set what you want to pay. It’s your offer, not a fixed fare.',
+    titreDeux: 'Drivers answer',
+    sousDeux: 'Offers and counter-offers come in. You pick yours.',
+    titreTrois: 'Welcome to Flex',
+    sousTrois: 'You’re the one who says the price.',
+    passer: 'Skip',
+    carte: 'Card {n} of {total}',
     titre: 'You name the price',
     sous: 'Offer your price, a driver answers.',
     continuer: 'Continue',

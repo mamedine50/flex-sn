@@ -90,3 +90,37 @@ export function AccrocheOnVousRepond() {
     </Cadre>
   );
 }
+
+/**
+ * Troisième carte : bienvenue. Le trajet, du départ à l'arrivée.
+ *
+ * Ni prix ni bulle ici — les deux premières cartes ont dit le produit. Celle-ci
+ * ne répète pas, elle accueille : deux points reliés, la course qui commence.
+ */
+export function AccrocheBienvenue() {
+  const { couleurs } = useTheme();
+  return (
+    <Cadre>
+      <Path
+        d="M120 4 L200 24 L164 62 L214 82 L120 156 L146 88 L96 70 Z"
+        fill={couleurs.accFill}
+        opacity={0.9}
+      />
+      {/* La route : elle se lit du départ vers l'arrivée, pas l'inverse. */}
+      <Path
+        d="M40 150 C40 100 90 96 120 96 C150 96 200 92 200 44"
+        fill="none"
+        stroke={couleurs.ink}
+        strokeWidth={4}
+        strokeLinecap="round"
+        strokeDasharray="12 10"
+      />
+      {/* Départ en `ok`, arrivée en accent : deux formes porteuses, donc
+          cerclées — un aplat seul ne se distingue pas sur fond clair. */}
+      <G stroke={couleurs.shapeOutline} strokeWidth={3}>
+        <Circle cx={40} cy={150} r={16} fill={couleurs.ok} />
+        <Circle cx={200} cy={44} r={16} fill={couleurs.accFill} />
+      </G>
+    </Cadre>
+  );
+}
