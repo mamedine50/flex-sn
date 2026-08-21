@@ -6,7 +6,7 @@
 begin;
 create extension if not exists pgtap with schema public;
 
-select plan(31);
+select plan(33);
 
 -- Les tests calculent leurs valeurs attendues avec ces utilitaires. Le PRODUIT
 -- ne les appelle que depuis des fonctions SECURITY DEFINER, qui n'ont pas besoin
@@ -256,6 +256,33 @@ set local role postgres;
 set local role postgres;
 insert into public.positions_conducteurs (conducteur_id, lat, lon, en_ligne)
 select conducteur, 14.6990, -17.4520, true from f;
+
+-- DISPONIBLE N'EST PAS SUIVI, et ça se prouve AVANT toute course. Le conducteur
+-- est en ligne, sa position est en base — c'est l'état de quelqu'un qui attend
+-- une demande. Personne ne doit le voir : ni un passager quelconque, ni celui
+-- qui lui enverra une offre dans une minute. La suite du fichier vérifie le
+-- cycle d'une course ; celle-ci vérifie qu'il n'y a rien à voir HORS course,
+-- c'est-à-dire la plus grande partie du temps d'un conducteur.
+set local role postgres;
+update public.rides set statut = 'annulee' where id = (select id from c);
+
+select public.t_devenir((select passager from f));
+set local role authenticated;
+select is_empty(
+  $$ select 1 from public.positions_conducteurs $$,
+  'conducteur EN LIGNE sans course : personne ne le suit — disponible n''est pas suivi'
+);
+set local role postgres;
+
+select public.t_devenir((select temoin from f));
+set local role authenticated;
+select is_empty(
+  $$ select 1 from public.positions_conducteurs $$,
+  'et un tiers ne voit pas davantage un conducteur simplement disponible'
+);
+set local role postgres;
+
+update public.rides set statut = 'verrouillee' where id = (select id from c);
 
 select public.t_devenir((select passager from f));
 set local role authenticated;

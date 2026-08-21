@@ -127,9 +127,23 @@ fixe, qui n'envoie aucun SMS et ne coûte rien.
 | `+15550000001` | `123456` |
 | `+15550000002` | `123456` |
 
-Ce réglage vit dans la configuration de GoTrue, pas dans la base : il **ne se
-pose ni en SQL ni par migration**, seulement dans la console. C'est la seule
-étape de ce document qui ne s'automatise pas.
+Ce réglage vit dans la configuration de GoTrue, **pas dans la base** : il ne se
+pose ni en SQL, ni par migration, ni par le connecteur — aucun de ces chemins ne
+touche à la configuration d'authentification.
+
+Deux chemins existent, et un seul est sûr :
+
+- **La console.** Trente secondes, aucun effet de bord. C'est celui-ci.
+- **L'API de gestion** (`PATCH /v1/projects/{ref}/config/auth`, champ
+  `sms_test_otp`). Elle marche, mais elle demande un jeton d'accès personnel —
+  une clé de compte, pas une clé de projet, qui ouvre TOUS les projets de son
+  porteur. Elle ne se met pas dans le dépôt et ne se confie pas à un outil.
+
+**Ce qu'il ne faut PAS faire :** `supabase config push`. La commande pousse
+`supabase/config.toml` en entier. Le fichier du dépôt est le gabarit local — pas
+de Twilio, `site_url` en `127.0.0.1` — et l'envoyer **écraserait la
+configuration SMS du distant**, c'est-à-dire la seule chose qui marche
+aujourd'hui côté envoi.
 
 Une fois posés, ces deux numéros servent aussi :
 
