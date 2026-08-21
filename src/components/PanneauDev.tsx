@@ -109,7 +109,7 @@ export default function PanneauDev({ visible, actuel, onChoisir, onFermer }: Pro
             accessibilityRole="button"
             onPress={() => {
               onFermer();
-              router.push('/conducteur');
+              router.replace('/');
             }}
             className="mb-16 min-h-touch justify-center rounded-field bg-card2 px-16"
             style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}

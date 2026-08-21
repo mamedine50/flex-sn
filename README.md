@@ -14,7 +14,7 @@ bout **sur le projet distant, avec deux vraies sessions** — voir `docs/parcour
 
 | | |
 |---|---|
-| Écrans | Accroche · Connexion (pays, numéro, code, prénom) · Accueil · Fixez votre prix · Offres reçues · Mode conducteur · En route · Profil · Mon profil · Mes lieux · Mes courses · Mes avis · Affichage · Conduire avec Flex · À propos · Conditions · Confidentialité · Administration (file + dossier) |
+| Écrans | Accroche · Connexion (pays, numéro, code, prénom) · Accueil · Fixez votre prix · Offres reçues · Mode conducteur · En route · Profil · Mon profil · Mes lieux · Mes courses · Mes avis · Affichage · Maison du conducteur (GO, en ligne, file) · Conduire avec Flex · À propos · Conditions · Confidentialité · Administration (file + dossier) |
 | Base | 47 migrations, **316 assertions pgTAP**, RLS sur chaque table, logique métier en RPC |
 | Gardes | `pnpm typecheck` · `pnpm lint` · `pnpm test` · `pnpm tokens:check` (44 paires) · `supabase test db` · `node scripts/parcours-v1.mjs` |
 | Étiquette | `v1.0.0-dev` |
@@ -257,7 +257,9 @@ pnpm tokens:check          # échoue si une paire texte/fond passe sous 4,5:1, d
 pnpm typecheck
 pnpm lint
 supabase test db --local   # 316 assertions pgTAP
-node scripts/parcours-v1.mjs   # le parcours complet sur le DISTANT, deux sessions
+node scripts/parcours-v1.mjs          # le parcours passager, deux sessions
+node scripts/parcours-conducteur.mjs  # le parcours conducteur : GO → course → note
 ```
 
-Le parcours de bout en bout est décrit écran par écran dans `docs/parcours-v1.md`.
+Les parcours sont décrits écran par écran dans `docs/parcours-v1.md` (passager) et
+`docs/parcours-conducteur.md` (conducteur).

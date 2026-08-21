@@ -1,34 +1,31 @@
 import * as Haptics from 'expo-haptics';
-import { useNetworkState } from 'expo-network';
-import { router } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { FlatList, Modal, Pressable, Switch, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { FlatList, Modal, Pressable, Text, View } from 'react-native';
 
-import PanneauDev, { type EtatForce } from '../src/components/PanneauDev';
-import { useT } from '../src/i18n';
+import { useT } from '../i18n';
 import {
   delaiEstimeMin,
   distanceM,
-  majEnLigne,
   useDemandesProches,
-  useEnLigne,
-  useEstConducteur,
   type DemandeProche,
-} from '../src/lib/conducteur';
-import { useCourse } from '../src/lib/course';
-import { cleErreur } from '../src/lib/erreursServeur';
-import { arrondirAuPas, formatXof, PAS_XOF } from '../src/lib/format';
-import { useGardeSession } from '../src/lib/garde';
-import { configurerGabarit, noterMesure } from '../src/lib/gabarit';
-import { useLocalisation } from '../src/lib/localisation';
-import { supabase } from '../src/lib/supabase';
-import { chiffresTabulaires } from '../src/theme/typographie';
+} from '../lib/conducteur';
+import { cleErreur } from '../lib/erreursServeur';
+import { arrondirAuPas, formatXof, PAS_XOF } from '../lib/format';
+import { configurerGabarit, noterMesure } from '../lib/gabarit';
+import { supabase } from '../lib/supabase';
+import { chiffresTabulaires } from '../theme/typographie';
 
 /**
- * Mode conducteur.
+ * La file des demandes, telle qu'elle remonte sur la carte du conducteur.
  *
- * Cet écran se lit et se tape AU VOLANT. Trois conséquences tenues ici :
+ * DÉPLACEMENT DE PRÉSENTATION, PAS DE COMPORTEMENT. Les RPC, les états, le
+ * rafraîchissement, les retours haptiques et les messages d'erreur sont ceux de
+ * l'ancien écran, à la ligne près. Ce qui a changé : elle ne porte plus sa
+ * propre coquille — plus de titre, plus de bascule en ligne, plus de bouton
+ * retour. La maison du conducteur s'en charge, et la feuille ne fait qu'une
+ * chose.
+ *
+ * Elle se lit et se tape AU VOLANT. Trois conséquences tenues ici :
  *
  *   - les trois actions font 56 px, la taille « conduite » ;
  *   - elles se distinguent par la COULEUR et la POSITION, pas par le texte —
@@ -41,46 +38,37 @@ import { chiffresTabulaires } from '../src/theme/typographie';
  * le texte libre — tout ça arrive avec la course, et seulement après.
  */
 
-const GABARIT = { bascule: 56, accepter: 56, contre: 56, refuser: 56 };
+const GABARIT = { accepter: 56, contre: 56, refuser: 56 };
 
 type EtatAction =
   | { statut: 'repos' }
   | { statut: 'envoi'; demande: string }
   | { statut: 'echec'; cle: ReturnType<typeof cleErreur> };
 
-export default function ModeConducteur() {
+export default function FileDemandes({
+  enLigne,
+  position,
+  gele,
+  /**
+   * Pourquoi Accepter est inactif, s'il l'est. Le verrou anti-enchaînement et
+   * le péage de la note passent par ici : la file reste LISIBLE, seule
+   * l'acceptation s'éteint — et elle dit pourquoi.
+   */
+  raisonInactive,
+  basPage = 24,
+}: {
+  enLigne: boolean;
+  position: { latitude: number; longitude: number } | null;
+  gele: boolean;
+  raisonInactive?: string | null;
+  basPage?: number;
+}) {
   const t = useT();
-  // Cet écran écrit : sans session, il n'a rien à montrer. La garde
-  // emporte le chemin, et la connexion y revient.
-  useGardeSession('/conducteur');
-  const marges = useSafeAreaInsets();
-  const reseau = useNetworkState();
-  const { position, demander } = useLocalisation();
-
-  const [etatForce, setEtatForce] = useState<EtatForce>('aucun');
-  const [panneauOuvert, setPanneauOuvert] = useState(false);
-
-  const capacite = useEstConducteur();
-  const { enLigne: enLigneBase, setEnLigne } = useEnLigne();
-  const enLigne = enLigneBase === true;
   const file = useDemandesProches(enLigne);
-
-  // Une offre acceptée verrouille une course, et le conducteur ne l'apprend
-  // que par la base : `submit_offer()` rend la main sans savoir si le passager
-  // dira oui. Sans cette bascule, il resterait sur une file de demandes alors
-  // qu'il a déjà quelqu'un qui l'attend.
-  const course = useCourse();
-  const courseActive = course.course?.id ?? null;
-  useEffect(() => {
-    if (courseActive) router.replace('/course');
-  }, [courseActive]);
 
   const [ecartees, setEcartees] = useState<string[]>([]);
   const [action, setAction] = useState<EtatAction>({ statut: 'repos' });
   const [contreOffre, setContreOffre] = useState<DemandeProche | null>(null);
-
-  const horsLigneReseau =
-    etatForce === 'hors_ligne' || reseau.isInternetReachable === false;
 
   // Le battement du compte à rebours : une demande peut expirer pendant qu'on
   // la lit, et les actions doivent s'éteindre à cet instant précis.
@@ -89,20 +77,6 @@ export default function ModeConducteur() {
     const battement = setInterval(() => setMaintenant(Date.now()), 1000);
     return () => clearInterval(battement);
   }, []);
-
-  const basculer = useCallback(
-    async (valeur: boolean) => {
-      if (!position) {
-        void demander();
-        return;
-      }
-      setEnLigne(valeur);
-      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      await majEnLigne(position, valeur);
-      if (valeur) file.relire();
-    },
-    [position, demander, file, setEnLigne],
-  );
 
   const repondre = useCallback(
     async (demande: DemandeProche, prix: number, delai: number) => {
@@ -139,97 +113,45 @@ export default function ModeConducteur() {
   );
 
   configurerGabarit(
-    visibles.length > 0 ? 'conducteur+file' : 'conducteur',
-    visibles.length > 0
-      ? {
-          bascule: GABARIT.bascule,
-          accepter: GABARIT.accepter,
-          contre: GABARIT.contre,
-          refuser: GABARIT.refuser,
-        }
-      : { bascule: GABARIT.bascule },
+    visibles.length > 0 ? 'file+demandes' : 'file',
+    visibles.length > 0 ? GABARIT : {},
   );
 
+  if (!enLigne) return null;
+
   return (
-    <View className="flex-1 bg-bg" style={{ paddingTop: marges.top + 8 }}>
-      <View className="flex-row items-center justify-between px-16">
-        <Text className="text-[22px] font-extrabold text-ink">{t('conducteur.titre')}</Text>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('commun.retour')}
-          onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
-          onLongPress={__DEV__ ? () => setPanneauOuvert(true) : undefined}
-          className="min-h-touch justify-center px-12"
-        >
-          <Text className="text-[15px] font-bold text-accInk">{t('commun.retour')}</Text>
-        </Pressable>
-      </View>
+    <>
+      {action.statut === 'echec' ? <Bandeau texte={t(action.cle)} danger /> : null}
 
-      {capacite === 'non' ? (
-        <Message
-          titre={t('conducteur.pasConducteur')}
-          aide={t('conducteur.pasConducteurAide')}
-        />
+      {raisonInactive ? <Bandeau texte={raisonInactive} /> : null}
+
+      {file.statut === 'chargement' ? (
+        <Squelettes />
+      ) : visibles.length === 0 ? (
+        <Message titre={t('conducteur.aucuneDemande')} />
       ) : (
-        <>
-          <View
-            className="mx-16 mt-12 min-h-driving flex-row items-center justify-between rounded-card bg-card px-16"
-            onLayout={(e) => noterMesure('bascule', e.nativeEvent.layout.height)}
-          >
-            <Text className="text-[16px] font-extrabold text-ink">
-              {enLigne ? t('conducteur.enLigne') : t('conducteur.horsLigne')}
-            </Text>
-            <Switch
-              value={enLigne}
-              onValueChange={(v) => void basculer(v)}
-              accessibilityLabel={
-                enLigne ? t('conducteur.passerHorsLigne') : t('conducteur.passerEnLigne')
-              }
-            />
-          </View>
-
-          {horsLigneReseau ? <Bandeau texte={t('conducteur.reseauCoupe')} /> : null}
-          {action.statut === 'echec' ? <Bandeau texte={t(action.cle)} danger /> : null}
-
-          {/* La position LOCALE ne sert qu'à estimer un délai d'arrivée. Celle
-              qui décide de l'appariement est publiée en base. Un GPS coupé ne
-              doit donc pas masquer la file — il rend l'estimation approximative,
-              et on le dit. */}
-          {enLigne && !position ? <Bandeau texte={t('conducteur.positionRequise')} /> : null}
-
-          {!enLigne ? (
-            <Message titre={t('conducteur.horsLigneInvite')} />
-          ) : file.statut === 'chargement' ? (
-            <Squelettes />
-          ) : visibles.length === 0 ? (
-            <Message titre={t('conducteur.aucuneDemande')} />
-          ) : (
-            <FlatList
-              data={visibles}
-              keyExtractor={(d) => d.id ?? ''}
-              className="mt-12"
-              contentContainerClassName="px-16"
-              contentContainerStyle={{ paddingBottom: marges.bottom + 24 }}
-              renderItem={({ item }) => (
-                <CarteDemande
-                  demande={item}
-                  position={position}
-                  maintenant={maintenant}
-                  occupe={action.statut === 'envoi' && action.demande === item.id}
-                  gele={horsLigneReseau || action.statut === 'envoi'}
-                  onAccepter={(delai) =>
-                    void repondre(item, item.prix_xof ?? 0, delai)
-                  }
-                  onContreProposer={() => setContreOffre(item)}
-                  onRefuser={() => {
-                    setEcartees((liste) => [...liste, item.id ?? '']);
-                    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  }}
-                />
-              )}
+        <FlatList
+          data={visibles}
+          keyExtractor={(d) => d.id ?? ''}
+          contentContainerClassName="px-16"
+          contentContainerStyle={{ paddingBottom: basPage }}
+          renderItem={({ item }) => (
+            <CarteDemande
+              demande={item}
+              position={position}
+              maintenant={maintenant}
+              occupe={action.statut === 'envoi' && action.demande === item.id}
+              gele={gele || action.statut === 'envoi'}
+              accepterInactif={Boolean(raisonInactive)}
+              onAccepter={(delai) => void repondre(item, item.prix_xof ?? 0, delai)}
+              onContreProposer={() => setContreOffre(item)}
+              onRefuser={() => {
+                setEcartees((liste) => [...liste, item.id ?? '']);
+                void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              }}
             />
           )}
-        </>
+        />
       )}
 
       {contreOffre ? (
@@ -241,19 +163,7 @@ export default function ModeConducteur() {
           onFermer={() => setContreOffre(null)}
         />
       ) : null}
-
-      {__DEV__ ? (
-        <PanneauDev
-          visible={panneauOuvert}
-          actuel={etatForce}
-          onChoisir={(etat) => {
-            setEtatForce(etat);
-            setPanneauOuvert(false);
-          }}
-          onFermer={() => setPanneauOuvert(false)}
-        />
-      ) : null}
-    </View>
+    </>
   );
 }
 
@@ -263,6 +173,7 @@ function CarteDemande({
   maintenant,
   occupe,
   gele,
+  accepterInactif = false,
   onAccepter,
   onContreProposer,
   onRefuser,
@@ -272,6 +183,8 @@ function CarteDemande({
   maintenant: number;
   occupe: boolean;
   gele: boolean;
+  /** Le verrou anti-enchaînement : la carte reste lisible, Accepter s'éteint. */
+  accepterInactif?: boolean;
   onAccepter: (delai: number) => void;
   onContreProposer: () => void;
   onRefuser: () => void;
@@ -343,7 +256,13 @@ function CarteDemande({
             texte={t('conducteur.accepterA', { prix: formatXof(demande.prix_xof ?? 0) })}
             ton="principale"
             large
-            actif={actif}
+            // Sous verrou, on ne peut plus S'ENGAGER — ni accepter, ni
+            // contre-proposer, parce qu'une contre-offre acceptée crée une
+            // seconde course et que le serveur la refuse déjà par
+            // `conducteur_indisponible`. Laisser le bouton vif produirait un
+            // message d'erreur là où une règle claire suffit. Lire et refuser
+            // restent possibles : on ne prive pas le conducteur de sa file.
+            actif={actif && !accepterInactif}
             occupe={occupe}
             onPress={() => onAccepter(delai)}
           />
@@ -351,7 +270,7 @@ function CarteDemande({
             nom="contre"
             texte={t('conducteur.contreProposer')}
             ton="neutre"
-            actif={actif}
+            actif={actif && !accepterInactif}
             occupe={false}
             onPress={onContreProposer}
           />

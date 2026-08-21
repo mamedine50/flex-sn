@@ -13,6 +13,7 @@ import { useFavoris } from '../../src/lib/favoris';
 import { formatXof } from '../../src/lib/format';
 import { configurerGabarit, noterMesure } from '../../src/lib/gabarit';
 import { GAINS_VIDES, useGains } from '../../src/lib/gains';
+import { useMonde } from '../../src/lib/monde';
 import { useMonProfil } from '../../src/lib/monProfil';
 import { deposerPhotoProfil } from '../../src/lib/photos';
 import { useProfilPublic } from '../../src/lib/profilPublic';
@@ -51,6 +52,7 @@ export default function Profil() {
   // L'administration n'existe que pour qui la porte. Le filtre réel est en base
   // — `dossiers_en_attente` porte son `est_admin()` — mais on ne montre pas non
   // plus une porte fermée.
+  const { basculer } = useMonde();
   const admin = useEstAdmin() === 'oui';
   const fileAdmin = useFileDossiers();
 
@@ -212,7 +214,12 @@ export default function Profil() {
               icone="volant"
               titre={t('profil.passerEnLigne')}
               sous={t('profil.passerEnLigneSous')}
-              onPress={() => router.push('/conducteur')}
+              // Il n'y a plus de route « mode conducteur » : il y a un MONDE,
+              // et c'est l'onglet Course qui le rend. Basculer puis y aller.
+              onPress={() => {
+                basculer('conducteur');
+                router.replace('/');
+              }}
             />
             <Ligne
               icone="documents"

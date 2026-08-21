@@ -91,17 +91,49 @@ export function useCourse(courseId?: string | null) {
 
       requete = courseId
         ? requete.eq('id', courseId)
-        : // Sans identifiant : la course active de l'appelant, s'il en a une.
-          requete.in('statut', COURSE_ACTIVE);
+        : /*
+           * Sans identifiant : la course « en cours » de l'appelant — au sens
+           * où elle le CONCERNE encore.
+           *
+           * `terminee` en fait partie, et c'est un défaut corrigé : la liste
+           * s'arrêtait aux statuts actifs, donc à la seconde où le conducteur
+           * appuyait sur « Terminer », la relecture ne rendait plus rien et
+           * l'écran de notation disparaissait avant d'avoir été vu. La note
+           * était obligatoire et inatteignable.
+           *
+           * Une course reste la vôtre tant que vous ne l'avez pas notée. C'est
+           * `relire()` qui écarte ensuite celles qu'on a déjà notées.
+           */
+          requete.in('statut', [...COURSE_ACTIVE, 'terminee']);
 
       const { data, error } = await requete
         .order('verrouillee_le', { ascending: false })
         .limit(1);
 
       if (marqueur?.annule) return;
+
+      /*
+       * Une course terminée ET DÉJÀ NOTÉE ne concerne plus personne : on la
+       * retire, sinon l'écran de notation resterait affiché pour toujours et le
+       * conducteur ne pourrait plus rien accepter.
+       */
+      const trouvee = (data?.[0] as Course | undefined) ?? null;
+      let course = trouvee;
+      if (trouvee && trouvee.statut === 'terminee') {
+        const { data: session } = await supabase.auth.getUser();
+        const uid = session.user?.id;
+        const { count } = await supabase
+          .from('evaluations')
+          .select('course_id', { count: 'exact', head: true })
+          .eq('course_id', trouvee.id)
+          .eq('auteur_id', uid ?? '');
+        if (marqueur?.annule) return;
+        if ((count ?? 0) > 0) course = null;
+      }
+
       setEtat({
         statut: error ? 'erreur' : 'pret',
-        course: (data?.[0] as Course | undefined) ?? null,
+        course,
         resynchronise: false,
       });
     },

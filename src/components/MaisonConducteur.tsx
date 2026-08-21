@@ -1,11 +1,14 @@
+import { router } from 'expo-router';
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Marker } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import CarteLocalisation from './CarteLocalisation';
+import FileDemandes from './FileDemandes';
 import type { EtatCarte } from './CarteFond';
 import { useT } from '../i18n';
+import { useCourse } from '../lib/course';
 import { majEnLigne, quitterLaLigne, useEnLigne } from '../lib/conducteur';
 import { horsCouverture } from '../lib/couverture';
 import { formatXof } from '../lib/format';
@@ -56,6 +59,22 @@ export default function MaisonConducteur({
   const { enLigne: enLigneBase, setEnLigne } = useEnLigne();
   const enLigne = enLigneBase === true;
   const gains = useGains(true) ?? GAINS_VIDES;
+
+  /**
+   * Le verrou anti-enchaînement.
+   *
+   * Une course à la fois. Tant qu'elle n'est pas terminée, la file reste
+   * LISIBLE — savoir ce qui passe autour a de la valeur — mais on ne peut plus
+   * s'engager. Le serveur le refuse déjà par `conducteur_indisponible` ; l'écran
+   * le dit avant, plutôt que de laisser partir un appui pour rien.
+   */
+  const course = useCourse();
+  const enCourse = course.course !== null;
+  // Deux verrous, deux phrases. Une course en cours dit « après votre course » ;
+  // une course terminée mais pas encore notée dit « notez votre passager ».
+  // Le second est un péage de deux secondes, pas un mur — et il faut qu'on
+  // sache lequel des deux nous retient.
+  const aNoter = course.course?.statut === 'terminee';
 
   const [monterCarte, setMonterCarte] = useState(false);
   const [etatCarte, setEtatCarte] = useState<EtatCarte>('attente');
@@ -182,13 +201,49 @@ export default function MaisonConducteur({
           </Pressable>
         </View>
 
+        {/* Le verrou doit avoir une SORTIE. Sans ce raccourci, le conducteur
+            lit « notez votre passager » sans savoir où aller le faire. */}
+        {enCourse ? (
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => router.push('/course')}
+            className="mx-16 mt-8 min-h-touch justify-center rounded-field bg-accFill px-16"
+            style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+          >
+            <Text className="text-[14px] font-extrabold text-onAcc">
+              {aNoter ? t('maison.noterAvant') : t('maison.enCourse')}
+            </Text>
+          </Pressable>
+        ) : null}
+
         {empeche === 'position' ? (
           <Bandeau texte={t('maison.sansPosition')} />
         ) : empeche === 'zone' ? (
           <Bandeau texte={t('maison.horsZone')} />
         ) : null}
 
-        <View className="flex-1" />
+        {/* La feuille des demandes remonte sur la carte dès qu'on est en
+            ligne. Elle ne se reconstruit pas : c'est la file de l'écran
+            conducteur, déplacée. */}
+        {enLigne ? (
+          <View className="flex-1 pt-8" pointerEvents="box-none">
+            <FileDemandes
+              enLigne={enLigne}
+              position={position}
+              gele={occupe}
+              raisonInactive={
+                aNoter
+                  ? t('maison.noterAvant')
+                  : enCourse
+                    ? t('maison.apresVotreCourse')
+                    : null
+              }
+              basPage={marges.bottom + 8}
+            />
+          </View>
+        ) : (
+          <View className="flex-1" />
+        )}
 
         {/* Le message, puis GO. Dans cet ordre : on lit avant d'appuyer. */}
         <View className="items-center px-24 pb-24" pointerEvents="box-none">
