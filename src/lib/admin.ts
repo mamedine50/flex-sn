@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { AppState } from 'react-native';
 
 import type { Database } from './database.types';
 import { supabase } from './supabase';
@@ -15,21 +16,39 @@ export type DossierEnAttente = Database['public']['Views']['dossiers_en_attente'
 export type Piece = Database['public']['Tables']['documents_conducteur']['Row'];
 export type TypeDocument = Database['public']['Enums']['type_document'];
 
-/** Le drapeau, lu à la source. Jamais déduit d'autre chose. */
+/**
+ * Le drapeau, lu à la source. Jamais déduit d'autre chose.
+ *
+ * Relu au changement de session ET au retour au premier plan. Sans le premier,
+ * une déconnexion suivie d'une connexion sous un AUTRE compte laisserait le
+ * drapeau du précédent : la section Administration resterait affichée à
+ * quelqu'un qui n'y a pas droit. Elle ne servirait rien — le filtre est en base
+ * — mais montrer une porte qu'on ne peut pas ouvrir est déjà une erreur.
+ */
 export function useEstAdmin() {
   const [etat, setEtat] = useState<'chargement' | 'oui' | 'non'>('chargement');
 
+  const relire = useCallback(async (vivant: { annule: boolean }) => {
+    const { data, error } = await supabase.rpc('est_admin');
+    if (vivant.annule) return;
+    setEtat(!error && data === true ? 'oui' : 'non');
+  }, []);
+
   useEffect(() => {
     const vivant = { annule: false };
-    void (async () => {
-      const { data, error } = await supabase.rpc('est_admin');
-      if (vivant.annule) return;
-      setEtat(!error && data === true ? 'oui' : 'non');
-    })();
+    // Faux positif : tout `setState` de `relire` suit un `await` réseau.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void relire(vivant);
+    const { data: veille } = supabase.auth.onAuthStateChange(() => void relire(vivant));
+    const abonnement = AppState.addEventListener('change', (etatApp) => {
+      if (etatApp === 'active') void relire(vivant);
+    });
     return () => {
       vivant.annule = true;
+      veille.subscription.unsubscribe();
+      abonnement.remove();
     };
-  }, []);
+  }, [relire]);
 
   return etat;
 }

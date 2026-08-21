@@ -15,7 +15,7 @@ bout **sur le projet distant, avec deux vraies sessions** — voir `docs/parcour
 | | |
 |---|---|
 | Écrans | Accroche · Connexion (pays, numéro, code, prénom) · Accueil · Fixez votre prix · Offres reçues · Mode conducteur · En route · Profil · Mon profil · Mes lieux · Mes courses · Mes avis · Affichage · Maison du conducteur (GO, en ligne, file) · Conduire avec Flex · À propos · Conditions · Confidentialité · Administration (file + dossier) |
-| Base | 47 migrations, **316 assertions pgTAP**, RLS sur chaque table, logique métier en RPC |
+| Base | 48 migrations, **323 assertions pgTAP**, RLS sur chaque table, logique métier en RPC |
 | Gardes | `pnpm typecheck` · `pnpm lint` · `pnpm test` · `pnpm tokens:check` (44 paires) · `supabase test db` · `node scripts/parcours-v1.mjs` |
 | Étiquette | `v1.0.0-dev` |
 
@@ -214,6 +214,7 @@ d'architecture**, pas des oublis. Ne les « réparez » pas — les tests de
 | `security_definer_view` sur `profils_publics`, `vehicules_publics`, `demandes_ouvertes`, `offres_recues`, `evaluations_visibles` | La RLS filtre des **lignes**, pas des **colonnes**. La confidentialité de Flex est une affaire de colonnes : un conducteur a le droit de savoir qu'une demande existe, pas qui la pose. Ces vues contournent la RLS mais ne projettent que le non-confidentiel. |
 | `security_definer_view` sur `mes_gains` | Cas à part, et volontaire : la vue porte `where conducteur_id = auth.uid()` **dans sa définition**. Le filtre ne peut donc pas être oublié côté client — c'est exactement l'inverse d'une fuite. |
 | `rls_enabled_no_policy` sur `events_prix` | Voulu, et c'est le verrou : RLS active, **aucune** policy, `select` accordé au seul `service_role`. Le journal de calibrage tarifaire n'est lisible par personne d'autre — pas même par celui qui vient d'en provoquer une ligne. |
+| `anon_security_definer_function_executable` sur `prix_suggere` | Voulu depuis `20260821120000_tarifs_publics`. La grille de prix est la **vitrine** du produit, et `prix_suggere()` n'en est que l'arithmétique sur deux points que l'appelant fournit lui-même : ni l'une ni l'autre ne rend une ligne appartenant à quiconque. Sans ça, l'écran « Fixez votre prix » — censé se consulter sans compte — n'affichait rien. C'est la SEULE fonction ouverte à `anon`, et `supabase/tests/010_schema.sql` en tient la liste blanche. |
 | `authenticated_security_definer_function_executable` sur les RPC | C'est toute l'architecture : aucune table n'accorde d'écriture au client, tout passe par ces fonctions. Leur retirer `execute` fermerait l'application. `expire_stale()` n'est **pas** dans la liste — elle est réservée à `service_role`, et c'est vérifié. |
 
 Côté performance, trois remontées `INFO` restent, et resteront tant que la base est vide :
@@ -256,10 +257,12 @@ s'il ne le sait pas.
 pnpm tokens:check          # échoue si une paire texte/fond passe sous 4,5:1, dans les deux thèmes
 pnpm typecheck
 pnpm lint
-supabase test db --local   # 316 assertions pgTAP
+supabase test db --local   # 323 assertions pgTAP
 node scripts/parcours-v1.mjs          # le parcours passager, deux sessions
 node scripts/parcours-conducteur.mjs  # le parcours conducteur : GO → course → note
 ```
 
-Les parcours sont décrits écran par écran dans `docs/parcours-v1.md` (passager) et
-`docs/parcours-conducteur.md` (conducteur).
+**`docs/parcours-complet.md` est la carte maîtresse** : le parcours de référence, de
+l'installation au cycle GO, transition par transition. Tout écran ajouté à Flex doit s'y
+insérer sans en casser une. Le détail écran par écran vit dans `docs/parcours-v1.md`
+(passager) et `docs/parcours-conducteur.md` (conducteur).

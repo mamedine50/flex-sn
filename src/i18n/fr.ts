@@ -193,6 +193,7 @@ export const fr = {
   },
 
   profil: {
+    deconnexionRatee: 'Impossible de vous mettre hors ligne. Vérifiez le réseau et réessayez.',
     titre: 'Profil',
     apparence: 'Apparence',
     langue: 'Langue',

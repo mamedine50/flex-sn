@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { AppState } from 'react-native';
 
-import { lire, ecrire } from './stockage';
+import { lire, ecrire, effacer } from './stockage';
+import { supabase } from './supabase';
 
 /**
  * Deux mondes, une bascule.
@@ -19,6 +20,12 @@ import { lire, ecrire } from './stockage';
  *
  * La marque est donc écrite avec l'instant, et relue avec une péremption. Sans
  * horodatage, on ne distingue pas les deux cas : le stockage survit aux deux.
+ *
+ * ET LE MONDE MEURT AVEC LA SESSION. Une déconnexion l'efface, en mémoire comme
+ * au stockage. Sans ça, deux défauts : le compte SUIVANT sur ce téléphone
+ * démarrerait dans le monde conducteur d'un autre, et celui qui se reconnecte
+ * lui-même se retrouverait au volant sans l'avoir demandé — alors que la règle
+ * est de ne jamais ouvrir en ligne sans un geste.
  */
 const CLE = 'flex.monde';
 
@@ -52,6 +59,15 @@ export function useMonde() {
       });
     });
     return () => abonnement.remove();
+  }, []);
+
+  useEffect(() => {
+    const { data: veille } = supabase.auth.onAuthStateChange((evenement) => {
+      if (evenement !== 'SIGNED_OUT') return;
+      setMonde('passager');
+      void effacer(CLE);
+    });
+    return () => veille.subscription.unsubscribe();
   }, []);
 
   const basculer = useCallback((suivant: Monde) => {

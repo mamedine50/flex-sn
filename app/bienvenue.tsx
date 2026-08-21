@@ -84,9 +84,12 @@ export default function Bienvenue() {
     [largeur],
   );
 
+  // Le tour mène à l'ACCUEIL, pas à la connexion. On vient d'expliquer qu'on
+  // propose son prix : le geste suivant est d'en proposer un, pas de donner son
+  // numéro. La connexion arrive au moment d'envoyer, et elle ramène ici même.
   const continuer = () => {
     void marquerAccrocheVue();
-    router.replace('/connexion');
+    router.replace('/');
   };
 
   return (

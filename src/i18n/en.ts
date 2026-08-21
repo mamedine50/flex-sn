@@ -185,6 +185,7 @@ export const en: Dictionnaire = {
   },
 
   profil: {
+    deconnexionRatee: 'Could not take you offline. Check your connection and try again.',
     titre: 'Profile',
     apparence: 'Appearance',
     langue: 'Language',

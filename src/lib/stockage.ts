@@ -19,3 +19,11 @@ export async function ecrire(cle: string, valeur: string): Promise<void> {
     // Silencieux : la préférence retombera sur sa valeur par défaut.
   }
 }
+
+export async function effacer(cle: string): Promise<void> {
+  try {
+    await AsyncStorage.removeItem(cle);
+  } catch {
+    // Silencieux, pour la même raison : rien ici ne vaut un démarrage bloqué.
+  }
+}

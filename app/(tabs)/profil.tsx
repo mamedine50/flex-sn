@@ -10,6 +10,7 @@ import { useI18n, useT } from '../../src/i18n';
 import { useEstAdmin, useFileDossiers } from '../../src/lib/admin';
 import { useEstConducteur } from '../../src/lib/conducteur';
 import { useFavoris } from '../../src/lib/favoris';
+import { useGardeSession } from '../../src/lib/garde';
 import { formatXof } from '../../src/lib/format';
 import { configurerGabarit, noterMesure } from '../../src/lib/gabarit';
 import { GAINS_VIDES, useGains } from '../../src/lib/gains';
@@ -17,8 +18,8 @@ import { useMonde } from '../../src/lib/monde';
 import { useMonProfil } from '../../src/lib/monProfil';
 import { deposerPhotoProfil } from '../../src/lib/photos';
 import { useProfilPublic } from '../../src/lib/profilPublic';
+import { seDeconnecter } from '../../src/lib/deconnexion';
 import { useSession } from '../../src/lib/session';
-import { supabase } from '../../src/lib/supabase';
 import { useVehicule } from '../../src/lib/vehicule';
 import { chiffresTabulaires } from '../../src/theme/typographie';
 
@@ -46,6 +47,10 @@ export default function Profil() {
   const { langue } = useI18n();
   const session = useSession();
 
+  // L'accueil se consulte sans compte ; SON compte, non. Ouvrir cet onglet est
+  // déjà un geste, donc la connexion s'exige ici — et elle ramène ici.
+  useGardeSession('/profil');
+
   const capacite = useEstConducteur();
   const conducteur = capacite === 'oui';
 
@@ -68,6 +73,7 @@ export default function Profil() {
   const [etatForce, setEtatForce] = useState<EtatForce>('aucun');
   const [panneauOuvert, setPanneauOuvert] = useState(false);
   const [confirmeDeconnexion, setConfirmeDeconnexion] = useState(false);
+  const [deconnexionRatee, setDeconnexionRatee] = useState(false);
 
   // Un lieu ajouté depuis « Mes lieux » doit apparaître ici au retour. Même
   // raison que pour le profil : cet onglet reste monté pendant qu'on modifie
@@ -321,11 +327,18 @@ export default function Profil() {
             <Text className="text-[17px] font-extrabold text-ink">
               {t('profil.confirmerDeconnexion')}
             </Text>
+            {deconnexionRatee ? (
+              <Text className="mt-8 text-[13px] font-semibold text-danger">
+                {t('profil.deconnexionRatee')}
+              </Text>
+            ) : null}
             <Pressable
               accessibilityRole="button"
               onPress={() => {
-                setConfirmeDeconnexion(false);
-                void supabase.auth.signOut();
+                void seDeconnecter().then(({ erreur }) => {
+                  setDeconnexionRatee(erreur);
+                  if (!erreur) setConfirmeDeconnexion(false);
+                });
               }}
               className="mt-16 min-h-driving items-center justify-center rounded-button bg-card2"
               style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}

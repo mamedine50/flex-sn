@@ -2,6 +2,8 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
 
+import { marquerAccrocheVue } from '../src/lib/accroche';
+import { seDeconnecter } from '../src/lib/deconnexion';
 import { supabase } from '../src/lib/supabase';
 
 /**
@@ -15,20 +17,36 @@ import { supabase } from '../src/lib/supabase';
  * l'ancienne solution embarquait un mot de passe utilisable par quiconque lisait
  * le dépôt ; celle-ci ne fonctionne que si l'on a déjà la main sur la base
  * locale.
+ *
+ * `?sortir=1` fait l'inverse : il ferme la session par la MÊME séquence que le
+ * bouton du profil — hors ligne d'abord, session ensuite. C'est ce qui permet
+ * d'éprouver le parcours anonyme sans main humaine, et de vérifier qu'une
+ * déconnexion depuis le monde conducteur en ligne ne laisse pas de fantôme.
  */
 export default function SessionDev() {
-  const { jeton } = useLocalSearchParams<{ jeton?: string }>();
+  const { jeton, sortir } = useLocalSearchParams<{ jeton?: string; sortir?: string }>();
   const [erreurServeur, setErreurServeur] = useState<string | null>(null);
 
   // L'absence de jeton se DÉDUIT des props : la garder en état obligerait à
   // l'écrire depuis l'effet, c'est-à-dire un rendu de plus pour rien.
-  const echec = jeton
-    ? erreurServeur
-    : 'Aucun jeton. Lancez `node scripts/session-locale.mjs`.';
+  const echec =
+    jeton || sortir
+      ? erreurServeur
+      : 'Aucun jeton. Lancez `node scripts/session-locale.mjs`.';
 
   useEffect(() => {
     if (!__DEV__) {
       router.replace('/');
+      return;
+    }
+    if (sortir === '1') {
+      // Une installation dont l'utilisateur se déconnecte a forcément déjà vu le
+      // tour. Sans cette marque, la sortie retomberait dessus et on ne pourrait
+      // pas atteindre l'accueil anonyme, qui est justement ce qu'on éprouve.
+      void marquerAccrocheVue();
+      void seDeconnecter().then(({ erreur }) => {
+        if (erreur) setErreurServeur('Mise hors ligne impossible : session gardée.');
+      });
       return;
     }
     if (!jeton) return;
@@ -44,7 +62,7 @@ export default function SessionDev() {
       }
       router.replace('/');
     })();
-  }, [jeton]);
+  }, [jeton, sortir]);
 
   // Cet écran ne passe pas par `src/i18n` : c'est de l'outillage, il ne sera
   // jamais traduit — même règle que le panneau de développement.

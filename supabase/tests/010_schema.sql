@@ -76,8 +76,11 @@ select hasnt_column('public', 'demandes_ouvertes', 'depart_libelle',
 -- voulu. Cet inventaire ferme la porte par défaut : le prochain oubli tombe ici,
 -- pas dans une relecture d'advisors.
 --
--- La liste blanche est VIDE et doit le rester tant qu'aucune fonction n'a de
--- raison explicite d'être appelée sans session.
+-- La liste blanche porte UNE entrée, et il faut une raison écrite pour en
+-- ajouter une : `prix_suggere()` est l'arithmétique d'une grille publique sur
+-- deux points que l'appelant fournit — elle ne rend aucune ligne appartenant à
+-- quiconque, et sans elle l'écran « Fixez votre prix » est inconsultable sans
+-- compte, ce qui contredit la règle du parcours.
 select is(
   (select coalesce(string_agg(
             p.proname || '(' || pg_get_function_identity_arguments(p.oid) || ')',
@@ -87,9 +90,9 @@ select is(
    where n.nspname = 'public'
      and p.prokind = 'f'
      and has_function_privilege('anon', p.oid, 'execute')
-     and p.proname <> all (array[]::text[])),
+     and p.proname <> all (array['prix_suggere']::text[])),
   '',
-  'aucune fonction de public n''est exécutable par anon — liste blanche vide'
+  'aucune fonction de public n''est exécutable par anon hors liste blanche'
 );
 
 -- Même inventaire côté `authenticated`, mais avec une liste blanche : là, les

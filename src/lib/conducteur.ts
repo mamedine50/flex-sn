@@ -14,7 +14,16 @@ export type DemandeProche = Database['public']['Views']['demandes_ouvertes']['Ro
 /** Rayon d'écoute. 3 km à Dakar, c'est déjà vingt minutes aux heures de pointe. */
 export const RAYON_M = 3000;
 
-/** La capacité à conduire : documents validés ET véhicule actif. */
+/**
+ * La capacité à conduire : documents validés ET véhicule actif.
+ *
+ * Elle se relit au RETOUR AU PREMIER PLAN, et pas seulement au montage. Un
+ * dossier se valide pendant que le candidat attend, application ouverte : sans
+ * cette relecture, le raccourci « Passer en ligne » et les sections conducteur
+ * n'apparaîtraient qu'au prochain démarrage — et personne ne redémarre une
+ * application pour vérifier si son dossier est passé. Il conclurait qu'on l'a
+ * refusé sans le lui dire.
+ */
 export function useEstConducteur() {
   const [etat, setEtat] = useState<'chargement' | 'oui' | 'non'>('chargement');
 
@@ -36,9 +45,13 @@ export function useEstConducteur() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void relire(marqueur);
     const { data: veille } = supabase.auth.onAuthStateChange(() => void relire(marqueur));
+    const abonnement = AppState.addEventListener('change', (etatApp) => {
+      if (etatApp === 'active') void relire(marqueur);
+    });
     return () => {
       marqueur.annule = true;
       veille.subscription.unsubscribe();
+      abonnement.remove();
     };
   }, [relire]);
 
