@@ -1,8 +1,10 @@
 import { router } from 'expo-router';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { useState } from 'react';
+import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { LANGUES_DISPONIBLES, useI18n, useT, type Langue } from '../src/i18n';
+import { ADRESSE_AIDE, ouvrirAide } from '../src/lib/aide';
 import { configurerGabarit, noterMesure } from '../src/lib/gabarit';
 import { PREFERENCES, useTheme, type PreferenceTheme } from '../src/theme/ThemeProvider';
 
@@ -18,6 +20,7 @@ import { PREFERENCES, useTheme, type PreferenceTheme } from '../src/theme/ThemeP
 const GABARIT = { choix: 48 };
 
 export default function Reglages() {
+  const [adresseVisible, setAdresseVisible] = useState(false);
   const t = useT();
   const marges = useSafeAreaInsets();
   const { preference, definirPreference } = useTheme();
@@ -65,8 +68,91 @@ export default function Reglages() {
             onChoisir={(v) => definirLangue(v as Langue)}
           />
         </Groupe>
+
+        {/* CE QUI VIENT DU PROFIL. Ces trois-là s'ouvrent une fois par an et
+            occupaient un tiers de la page d'accueil du compte, à hauteur de
+            pouce, entre des choses qu'on touche tous les jours. Elles sont
+            ici parce que c'est ici qu'on va quand on cherche un réglage. */}
+        <View className="mt-24 gap-8">
+          <Passage
+            titre={t('profil.personnesBloquees')}
+            sous={t('profil.personnesBloqueesSous')}
+            onPress={() => router.push('/bloques')}
+          />
+          <Passage
+            titre={t('profil.aide')}
+            sous={t('profil.aideSous')}
+            onPress={() => {
+              // Sans client mail configuré, l'ouverture échoue : on montre
+              // alors l'adresse en clair plutôt que de ne rien faire.
+              void ouvrirAide(false).then((ouvert) => setAdresseVisible(!ouvert));
+            }}
+          />
+          <Passage
+            titre={t('profil.aPropos')}
+            sous={t('profil.aProposSous')}
+            onPress={() => router.push('/a-propos')}
+          />
+        </View>
       </ScrollView>
+
+      {/* Aucun client mail : l'adresse s'affiche, sélectionnable. Un bouton
+          « Copier » imposerait une dépendance native. */}
+      <Modal visible={adresseVisible} transparent animationType="fade">
+        <Pressable
+          className="flex-1 items-center justify-center bg-bg/70 px-24"
+          onPress={() => setAdresseVisible(false)}
+        >
+          <Pressable className="w-full rounded-card bg-card p-16">
+            <Text className="text-[17px] font-extrabold text-ink">{t('profil.aide')}</Text>
+            <Text className="mt-8 text-[13px] font-semibold text-muted">
+              {t('profil.aideAdresse')}
+            </Text>
+            <Text selectable className="mt-12 text-[16px] font-extrabold text-accInk">
+              {ADRESSE_AIDE}
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => setAdresseVisible(false)}
+              className="mt-16 min-h-driving items-center justify-center rounded-button bg-accFill"
+              style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+            >
+              <Text className="text-[15px] font-extrabold text-onAcc">
+                {t('commun.fermer')}
+              </Text>
+            </Pressable>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </View>
+  );
+}
+
+/** Une ligne qui mène ailleurs. Même hauteur de pouce que partout : 48. */
+function Passage({
+  titre,
+  sous,
+  onPress,
+}: {
+  titre: string;
+  sous: string;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      onPress={onPress}
+      className="min-h-touch flex-row items-center rounded-card bg-card px-16 py-12"
+      style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+    >
+      <View className="flex-1 pr-12">
+        <Text className="text-[15px] font-bold text-ink">{titre}</Text>
+        <Text className="mt-2 text-[12px] font-semibold text-muted" numberOfLines={1}>
+          {sous}
+        </Text>
+      </View>
+      <Text className="text-[16px] font-bold text-muted">›</Text>
+    </Pressable>
   );
 }
 

@@ -1,5 +1,5 @@
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useRef, useState } from 'react';
+import { Fragment, useCallback, useRef, useState } from 'react';
 import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -13,12 +13,11 @@ import { useFavoris } from '../../src/lib/favoris';
 import { useGardeSession } from '../../src/lib/garde';
 import { cleMois, formatXof } from '../../src/lib/format';
 import { configurerGabarit, noterMesure } from '../../src/lib/gabarit';
-import { GAINS_VIDES, useGains } from '../../src/lib/gains';
+import { useGains } from '../../src/lib/gains';
 import { entrerMondeConducteur } from '../../src/lib/mondeEntree';
 import { useMonProfil } from '../../src/lib/monProfil';
 import { deposerPhotoProfil } from '../../src/lib/photos';
 import { useProfilPublic } from '../../src/lib/profilPublic';
-import { ADRESSE_AIDE, ouvrirAide } from '../../src/lib/aide';
 import { supprimerMonCompte, type EchecSuppression } from '../../src/lib/compte';
 import { seDeconnecter } from '../../src/lib/deconnexion';
 import { useSession } from '../../src/lib/session';
@@ -92,7 +91,6 @@ export default function Profil() {
   const [confirmeSuppression, setConfirmeSuppression] = useState(false);
   const [suppressionEnCours, setSuppressionEnCours] = useState(false);
   const [echecSuppression, setEchecSuppression] = useState<EchecSuppression | null>(null);
-  const [adresseVisible, setAdresseVisible] = useState(false);
 
   // Un lieu ajouté depuis « Mes lieux » doit apparaître ici au retour. Même
   // raison que pour le profil : cet onglet reste monté pendant qu'on modifie
@@ -118,6 +116,94 @@ export default function Profil() {
 
   const domicile = favoris.find((f) => f.type === 'domicile') ?? null;
   const travail = favoris.find((f) => f.type === 'travail') ?? null;
+
+  const blocLieux = (
+    <>
+        <Section titre={t('profil.mesLieux')} />
+        <Ligne
+          nom="ligne"
+          icone="domicile"
+          titre={t('favoris.domicile')}
+          sous={domicile ? t('favoris.modifier') : t('favoris.definir')}
+          onPress={() => router.push('/mes-lieux')}
+        />
+        <Ligne
+          icone="travail"
+          titre={t('favoris.travail')}
+          sous={travail ? t('favoris.modifier') : t('favoris.definir')}
+          onPress={() => router.push('/mes-lieux')}
+        />
+        <Ligne
+          icone="plus"
+          titre={t('favoris.ajouter')}
+          onPress={() => router.push('/mes-lieux')}
+        />
+
+        {/* ─────────────────────────────────────────────── conducteur ─── */}
+    </>
+  );
+
+  const blocConducteur = (
+    <>
+        <Section titre={t('profil.conducteur')} />
+        {conducteur ? (
+          <>
+            <Ligne
+              icone="volant"
+              titre={t('profil.passerEnLigne')}
+              sous={t('profil.passerEnLigneSous')}
+              // EXACTEMENT le même appel que le raccourci de l'accueil. Ces
+              // deux entrées ont divergé une fois ; elles ne peuvent plus.
+              onPress={entrerMondeConducteur}
+            />
+            <Ligne
+              icone="documents"
+              titre={t('profil.vehiculeEtDocuments')}
+              sous={t('profil.vehiculeEtDocumentsSous')}
+              onPress={() => router.push('/devenir-conducteur')}
+            />
+          </>
+        ) : (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`${t('profil.conduire')}. ${t('profil.gainsCommission')}`}
+            onPress={() => router.push('/devenir-conducteur')}
+            className="mx-16 min-h-driving justify-center rounded-card bg-accFill px-16 py-12"
+            style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+          >
+            <Text className="text-[16px] font-extrabold text-onAcc">
+              {t('profil.conduire')}
+            </Text>
+            <Text className="mt-2 text-[12px] font-semibold text-onAcc">
+              {t('profil.gainsCommission')}
+            </Text>
+            {/* La suite, dite tout de suite. Ce qui tue la confiance d'un
+                conducteur, ce n'est pas le taux : c'est de le découvrir. */}
+            <Text className="mt-4 text-[11px] font-semibold text-onAcc">
+              {t('profil.commissionApres')}
+            </Text>
+          </Pressable>
+        )}
+
+        {/* ─────────────────────────────────────────── administration ─── */}
+        {admin ? (
+          <>
+            <Section titre={t('admin.section')} />
+            <Ligne
+              icone="documents"
+              titre={t('admin.file')}
+              sous={
+                fileAdmin.dossiers.length === 1
+                  ? t('admin.fileSous', { n: fileAdmin.dossiers.length })
+                  : t('admin.fileSousPluriel', { n: fileAdmin.dossiers.length })
+              }
+              onPress={() => router.push('/admin')}
+            />
+          </>
+        ) : null}
+
+    </>
+  );
 
   return (
     <View className="flex-1 bg-bg">
@@ -204,88 +290,53 @@ export default function Profil() {
             ) : null}
             {conducteur ? <Badge texte={t('profil.valide')} succes /> : null}
           </View>
+
+          {/* LA BANDE DE CHIFFRES. L'entête disait qui on est ; elle ne disait
+              pas où on en est. Pour un conducteur, la semaine est LA question —
+              c'est le chiffre qu'il compare à ce que les autres lui laissent, et
+              il le cherchait plus bas, après avoir fait défiler. Pour un
+              passager, ses courses et sa note suffisent : lui montrer des gains
+              à zéro ne dirait rien de vrai sur lui. */}
+          {conducteur ? (
+            <View className="mt-16 w-full flex-row rounded-card bg-card">
+              <Chiffre
+                titre={t('profil.gainsSemaine')}
+                valeur={formatXof(gains?.semaine_xof ?? 0)}
+                argent
+              />
+              <View className="my-12 w-[1px] bg-line" />
+              <Chiffre
+                titre={t('profil.coursesCumul')}
+                valeur={String(public_?.courses_comme_conducteur ?? 0)}
+              />
+            </View>
+          ) : null}
+
+          {/* L'INVITATION REMPLACE LA CARTE DE GAINS, elle ne s'y ajoute pas.
+              La bande porte déjà le chiffre de la semaine ; garder la carte
+              en dessous l'affichait DEUX FOIS, et allonger une page qu'on
+              voulait raccourcir est le contraire du but. */}
+          {conducteur && (gains?.courses ?? 0) === 0 ? (
+            <Text className="mt-8 text-center text-[13px] font-semibold text-muted">
+              {t('profil.gainsVide')}
+            </Text>
+          ) : null}
         </Pressable>
 
         {/* ──────────────────────────────────────────────── mes lieux ─── */}
-        <Section titre={t('profil.mesLieux')} />
-        <Ligne
-          nom="ligne"
-          icone="domicile"
-          titre={t('favoris.domicile')}
-          sous={domicile ? t('favoris.modifier') : t('favoris.definir')}
-          onPress={() => router.push('/mes-lieux')}
-        />
-        <Ligne
-          icone="travail"
-          titre={t('favoris.travail')}
-          sous={travail ? t('favoris.modifier') : t('favoris.definir')}
-          onPress={() => router.push('/mes-lieux')}
-        />
-        <Ligne
-          icone="plus"
-          titre={t('favoris.ajouter')}
-          onPress={() => router.push('/mes-lieux')}
-        />
+        {/* L'ORDRE SUIT LE RÔLE. Pour un conducteur, ce qui rapporte passe
+            devant : il ouvre cet onglet pour voir ses gains et repartir en
+            ligne, pas pour régler l'adresse de son domicile. Pour un passager,
+            l'inverse — ses lieux sont ce qu'il vient chercher, et une section
+            « Conducteur » en tête lui parlerait d'un métier qu'il ne fait pas.
 
-        {/* ─────────────────────────────────────────────── conducteur ─── */}
-        <Section titre={t('profil.conducteur')} />
-        {conducteur ? (
-          <>
-            <Gains gains={gains ?? GAINS_VIDES} />
-            <Ligne
-              icone="volant"
-              titre={t('profil.passerEnLigne')}
-              sous={t('profil.passerEnLigneSous')}
-              // EXACTEMENT le même appel que le raccourci de l'accueil. Ces
-              // deux entrées ont divergé une fois ; elles ne peuvent plus.
-              onPress={entrerMondeConducteur}
-            />
-            <Ligne
-              icone="documents"
-              titre={t('profil.vehiculeEtDocuments')}
-              sous={t('profil.vehiculeEtDocumentsSous')}
-              onPress={() => router.push('/devenir-conducteur')}
-            />
-          </>
-        ) : (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={`${t('profil.conduire')}. ${t('profil.gainsCommission')}`}
-            onPress={() => router.push('/devenir-conducteur')}
-            className="mx-16 min-h-driving justify-center rounded-card bg-accFill px-16 py-12"
-            style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
-          >
-            <Text className="text-[16px] font-extrabold text-onAcc">
-              {t('profil.conduire')}
-            </Text>
-            <Text className="mt-2 text-[12px] font-semibold text-onAcc">
-              {t('profil.gainsCommission')}
-            </Text>
-            {/* La suite, dite tout de suite. Ce qui tue la confiance d'un
-                conducteur, ce n'est pas le taux : c'est de le découvrir. */}
-            <Text className="mt-4 text-[11px] font-semibold text-onAcc">
-              {t('profil.commissionApres')}
-            </Text>
-          </Pressable>
+            Le même ordre pour tout le monde sert forcément l'un des deux mal.
+            Les deux blocs sont montés UNE fois et remis dans l'ordre voulu :
+            les dupliquer dans deux branches, c'est deux endroits à corriger au
+            prochain changement, et un qu'on oubliera. */}
+        {(conducteur ? [blocConducteur, blocLieux] : [blocLieux, blocConducteur]).map(
+          (bloc, i) => <Fragment key={i}>{bloc}</Fragment>,
         )}
-
-        {/* ─────────────────────────────────────────── administration ─── */}
-        {admin ? (
-          <>
-            <Section titre={t('admin.section')} />
-            <Ligne
-              icone="documents"
-              titre={t('admin.file')}
-              sous={
-                fileAdmin.dossiers.length === 1
-                  ? t('admin.fileSous', { n: fileAdmin.dossiers.length })
-                  : t('admin.fileSousPluriel', { n: fileAdmin.dossiers.length })
-              }
-              onPress={() => router.push('/admin')}
-            />
-          </>
-        ) : null}
-
         {/* ─────────────────────────────────────────────────── compte ─── */}
         <Section titre={t('profil.compte')} />
         <Ligne
@@ -300,35 +351,16 @@ export default function Profil() {
           sous={t('profil.mesAvisSous')}
           onPress={() => router.push('/avis')}
         />
-        {/* Thème et langue quittent le fil : six pastilles au milieu du chemin
-            pour des réglages qu'on touche une fois. */}
+        {/* QUATRE LIGNES DEVIENNENT UNE. Affichage, personnes bloquées, aide et
+            À propos s'ouvrent une fois par an ; elles occupaient un tiers de la
+            page à hauteur de pouce, entre des choses qu'on touche tous les
+            jours. Elles vivent maintenant dans Réglages, qui existait déjà pour
+            le thème et la langue. */}
         <Ligne
           icone="theme"
-          titre={t('profil.affichage')}
-          sous={t('profil.affichageSous')}
+          titre={t('profil.reglages')}
+          sous={t('profil.reglagesSous')}
           onPress={() => router.push('/reglages')}
-        />
-        <Ligne
-          icone="bloque"
-          titre={t('profil.personnesBloquees')}
-          sous={t('profil.personnesBloqueesSous')}
-          onPress={() => router.push('/bloques')}
-        />
-        <Ligne
-          icone="aide"
-          titre={t('profil.aide')}
-          sous={t('profil.aideSous')}
-          onPress={() => {
-            // Si aucun client mail n'est configuré, l'ouverture échoue : on
-            // montre alors l'adresse en clair plutôt que de ne rien faire.
-            void ouvrirAide(conducteur).then((ouvert) => setAdresseVisible(!ouvert));
-          }}
-        />
-        <Ligne
-          icone="infos"
-          titre={t('profil.aPropos')}
-          sous={t('profil.aProposSous')}
-          onPress={() => router.push('/a-propos')}
         />
         {connecte ? (
           <Ligne
@@ -420,36 +452,6 @@ export default function Profil() {
         </Pressable>
       </Modal>
 
-      {/* Aucun client mail sur le téléphone : on montre l'adresse plutôt que de
-          ne rien faire. Sélectionnable — l'appui long copie, et ça n'ajoute
-          aucune dépendance native. */}
-      <Modal visible={adresseVisible} transparent animationType="fade">
-        <Pressable
-          className="flex-1 items-center justify-center bg-bg/70 px-24"
-          onPress={() => setAdresseVisible(false)}
-        >
-          <Pressable className="w-full rounded-card bg-card p-16">
-            <Text className="text-[17px] font-extrabold text-ink">{t('profil.aide')}</Text>
-            <Text className="mt-8 text-[13px] font-semibold text-muted">
-              {t('profil.aideAdresse')}
-            </Text>
-            <Text selectable className="mt-12 text-[16px] font-extrabold text-accInk">
-              {ADRESSE_AIDE}
-            </Text>
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => setAdresseVisible(false)}
-              className="mt-16 min-h-driving items-center justify-center rounded-button bg-accFill"
-              style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
-            >
-              <Text className="text-[15px] font-extrabold text-onAcc">
-                {t('commun.fermer')}
-              </Text>
-            </Pressable>
-          </Pressable>
-        </Pressable>
-      </Modal>
-
       <Modal visible={confirmeDeconnexion} transparent animationType="fade">
         <Pressable
           className="flex-1 items-center justify-center bg-bg/70 px-24"
@@ -504,6 +506,32 @@ export default function Profil() {
           onFermer={() => setPanneauOuvert(false)}
         />
       ) : null}
+    </View>
+  );
+}
+
+/** Un chiffre de la bande d'entête. Tabulaire : il change, il ne doit pas sauter. */
+function Chiffre({
+  titre,
+  valeur,
+  argent = false,
+}: {
+  titre: string;
+  valeur: string;
+  argent?: boolean;
+}) {
+  return (
+    <View className="flex-1 items-center py-12">
+      <Text
+        className={`text-[20px] font-extrabold ${argent ? 'text-moneyInk' : 'text-ink'}`}
+        style={chiffresTabulaires}
+        numberOfLines={1}
+      >
+        {valeur}
+      </Text>
+      <Text className="mt-2 text-[11px] font-bold uppercase tracking-wider text-muted">
+        {titre}
+      </Text>
     </View>
   );
 }
@@ -580,39 +608,5 @@ function Ligne({
         <Text className="text-[15px] font-bold text-muted">›</Text>
       ) : null}
     </Pressable>
-  );
-}
-
-/**
- * Les gains, en tête de la section conducteur.
- *
- * LA SEMAINE EN GROS, le cumul en dessous : un conducteur pense en semaines —
- * carburant, versement au propriétaire du véhicule, dépense du dimanche. Un
- * total cumulé grossit toujours, il ne dit rien de « comment ça marche en ce
- * moment ».
- */
-function Gains({
-  gains,
-}: {
-  gains: { courses: number; total_xof: number; semaine_xof: number };
-}) {
-  const t = useT();
-  return (
-    <View className="mx-16 mb-8 rounded-card bg-card p-16">
-      <Text className="text-[12px] font-bold uppercase tracking-wider text-muted">
-        {t('profil.gainsSemaine')}
-      </Text>
-      <Text
-        className="mt-4 text-[28px] font-extrabold text-moneyInk"
-        style={chiffresTabulaires}
-      >
-        {formatXof(gains.semaine_xof)}
-      </Text>
-      <Text className="mt-4 text-[13px] font-semibold text-muted">
-        {gains.courses === 0
-          ? t('profil.gainsVide')
-          : t('profil.gainsTotalLigne', { montant: formatXof(gains.total_xof) })}
-      </Text>
-    </View>
   );
 }

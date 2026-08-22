@@ -233,6 +233,9 @@ export const fr = {
   },
 
   profil: {
+    coursesCumul: 'Courses',
+    reglages: 'Réglages',
+    reglagesSous: 'Affichage, personnes bloquées, aide, à propos',
     supprimerCompte: 'Supprimer mon compte',
     supprimerCompteSous: 'Efface vos données. Cette action est irréversible.',
     supprimerCompteTitre: 'Supprimer votre compte ?',

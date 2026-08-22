@@ -225,6 +225,9 @@ export const en: Dictionnaire = {
   },
 
   profil: {
+    coursesCumul: 'Rides',
+    reglages: 'Settings',
+    reglagesSous: 'Display, blocked people, help, about',
     supprimerCompte: 'Delete my account',
     supprimerCompteSous: 'Erases your data. This cannot be undone.',
     supprimerCompteTitre: 'Delete your account?',
