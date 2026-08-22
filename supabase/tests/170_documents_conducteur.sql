@@ -2,7 +2,7 @@
 begin;
 create extension if not exists pgtap with schema public;
 
-select plan(15);
+select plan(18);
 
 create function public.t_utilisateur(p_prenom text) returns uuid
 language plpgsql as $$
@@ -136,6 +136,57 @@ select is(
   (select est_nouveau from public.profils_publics where id = (select candidat from f)),
   true,
   'sans courses terminées, on est « nouveau » — une moyenne sur deux avis ne dit rien'
+);
+
+-- ============================ UNE PIÈCE VALIDÉE EST SCELLÉE ==============
+-- Le contournement que ça ferme : `soumettre_document()` acceptait un dépôt
+-- quel que soit le statut. Un conducteur confirmé remplaçait une pièce déjà
+-- approuvée, la ligne repassait en attente — mais `documents_valides_le` n'est
+-- recalculé que par `decider_document()`, et personne ne décidait rien. Il
+-- continuait de rouler avec un fichier que personne n'avait regardé.
+set local role postgres;
+update public.documents_conducteur
+   set statut = 'valide', decide_le = now()
+ where profil_id = (select candidat from f) and type = 'permis';
+
+-- On retient le chemin SCELLÉ plutôt que de l'écrire en dur : les assertions
+-- précédentes redéposent déjà le permis, et une valeur en dur ici se casserait
+-- au premier test ajouté au-dessus.
+create temp table scelle as
+select chemin from public.documents_conducteur
+ where profil_id = (select candidat from f) and type = 'permis';
+grant select on scelle to authenticated;
+
+select public.t_devenir((select candidat from f));
+set local role authenticated;
+
+select throws_ok(
+  format($$ select public.soumettre_document('permis', %L) $$,
+         (select candidat from f) || '/autre-permis.jpg'),
+  'P0001', 'piece_validee',
+  'Une pièce VALIDÉE ne se redépose pas — ce qu''un admin a regardé ne bouge plus'
+);
+
+select is(
+  (select chemin from public.documents_conducteur
+    where profil_id = (select candidat from f) and type = 'permis'),
+  (select chemin from scelle),
+  'et le fichier d''origine est toujours celui qui a été validé'
+);
+
+-- Mais un REFUS se corrige : c'est tout l'intérêt d'un refus motivé.
+set local role postgres;
+update public.documents_conducteur
+   set statut = 'refuse', motif_refus = 'illisible', decide_le = now()
+ where profil_id = (select candidat from f) and type = 'permis';
+
+select public.t_devenir((select candidat from f));
+set local role authenticated;
+
+select lives_ok(
+  format($$ select public.soumettre_document('permis', %L) $$,
+         (select candidat from f) || '/permis-net.jpg'),
+  'Une pièce REFUSÉE se redépose librement — sinon un refus serait sans issue'
 );
 
 select * from finish();

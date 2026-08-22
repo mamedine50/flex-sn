@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useFocusEffect } from 'expo-router';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppState } from 'react-native';
 
 import type { Database } from './database.types';
@@ -112,6 +113,30 @@ export function useFileDossiers() {
       vivant.annule = true;
     };
   }, [tour]);
+
+  /**
+   * ── LA FILE SE RELIT EN REVENANT DESSUS ──────────────────────────────────
+   * Elle ne lisait qu'au montage. L'admin tranchait la dernière pièce d'un
+   * dossier sur l'écran de détail, revenait — et le candidat était toujours là,
+   * avec son « il attend depuis 2 j », alors qu'il ne l'attendait plus. Une
+   * file qui ment sur ce qu'elle contient fait retraiter des dossiers déjà
+   * traités.
+   *
+   * `useFocusEffect` et non `useEffect` : le retour arrière ne remonte pas
+   * l'écran, il le RÉVÈLE. Aucun effet de montage ne se rejoue.
+   */
+  // Le PREMIER focus coïncide avec le montage : le relancer ferait deux
+  // requêtes à l'ouverture, sur une 3G où chacune se paie.
+  const premierFocus = useRef(true);
+  useFocusEffect(
+    useCallback(() => {
+      if (premierFocus.current) {
+        premierFocus.current = false;
+        return;
+      }
+      setTour((n) => n + 1);
+    }, []),
+  );
 
   return { dossiers, statut, relire: useCallback(() => setTour((n) => n + 1), []) };
 }
