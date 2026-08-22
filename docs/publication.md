@@ -28,6 +28,19 @@ côté conducteur.
 avec, sinon le compte n'existe pas encore. Le bloc trouve le profil par son
 numéro, valide les cinq pièces et pose un véhicule actif.
 
+> **À REJOUER À CHAQUE FOIS QUE LA LISTE DES PIÈCES CHANGE.** Le 22 août 2026,
+> la photo du véhicule est devenue la cinquième pièce du dossier. Ce bloc a été
+> mis à jour, mais personne ne l'a rejoué : le compte de revue est resté à
+> quatre pièces et a PERDU sa capacité de conduire, en silence. Un compte de
+> démonstration qui n'est plus conducteur, c'est un rejet d'Apple qu'on découvre
+> trois jours plus tard. Le bloc est idempotent — le rejouer ne coûte rien.
+>
+> Et il n'y a **aucune exception dans le code** pour ce compte, il n'y en aura
+> jamais : une branche qui reconnaît un numéro et saute la validation est une
+> porte dérobée. Apple lit le binaire, c'est un motif de rejet en soi, et le
+> trou survit à la revue. Le compte de revue passe par la même règle que tout le
+> monde ; c'est son DOSSIER qu'on prépare, pas la règle qu'on plie.
+
 ```sql
 -- Flex — faire de Conducteur Test 0002 un conducteur validé.
 -- À lancer dans l'éditeur SQL de Supabase, en une fois.
