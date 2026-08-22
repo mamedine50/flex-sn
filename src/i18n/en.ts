@@ -324,6 +324,22 @@ export const en: Dictionnaire = {
     reseauCoupe: 'Offline. Requests are not coming in.',
   },
 
+  fil: {
+    titre: 'Chat',
+    fermer: 'Close',
+    voirConversation: 'View the chat',
+    champ: 'Message…',
+    envoyer: 'Send',
+    vide: 'Write the first message. Say where you are, or what you are wearing.',
+    confidentialite: 'Your numbers stay private — the chat closes after the ride',
+    ferme: 'The chat is closed. The ride is over.',
+    erreurEnvoi: 'Message not sent. Check your connection and try again.',
+    rapide_jarrive: 'On my way',
+    rapide_jesuisla: 'I’m here',
+    rapide_deuxminutes: '2 minutes',
+    rapide_ouetesvous: 'Where are you?',
+  },
+
   enRoute: {
     puce_ponctuel: 'On time',
     puce_conduite_sure: 'Safe driving',

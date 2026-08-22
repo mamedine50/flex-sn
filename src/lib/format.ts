@@ -63,3 +63,16 @@ export function arrondirAuPas(montant: number, pas: number = PAS_XOF): number {
 export function cleMois(date: Date): CleTraduction {
   return `mois.m${date.getMonth() + 1}` as CleTraduction;
 }
+
+/**
+ * L'heure d'un message, en 24 h. TOUJOURS en 24 h, dans toutes les langues :
+ * c'est la règle du dépôt, et un « 7:04 PM » dans un fil français aurait l'air
+ * d'une fuite de gabarit anglais. On formate à la main plutôt que par
+ * `toLocaleTimeString` — l'implémentation d'Intl varie d'un appareil à l'autre
+ * et impose l'usage local, qui est exactement ce qu'on refuse ici.
+ */
+export function heure24(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}

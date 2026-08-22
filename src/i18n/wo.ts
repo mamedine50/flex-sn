@@ -17,6 +17,7 @@ export const wo: DictionnairePartiel = {
   prix: {},
   offres: {},
   conducteur: {},
+  fil: {},
   enRoute: {},
   erreurs: {},
   onglets: {},

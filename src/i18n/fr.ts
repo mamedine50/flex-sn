@@ -336,6 +336,25 @@ export const fr = {
     reseauCoupe: 'Hors ligne. Les demandes n’arrivent plus.',
   },
 
+  /**
+   * La messagerie interne. Les numéros ne circulent plus.
+   */
+  fil: {
+    titre: 'Message',
+    fermer: 'Fermer',
+    voirConversation: 'Voir la conversation',
+    champ: 'Message…',
+    envoyer: 'Envoyer',
+    vide: 'Écrivez le premier message. Dites où vous êtes, ou ce que vous portez.',
+    confidentialite: 'Vos numéros restent privés — la conversation se ferme après la course',
+    ferme: 'La conversation est fermée. La course est terminée.',
+    erreurEnvoi: 'Message non envoyé. Vérifiez votre connexion et réessayez.',
+    rapide_jarrive: 'J’arrive',
+    rapide_jesuisla: 'Je suis là',
+    rapide_deuxminutes: '2 minutes',
+    rapide_ouetesvous: 'Où êtes-vous ?',
+  },
+
   enRoute: {
     puce_ponctuel: 'Ponctuel',
     puce_conduite_sure: 'Conduite sûre',

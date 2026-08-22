@@ -7,31 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
       blocages: {
@@ -315,6 +290,21 @@ export type Database = {
           },
         ]
       }
+      durees_service: {
+        Row: {
+          duree_demande: string
+          service: Database["public"]["Enums"]["service_course"]
+        }
+        Insert: {
+          duree_demande: string
+          service: Database["public"]["Enums"]["service_course"]
+        }
+        Update: {
+          duree_demande?: string
+          service?: Database["public"]["Enums"]["service_course"]
+        }
+        Relationships: []
+      }
       evaluations: {
         Row: {
           auteur_id: string
@@ -567,6 +557,66 @@ export type Database = {
           {
             foreignKeyName: "lieux_favoris_proprietaire_fkey"
             columns: ["proprietaire"]
+            isOneToOne: false
+            referencedRelation: "profils_publics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          contenu: string
+          course_id: string
+          cree_le: string
+          expediteur_id: string
+          id: string
+        }
+        Insert: {
+          contenu: string
+          course_id: string
+          cree_le?: string
+          expediteur_id: string
+          id?: string
+        }
+        Update: {
+          contenu?: string
+          course_id?: string
+          cree_le?: string
+          expediteur_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "rides"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_expediteur_id_fkey"
+            columns: ["expediteur_id"]
+            isOneToOne: false
+            referencedRelation: "candidat_admin"
+            referencedColumns: ["profil_id"]
+          },
+          {
+            foreignKeyName: "messages_expediteur_id_fkey"
+            columns: ["expediteur_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers_en_attente"
+            referencedColumns: ["profil_id"]
+          },
+          {
+            foreignKeyName: "messages_expediteur_id_fkey"
+            columns: ["expediteur_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_expediteur_id_fkey"
+            columns: ["expediteur_id"]
             isOneToOne: false
             referencedRelation: "profils_publics"
             referencedColumns: ["id"]
@@ -2041,6 +2091,22 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      envoyer_message: {
+        Args: { p_contenu: string; p_course_id: string }
+        Returns: {
+          contenu: string
+          course_id: string
+          cree_le: string
+          expediteur_id: string
+          id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "messages"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       est_admin: { Args: { p_profil?: string }; Returns: boolean }
       est_bloque: { Args: { p_autre: string; p_un: string }; Returns: boolean }
       est_conducteur: { Args: { p_profil: string }; Returns: boolean }
@@ -2415,9 +2481,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {
       auteur_offre: ["conducteur", "passager"],

@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { EtatCarte } from '../src/components/CarteFond';
 import Avatar from '../src/components/Avatar';
+import FilMessages from '../src/components/FilMessages';
 import PanneauDev, { type EtatForce } from '../src/components/PanneauDev';
 import GlisserPourConfirmer from '../src/components/GlisserPourConfirmer';
 import { useT } from '../src/i18n';
@@ -91,6 +92,7 @@ export default function EnRoute() {
   const [echec, setEchec] = useState<ReturnType<typeof cleErreur> | null>(null);
   const [confirmeAnnulation, setConfirmeAnnulation] = useState(false);
   const [etatCarte, setEtatCarte] = useState<EtatCarte>('attente');
+  const [filOuvert, setFilOuvert] = useState(false);
   const [note, setNote] = useState(0);
   const [puces, setPuces] = useState<string[]>([]);
 
@@ -398,6 +400,7 @@ export default function EnRoute() {
               photo={autre.photo_url}
               telephone={autre.telephone}
               suisConducteur={suisConducteur}
+              onEcrire={() => setFilOuvert(true)}
             />
           ) : null}
 
@@ -450,6 +453,26 @@ export default function EnRoute() {
             >
               <Text className="text-[14px] font-bold text-danger">
                 {t('enRoute.annuler')}
+              </Text>
+            </Pressable>
+          ) : null}
+
+          {/* ── L'HISTORIQUE RESTE ATTEIGNABLE ──
+              La course finie, `Contrepartie` disparaît — et avec elle le seul
+              bouton qui ouvrait le fil. Or c'est APRÈS coup qu'on signale, et
+              un signalement sans ses preuves ne vaut rien. Cette ligne rouvre
+              la conversation en lecture seule ; le serveur refuse l'envoi de
+              toute façon, mais on ne compte pas là-dessus pour l'écran. */}
+          {(terminee || annulee) && autre ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('fil.voirConversation')}
+              onPress={() => setFilOuvert(true)}
+              className="mt-12 min-h-touch justify-center rounded-field bg-card px-16"
+              style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+            >
+              <Text className="text-[13px] font-bold text-accInk">
+                {t('fil.voirConversation')}
               </Text>
             </Pressable>
           ) : null}
@@ -516,6 +539,22 @@ export default function EnRoute() {
         </Pressable>
       </Modal>
 
+      {/* LE FIL. Il s'ouvre sur demande, et se DÉMONTE avec l'écran de course :
+          le canal temps réel meurt avec lui, aucun abonnement ne survit à son
+          fil. `ouvert` porte la fermeture — après « terminée », on lit encore
+          l'historique, on n'écrit plus. */}
+      {filOuvert && autre ? (
+        <FilMessages
+          courseId={course.id}
+          monId={moi}
+          prenom={autre.prenom}
+          photo={autre.photo_url}
+          vehicule={course.vehicule}
+          ouvert={!terminee && !annulee}
+          onFermer={() => setFilOuvert(false)}
+        />
+      ) : null}
+
       {__DEV__ ? (
         <PanneauDev
           visible={panneauOuvert}
@@ -537,12 +576,14 @@ function Contrepartie({
   photo,
   telephone,
   suisConducteur,
+  onEcrire,
 }: {
   id: string;
   prenom: string;
   photo: string | null;
   telephone: string | null;
   suisConducteur: boolean;
+  onEcrire: () => void;
 }) {
   const t = useT();
   const profil = useProfilPublic(id);
@@ -585,30 +626,42 @@ function Contrepartie({
         ) : null}
       </View>
 
-      {/* Le numéro n'existe qu'à partir d'ici : la policy ne le sert que sur une
-          course active. Sans lui, on n'affiche pas de bouton mort. */}
-      {telephone ? (
-        <View className="flex-row gap-8">
+      {/* ÉCRIRE marche toujours ; APPELER seulement si la policy sert le
+          numéro, c'est-à-dire pendant la course. Sans lui on n'affiche pas de
+          bouton mort. */}
+      <View className="flex-row gap-8">
+        {telephone ? (
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('enRoute.appeler')}
+            // ═══ LE DERNIER ENDROIT OÙ UN NUMÉRO TRANSITE ═══
+            // L'appel est DIRECT : le numéro de la contrepartie part dans le
+            // composeur, et de là dans le journal d'appels. Le fil interne a
+            // fermé le SMS ; l'appel attend un RELAIS (type Twilio) qui
+            // masquerait les deux numéros derrière un numéro de service.
+            // Hors V1, et c'est la seule brèche qui reste — elle est ici,
+            // écrite, pour qu'on sache où revenir.
             onPress={() => void Linking.openURL(`tel:${telephone}`)}
             className="min-h-touch items-center justify-center rounded-field bg-accFill px-16"
             style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
           >
             <Text className="text-[13px] font-bold text-onAcc">{t('enRoute.appeler')}</Text>
           </Pressable>
+        ) : null}
+          {/* « Écrire » ouvre le FIL INTERNE, plus jamais les SMS de
+              l'opérateur. Un SMS emporte les deux numéros et ne les rend
+              jamais : la course finit, la RLS se referme, mais le numéro est
+              déjà dans le répertoire d'en face. */}
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('enRoute.ecrire')}
-            onPress={() => void Linking.openURL(`sms:${telephone}`)}
+            onPress={onEcrire}
             className="min-h-touch items-center justify-center rounded-field bg-card2 px-16"
             style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
           >
             <Text className="text-[13px] font-bold text-accInk">{t('enRoute.ecrire')}</Text>
           </Pressable>
-        </View>
-      ) : null}
+      </View>
       </View>
 
       {bloqueFait ? (
