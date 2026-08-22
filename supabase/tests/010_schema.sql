@@ -117,7 +117,8 @@ select is(
        -- appelables, comme `prix_suggere` l'est pour la grille de prix.
        'duree_demande', 'duree_offre',
        'demandes_proches',
-       'enregistrer_lieu_favori', 'est_admin', 'est_conducteur', 'maj_photo_profil',
+       'enregistrer_lieu_favori', 'envoyer_message',
+       'est_admin', 'est_conducteur', 'maj_photo_profil',
        'maj_position', 'maj_profil',
        'noter_course', 'prix_suggere', 'refuse_offer', 'signaler',
        'soumettre_document', 'submit_offer', 'supprimer_lieu_favori',
