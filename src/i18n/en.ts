@@ -60,6 +60,7 @@ export const en: Dictionnaire = {
   },
 
   prix: {
+    maPosition: 'My location',
     presDe: 'near {lieu}',
     titre: 'Set your price',
     depart: 'Pickup',

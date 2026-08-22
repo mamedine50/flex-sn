@@ -214,6 +214,22 @@ export default function AccueilPassager({
         });
 
   /**
+   * ON DEMANDE LA POSITION À LA PREMIÈRE ARRIVÉE, sans attendre un geste.
+   *
+   * Elle n'était demandée qu'en touchant la pastille « Point de départ » :
+   * quelqu'un qui installait l'application n'était donc jamais interrogé, et
+   * l'accueil s'ouvrait sur une carte centrée nulle part. Toutes les
+   * applications de transport demandent après la connexion, parce que sans
+   * position la carte ne sert à rien.
+   *
+   * Une seule fois : la marque `localisation` s'écrit dès que le pré-écran a
+   * été vu, refus compris. Redemander à chaque ouverture serait la boucle de
+   * relance qu'on s'interdit.
+   */
+  const ouvrirCarteLoc =
+    carteLoc || (locDejaVue === false && etatPosition === 'jamais_demandee');
+
+  /**
    * Première fois : on explique avant de laisser partir la boîte système. Les
    * suivantes, on demande directement — la carte aurait déjà été lue.
    */
@@ -397,7 +413,7 @@ export default function AccueilPassager({
       </View>
 
       <CarteLocalisation
-        visible={carteLoc}
+        visible={ouvrirCarteLoc}
         onAutoriser={() => {
           setCarteLoc(false);
           void marquerVu('localisation');

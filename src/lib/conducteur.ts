@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { AppState } from 'react-native';
 
+import { ZONE_TEST } from './couverture';
 import type { Database } from './database.types';
 import { supabase } from './supabase';
 
@@ -11,8 +12,27 @@ export { delaiEstimeMin, distanceM } from './geo';
  */
 export type DemandeProche = Database['public']['Views']['demandes_ouvertes']['Row'];
 
-/** Rayon d'écoute. 3 km à Dakar, c'est déjà vingt minutes aux heures de pointe. */
-export const RAYON_M = 3000;
+/**
+ * Le rayon d'écoute du conducteur — la distance au-delà de laquelle une demande
+ * ne lui est plus proposée.
+ *
+ * 3 KM À DAKAR, et ce n'est pas peu : aux heures de pointe c'est déjà vingt
+ * minutes de trajet pour aller chercher quelqu'un. Un rayon plus large remplit
+ * la file de courses qu'on refusera, et fait attendre le passager pendant qu'un
+ * conducteur trop loin réfléchit.
+ *
+ * EN MODE TEST, IL PASSE À 60 KM. Deux téléphones qui s'essaient depuis
+ * Gatineau ne sont pas à trois kilomètres l'un de l'autre, et une file vide ne
+ * prouve rien du tout — on croirait l'appariement cassé alors qu'il travaille.
+ * C'est le même interrupteur que la zone : un seul point de vérité pour tout ce
+ * qui relâche la géographie pendant les essais.
+ *
+ * Le rayon est envoyé par le client à `demandes_proches()`. Il ne cache rien :
+ * le filtrage se fait sur la MAILLE, jamais sur le point exact, et un rayon
+ * choisi par l'appelant sur un point exact se trilatérerait en trois essais.
+ * C'est pourquoi on peut le laisser réglable sans y regarder à deux fois.
+ */
+export const RAYON_M = ZONE_TEST ? 60_000 : 3_000;
 
 /**
  * La capacité à conduire : documents validés ET véhicule actif.

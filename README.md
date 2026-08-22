@@ -31,7 +31,7 @@ deux téléphones à Gatineau.
 
 | Profil de build | Environnement EAS | `ZONE_TEST` | Ce qu'il fait |
 |---|---|---|---|
-| `test` | `preview` | **1** | Partout dans le monde. Pour les essais internes. |
+| `test` | `preview` | **1** | Partout dans le monde, et rayon d'écoute à 60 km. Pour les essais internes. |
 | `production` | `production` | **0** | Sénégal seulement. C'est celui qu'on soumet à Apple. |
 
 ```bash
@@ -44,6 +44,11 @@ en mode Sénégal ne demande aucun nettoyage** : on construit avec l'autre profi
 c'est tout. Il n'y a aucune coordonnée d'essai ailleurs dans le code — la zone
 vit dans `src/lib/couverture.ts`, et c'est la seule constante à changer pour
 l'élargir ou la resserrer.
+
+L'interrupteur commande **deux** choses, et c'est voulu : la zone servie, et le
+rayon d'écoute du conducteur (3 km au Sénégal, 60 km en test). Deux téléphones
+qui s'essaient depuis le Canada ne sont pas à trois kilomètres l'un de l'autre,
+et une file vide se lirait comme un appariement cassé.
 
 **La zone de production est le SÉNÉGAL ENTIER**, en boîte englobante. Elle
 déborde sur la Gambie et un peu sur les voisins, et c'est assumé : refuser une

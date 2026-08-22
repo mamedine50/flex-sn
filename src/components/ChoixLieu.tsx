@@ -4,6 +4,7 @@ import { FlatList, Keyboard, Modal, Pressable, ScrollView, StyleSheet, Text, Tex
 import { useT } from '../i18n';
 import { communesPour, useCommunes, type Commune } from '../lib/communes';
 import { useFavoris, type Favori } from '../lib/favoris';
+import { useLocalisation } from '../lib/localisation';
 import { chercherLieux, GLYPHE, useLieux } from '../lib/lieux';
 import { lieuLePlusProche } from '../lib/lieuxOrdre';
 import { lieuDepuisFavori } from '../lib/lieuNeutre';
@@ -154,6 +155,10 @@ function SurCarte({
   } | null>(null);
   const lieux = useLieux();
   const { favoris } = useFavoris();
+  // La position sert au raccourci « Ma position ». On la lit ici plutôt que de
+  // la faire descendre en propriété : le sélecteur s'ouvre depuis trois écrans,
+  // et trois chemins de propriété se désaccordent au premier oubli.
+  const { position } = useLocalisation();
 
   const suggestions = useMemo(() => {
     if (normaliserVide(recherche)) return [];
@@ -238,7 +243,7 @@ function SurCarte({
               c'est choisi, sans passer par la recherche. Ils ne recentrent pas
               la carte — ils CHOISISSENT, parce qu'un lieu enregistré a déjà été
               pointé une fois. */}
-          <RangeeFavoris favoris={favoris} onChoisir={onChoisir} />
+          <RangeeFavoris favoris={favoris} position={position} onChoisir={onChoisir} />
 
           {/* Recherche par quartier, filtrée EN LOCAL sur la table communes.
               Aucun appel réseau, aucun service de géocodage. */}
@@ -336,15 +341,29 @@ function SurCarte({
  * Le nom affiché vient de l'interface pour « Domicile » et « Travail » : ces
  * deux-là ne sont pas stockés, ils se traduisent.
  */
+/**
+ * Les raccourcis, « Ma position » en tête.
+ *
+ * ELLE EST PREMIÈRE ET ELLE N'EST PAS UN FAVORI. Neuf fois sur dix, le point de
+ * départ est là où l'on se tient : le chercher sur une carte ou le taper est un
+ * détour absurde. Et c'est le SEUL chemin praticable hors de Dakar — la table
+ * des lieux ne contient que des quartiers dakarois, donc chercher « Gatineau »
+ * ne rend rien. Un testeur au Canada pose sa position d'un appui.
+ *
+ * Elle ne s'affiche que si la position est connue : proposer un raccourci qui
+ * échoue vaut moins que ne rien proposer.
+ */
 function RangeeFavoris({
   favoris,
+  position,
   onChoisir,
 }: {
   favoris: Favori[];
+  position: { latitude: number; longitude: number } | null;
   onChoisir: (lieu: Lieu) => void;
 }) {
   const t = useT();
-  if (favoris.length === 0) return null;
+  if (favoris.length === 0 && !position) return null;
 
   const nomDe = (f: Favori) =>
     f.type === 'domicile'
@@ -361,6 +380,24 @@ function RangeeFavoris({
       className="mt-8"
       contentContainerClassName="gap-8"
     >
+      {position ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('prix.maPosition')}
+          onPress={() =>
+            onChoisir({
+              lat: position.latitude,
+              lon: position.longitude,
+              libelle: t('prix.maPosition'),
+            })
+          }
+          className="min-h-touch justify-center rounded-full bg-accFill px-16"
+          style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+        >
+          <Text className="text-[14px] font-bold text-onAcc">{t('prix.maPosition')}</Text>
+        </Pressable>
+      ) : null}
+
       {favoris.map((f) => (
         <Pressable
           key={f.id}
