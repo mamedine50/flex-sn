@@ -82,7 +82,7 @@ if (erreurCreation) {
 // Un conducteur en règle : quatre pièces validées et un véhicule actif. Sans
 // ça `est_conducteur()` reste faux et le mode conducteur ne s'ouvre pas.
 if (CONDUCTEUR) {
-  const pieces = ['piece_identite', 'permis', 'carte_grise', 'selfie'];
+  const pieces = ['piece_identite', 'permis', 'carte_grise', 'selfie', 'photo_vehicule'];
   for (const type of pieces) {
     await admin.from('documents_conducteur').insert({
       profil_id: cree.user.id,

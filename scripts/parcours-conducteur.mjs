@@ -117,7 +117,7 @@ async function acteur(prenom, { conducteur = false } = {}) {
     .eq('id', cree.user.id);
 
   if (conducteur) {
-    for (const type of ['piece_identite', 'permis', 'carte_grise', 'selfie']) {
+    for (const type of ['piece_identite', 'permis', 'carte_grise', 'selfie', 'photo_vehicule']) {
       await admin
         .from('documents_conducteur')
         .insert({ profil_id: cree.user.id, type, chemin: `${cree.user.id}/${type}.jpg` });

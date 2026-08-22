@@ -16,7 +16,7 @@ bout **sur le projet distant, avec deux vraies sessions** — voir `docs/parcour
 |---|---|
 | Écrans | Accroche · Connexion (pays, numéro, code, prénom) · Accueil · Fixez votre prix · Offres reçues · Mode conducteur · En route · Profil · Mon profil · Mes lieux · Mes courses · Mes avis · Affichage · Maison du conducteur (GO, en ligne, file) · Conduire avec Flex · À propos · Conditions · Confidentialité · Administration (file + dossier) |
 | Base | 55 migrations, **378 assertions pgTAP**, RLS sur chaque table, logique métier en RPC |
-| Gardes | `pnpm typecheck` · `pnpm lint` · `pnpm test` · `pnpm tokens:check` (44 paires) · `supabase test db` · `node scripts/parcours-v1.mjs` |
+| Gardes | `pnpm typecheck` · `pnpm lint` · `pnpm test` · `pnpm tokens:check` (44 paires) · `pnpm diagnostic` · `supabase test db` · les trois parcours |
 | Étiquette | `v1.0.0-dev` |
 
 Code-complète ne veut pas dire lançable : le tableau ci-dessous liste ce qui manque, et
@@ -260,8 +260,10 @@ pnpm tokens:check          # échoue si une paire texte/fond passe sous 4,5:1, d
 pnpm typecheck
 pnpm lint
 supabase test db --local   # 378 assertions pgTAP
+pnpm diagnostic                       # routes, clés, RPC, tables : tout ce que le code appelle existe
 node scripts/parcours-v1.mjs          # le parcours passager, deux sessions
 node scripts/parcours-conducteur.mjs  # le parcours conducteur : GO → course → note
+node scripts/parcours-negociation.mjs # les deux allers-retours, et le cinquième message refusé
 ```
 
 **`docs/publication.md`** porte les comptes de test de la revue Apple, le SQL qui valide

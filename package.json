@@ -19,7 +19,8 @@
     "db:verif-policies": "node scripts/verif-policies.mjs",
     "garde:compte-dev": "node scripts/garde-compte-dev.mjs",
     "eas-build-pre-install": "node scripts/garde-compte-dev.mjs",
-    "db:verif-recommandation": "node scripts/verif-recommandation.mjs"
+    "db:verif-recommandation": "node scripts/verif-recommandation.mjs",
+    "diagnostic": "node scripts/diagnostic.mjs"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.2.0",
