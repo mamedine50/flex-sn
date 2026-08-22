@@ -25,6 +25,13 @@
       "extends": "production",
       "environment": "preview",
       "channel": "test"
+    },
+    "simulateur": {
+      "environment": "preview",
+      "distribution": "internal",
+      "ios": {
+        "simulator": true
+      }
     }
   },
   "submit": {
