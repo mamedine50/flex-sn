@@ -9,7 +9,7 @@
 begin;
 create extension if not exists pgtap with schema public;
 
-select plan(10);
+select plan(11);
 
 create function public.t_utilisateur(p_prenom text) returns uuid language plpgsql as $$
 declare v_id uuid := gen_random_uuid();
@@ -79,10 +79,12 @@ select is(
 );
 
 -- ════════════ 3. la passagère répond : le CONDUCTEUR apprend ═════════════
+-- Le passager ne passe PAS par `submit_offer` — c'est la porte du conducteur.
+-- Il répond à une offre précise, par `contre_proposer`.
 select public.t_devenir((select passagere from f));
 select lives_ok(
-  format($$ select public.submit_offer(%L::uuid, 'contre_offre'::public.type_offre, 2200, 5::smallint) $$,
-         (select id from d)),
+  format($$ select public.contre_proposer(%L::uuid, 2200) $$,
+         (select id from o1)),
   'La passagère contre-propose'
 );
 
@@ -138,9 +140,13 @@ select is(
 );
 
 -- ════════════ 7. marquer lu n'agit que sur SES lignes ════════════════════
+-- En DEUX temps : dans un même `select`, les deux sous-requêtes voient le même
+-- instantané, et le compte se ferait avant la mise à jour.
 select public.t_devenir((select passagere from f));
+create temp table marquees as select public.marquer_notifications_lues() as n;
+
 select ok(
-  (select public.marquer_notifications_lues()) > 0
+  (select n from marquees) > 0
     and (select count(*)::int from public.notifications
           where destinataire_id = (select passagere from f) and lu_le is null) = 0,
   'Marquer lu vide sa propre pastille'

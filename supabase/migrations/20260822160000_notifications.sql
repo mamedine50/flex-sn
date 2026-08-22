@@ -56,7 +56,12 @@ create table public.notifications (
   -- recopie pas ici.
   acteur_id uuid references public.profiles (id) on delete set null,
   lu_le timestamptz,
-  cree_le timestamptz not null default now(),
+  -- `clock_timestamp()` et non `now()`. `now()` rend l'heure de la TRANSACTION :
+  -- une acceptation dépose sa notification pour le passager, une pour le
+  -- conducteur et une par conducteur évincé — toutes à la milliseconde près
+  -- identiques, donc dans un ordre arbitraire à l'affichage. Une boîte de
+  -- notifications est une chronologie ; elle a besoin d'un temps qui avance.
+  cree_le timestamptz not null default clock_timestamp(),
   constraint notification_pointe_quelque_part
     check (demande_id is not null or course_id is not null or genre = 'document_decide')
 );

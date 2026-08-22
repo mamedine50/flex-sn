@@ -41,8 +41,11 @@ as $$
   );
 $$;
 
+-- FERMÉE À TOUT LE MONDE. Elle n'est appelée que depuis `submit_offer` et
+-- `accept_offer`, toutes deux SECURITY DEFINER : elles s'exécutent en tant que
+-- propriétaire et n'ont besoin d'aucun droit. Ni vue ni policy ne l'appelle,
+-- donc rien à ouvrir. Le client sait déjà s'il est occupé, il a sa course.
 revoke all on function public.conducteur_occupe(uuid) from public, anon, authenticated;
-grant execute on function public.conducteur_occupe(uuid) to authenticated;
 
 comment on function public.conducteur_occupe(uuid) is
   'Une course à la fois. Nomme la règle au lieu de recopier une liste de statuts — c''est une liste recopiée qui l''avait rendue fausse en silence.';

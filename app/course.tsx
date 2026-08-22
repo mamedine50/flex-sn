@@ -416,6 +416,14 @@ export default function EnRoute() {
             suivante === 'commencee' || suivante === 'terminee' ? (
               <View className="mt-12">
                 <GlisserPourConfirmer
+                  // UN GESTE DIFFÉRENT EST UN CONTRÔLE DIFFÉRENT. Sans cette
+                  // clé, React réutilise la même instance pour « Démarrer »
+                  // puis « Terminer » — même type, même position — et l'état
+                  // animé survit : le conducteur trouvait une piste
+                  // « Terminer la course » déjà pleine, pastille collée à
+                  // droite, sans nulle part où aller. La course ne se terminait
+                  // jamais.
+                  key={suivante}
                   nom="action"
                   texte={
                     suivante === 'commencee'

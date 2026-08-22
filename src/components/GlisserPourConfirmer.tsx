@@ -33,6 +33,24 @@ import { useTheme } from '../theme/ThemeProvider';
  * DÉSACTIVÉ, IL DIT POURQUOI. Une piste grise sans phrase se lit comme une
  * panne. Un état désactivé change de COULEUR, pas seulement d'opacité — un aplat
  * clair à 50 % reste lumineux et l'on croit le contrôle actif.
+ *
+ * ── LA PASTILLE REVIENT TOUJOURS ───────────────────────────────────────────
+ * Elle restait au bout après un glissement réussi. Sur l'écran de course, la
+ * MÊME instance sert deux gestes de suite — « Démarrer » puis « Terminer » :
+ * même type, même position dans l'arbre, donc React la réutilise et l'état
+ * animé survit. Le conducteur démarrait sa course, et trouvait ensuite une
+ * piste « Terminer la course » déjà pleine, pastille collée à droite. Elle
+ * n'avait plus nulle part où aller : le geste ne produisait rien, et la course
+ * ne se terminait jamais.
+ *
+ * Deux réponses, et il fallait les deux. ICI, la pastille revient après avoir
+ * déclenché : sans ça, un refus du serveur laisserait une piste pleine et
+ * inerte, sans aucun moyen de réessayer. Et CHEZ L'APPELANT, une `key` liée au
+ * geste force un vrai remontage — un geste différent est un contrôle différent,
+ * et c'est plus honnête que de remettre à zéro un état qu'on aurait dû ne pas
+ * traîner. On ne le fait pas par un effet sur le texte : `x` deviendrait une
+ * dépendance d'effet ET une valeur modifiée dans le geste, ce que le compilateur
+ * React refuse — à raison.
  */
 const PASTILLE = 56;
 const SEUIL = 0.85;
@@ -73,7 +91,12 @@ export default function GlisserPourConfirmer({
     })
     .onEnd(() => {
       if (x.value >= course * SEUIL) {
-        x.value = withSpring(course, { damping: 20 });
+        // Elle va au bout — on voit que le geste a porté — puis elle revient.
+        // Sans le retour, un refus du serveur laisserait une piste pleine et
+        // inerte, sans aucun moyen de réessayer.
+        x.value = withSpring(course, { damping: 20 }, () => {
+          x.value = withSpring(0, { damping: 20 });
+        });
         runOnJS(declencher)();
       } else {
         x.value = withSpring(0, { damping: 20 });
