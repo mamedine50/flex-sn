@@ -43,7 +43,42 @@ import { declarerVehicule, useVehicule } from '../src/lib/vehicule';
 
 // `piece1` est la carte d'une pièce déjà validée : plus de bouton, donc plus
 // courte. Le bouton se mesure à part, là où il existe toujours.
-const GABARIT = { vehicule: 96, photo: 96, piece1: 64, bouton: 48, action: 48 };
+/**
+ * Les étapes, dans l'ordre où on les demande.
+ *
+ * LA PHOTO DE PROFIL D'ABORD : c'est la plus facile, elle ne demande aucun
+ * papier, et elle met le pied à l'étrier. Puis les papiers qu'on a déjà en
+ * poche. Puis les deux photos à PRENDRE — le selfie tenant le permis, la
+ * voiture. Puis les champs du véhicule, qui se tapent. Finir par le plus dur
+ * fait abandonner à la première étape.
+ */
+type Etape =
+  | { genre: 'photo' }
+  | { genre: 'piece'; type: TypeDocument }
+  | { genre: 'vehicule' }
+  | { genre: 'recap' };
+
+const ETAPES: Etape[] = [
+  { genre: 'photo' },
+  ...PIECES.map((type) => ({ genre: 'piece' as const, type })),
+  { genre: 'vehicule' },
+  { genre: 'recap' },
+];
+
+/**
+ * UN GABARIT PAR ÉTAPE, et ce n'est pas du zèle.
+ *
+ * Une seule étape est à l'écran : une assertion qui attendrait à la fois la
+ * photo, une pièce et le véhicule n'aurait JAMAIS toutes ses mesures, et ne se
+ * prononcerait donc jamais. Elle passerait pour verte en ne disant rien. Le
+ * découpage est ce qui la rend capable d'échouer.
+ */
+const GABARIT: Record<Etape['genre'], Record<string, number>> = {
+  photo: { action: 48, photo: 96, continuer: 56 },
+  piece: { action: 48, piece1: 64, continuer: 56 },
+  vehicule: { action: 48, vehicule: 96, bouton: 48 },
+  recap: { action: 48 },
+};
 
 export default function DevenirConducteur() {
   const t = useT();
@@ -60,11 +95,11 @@ export default function DevenirConducteur() {
   const capacite = useEstConducteur();
 
   const [enCours, setEnCours] = useState<TypeDocument | 'photo' | null>(null);
+  const [indexEtape, setIndexEtape] = useState(0);
   const [erreurEnvoi, setErreurEnvoi] = useState<string | null>(null);
   const [etatForce, setEtatForce] = useState<EtatForce>('aucun');
   const [panneauOuvert, setPanneauOuvert] = useState(false);
 
-  configurerGabarit('dossier', GABARIT);
 
   const horsLigne = etatForce === 'hors_ligne' || reseau.isInternetReachable === false;
   const statut =
@@ -95,8 +130,38 @@ export default function DevenirConducteur() {
   };
 
   const parType = new Map(dossier.documents.map((d) => [d.type, d]));
-  const valides = dossier.documents.filter((d) => d.statut === 'valide').length;
-  const manquantes = PIECES.filter((p) => !parType.has(p)).length;
+
+  const etape: Etape = ETAPES[indexEtape] ?? { genre: 'photo' };
+
+  configurerGabarit(
+    indexEtape === 0 ? 'dossier' : `dossier+${etape.genre}`,
+    GABARIT[etape.genre],
+  );
+
+  /**
+   * L'étape est-elle franchie ? Une pièce REFUSÉE ne l'est pas : on ne saute
+   * pas par-dessus un refus, on redépose. C'est tout l'intérêt du parcours par
+   * étapes — un refus au milieu d'une longue liste passe inaperçu.
+   */
+  const document =
+    etape.genre === 'piece' ? (parType.get(etape.type) ?? null) : null;
+  const etapeFaite =
+    etape.genre === 'photo'
+      ? Boolean(moi?.photo_url)
+      : etape.genre === 'vehicule'
+        ? Boolean(auto.vehicule)
+        : etape.genre === 'piece'
+          ? document !== null && document.statut !== 'refuse'
+          : true;
+
+  const blocage =
+    etape.genre === 'photo'
+      ? t('dossier.blocagePhoto')
+      : etape.genre === 'vehicule'
+        ? t('dossier.blocageVehicule')
+        : document?.statut === 'refuse'
+          ? t('dossier.blocageRefus')
+          : t('dossier.blocagePiece');
 
   return (
     <View className="flex-1 bg-bg">
@@ -175,74 +240,123 @@ export default function DevenirConducteur() {
         ) : (
           <>
             {capacite === 'oui' ? (
-              <Encart
-                titre={t('dossier.complet')}
-                aide={t('dossier.completAide')}
-              />
-            ) : valides === PIECES.length && !auto.vehicule ? (
-              // Le piège : quatre pièces validées et pas de voiture déclarée.
-              // Annoncer « complet » ici, c'est envoyer quelqu'un chercher un
-              // mode conducteur qui n'apparaîtra pas.
-              <Encart
-                titre={t('dossier.vehiculeManquant')}
-                aide={t('dossier.vehiculeManquantAide')}
-              />
-            ) : manquantes === 0 ? (
-              <Encart
-                titre={t('dossier.enCours')}
-                aide={t('dossier.enCoursAide')}
-              />
+              <Encart titre={t('dossier.complet')} aide={t('dossier.completAide')} />
             ) : (
-              <Encart
-                titre={
-                  manquantes === 1
-                    ? t('dossier.manquant', { n: manquantes })
-                    : t('dossier.manquantPluriel', { n: manquantes })
-                }
-              />
+              <>
+                {/* UNE ÉTAPE À LA FOIS. La liste complète décourageait : sept
+                    demandes d'un coup, on referme. Une seule question à
+                    l'écran, et le compteur dit qu'elle finit. */}
+                <View className="mt-16 flex-row items-center justify-between">
+                  <Text className="text-[12px] font-bold uppercase tracking-wider text-accInk">
+                    {t('dossier.etape', {
+                      n: indexEtape + 1,
+                      total: ETAPES.length,
+                    })}
+                  </Text>
+                  {indexEtape > 0 ? (
+                    <Pressable
+                      accessibilityRole="button"
+                      onPress={() => setIndexEtape((i) => Math.max(0, i - 1))}
+                      className="min-h-touch justify-center pl-16"
+                      style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
+                    >
+                      <Text className="text-[13px] font-bold text-muted">
+                        {t('dossier.precedente')}
+                      </Text>
+                    </Pressable>
+                  ) : null}
+                </View>
+
+                {/* La barre d'avancement : elle dit ce qui reste, pas ce qui
+                    est fait. C'est ce qui décide si on continue. */}
+                <View className="mt-8 h-8 flex-row gap-4">
+                  {ETAPES.map((_, i) => (
+                    <View
+                      key={i}
+                      className={`h-8 flex-1 rounded-full ${
+                        i <= indexEtape ? 'bg-accFill' : 'bg-card2'
+                      }`}
+                    />
+                  ))}
+                </View>
+
+                {erreurEnvoi ? <Bandeau texte={erreurEnvoi} danger /> : null}
+
+                {etape.genre === 'photo' ? (
+                  <Photo
+                    nom="photo"
+                    chemin={moi?.photo_url ?? null}
+                    prenom={moi?.prenom ?? null}
+                    occupe={enCours === 'photo'}
+                    gele={horsLigne || (enCours !== null && enCours !== 'photo')}
+                    onDeposer={() => void deposer('photo')}
+                  />
+                ) : etape.genre === 'vehicule' ? (
+                  <Vehicule
+                    key={auto.vehicule?.id ?? 'neuf'}
+                    nom="vehicule"
+                    vehicule={auto.vehicule}
+                    gele={horsLigne || enCours !== null}
+                    onEnregistre={() => auto.relire()}
+                  />
+                ) : etape.genre === 'piece' ? (
+                  <Piece
+                    nom="piece1"
+                    titre={t(`dossier.${etape.type}`)}
+                    aide={t(`dossier.${etape.type}Aide`)}
+                    document={parType.get(etape.type) ?? null}
+                    occupe={enCours === etape.type}
+                    gele={horsLigne || (enCours !== null && enCours !== etape.type)}
+                    onDeposer={() => void deposer(etape.type)}
+                  />
+                ) : (
+                  <Recapitulatif
+                    pieces={PIECES.map((type) => ({
+                      titre: t(`dossier.${type}`),
+                      document: parType.get(type) ?? null,
+                    }))}
+                    vehicule={auto.vehicule}
+                    onCorriger={setIndexEtape}
+                  />
+                )}
+
+                {/* ON N'AVANCE PAS TANT QUE L'ÉTAPE N'EST PAS FAITE, et le
+                    bouton dit POURQUOI plutôt que de rester gris. Une pièce
+                    refusée renvoie ici : on ne saute pas par-dessus un refus. */}
+                {etape.genre !== 'recap' ? (
+                  <>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityState={{ disabled: !etapeFaite }}
+                      disabled={!etapeFaite}
+                      onPress={() =>
+                        setIndexEtape((i) => Math.min(ETAPES.length - 1, i + 1))
+                      }
+                      onLayout={(e) =>
+                        noterMesure('continuer', e.nativeEvent.layout.height)
+                      }
+                      className={`mt-16 min-h-driving items-center justify-center rounded-button ${
+                        etapeFaite ? 'bg-accFill' : 'bg-card2'
+                      }`}
+                      style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+                    >
+                      <Text
+                        className={`text-[15px] font-extrabold ${
+                          etapeFaite ? 'text-onAcc' : 'text-muted'
+                        }`}
+                      >
+                        {t('dossier.continuer')}
+                      </Text>
+                    </Pressable>
+                    {!etapeFaite ? (
+                      <Text className="mt-8 text-center text-[12px] font-semibold text-muted">
+                        {blocage}
+                      </Text>
+                    ) : null}
+                  </>
+                ) : null}
+              </>
             )}
-
-            {erreurEnvoi ? <Bandeau texte={erreurEnvoi} danger /> : null}
-
-            {/* La photo de profil n'est PAS une pièce du dossier : elle ne se
-                valide pas, elle s'affiche. Elle va dans un autre dépôt, avec
-                d'autres droits — la confondre avec un permis ouvrirait la
-                lecture des permis à tous les connectés. */}
-            <Photo
-              nom="photo"
-              chemin={moi?.photo_url ?? null}
-              prenom={moi?.prenom ?? null}
-              occupe={enCours === 'photo'}
-              gele={horsLigne || (enCours !== null && enCours !== 'photo')}
-              onDeposer={() => void deposer('photo')}
-            />
-
-            {/* Le véhicule : sans lui, quatre pièces validées n'ouvrent RIEN —
-                `est_conducteur()` demande les deux. L'écran le disait ouvert ;
-                il ne l'était pas. */}
-            {/* Le véhicule arrive après un aller-retour. La `key` remonte le
-                bloc quand il tombe : les champs partent alors des valeurs déjà
-                déclarées, sans effet qui recopie des props dans un état. */}
-            <Vehicule
-              key={auto.vehicule?.id ?? 'neuf'}
-              nom="vehicule"
-              vehicule={auto.vehicule}
-              gele={horsLigne || enCours !== null}
-              onEnregistre={() => auto.relire()}
-            />
-
-            {PIECES.map((type, i) => (
-              <Piece
-                key={type}
-                nom={`piece${i + 1}`}
-                titre={t(`dossier.${type}`)}
-                aide={t(`dossier.${type}Aide`)}
-                document={parType.get(type) ?? null}
-                occupe={enCours === type}
-                gele={horsLigne || (enCours !== null && enCours !== type)}
-                onDeposer={() => void deposer(type)}
-              />
-            ))}
           </>
         )}
       </ScrollView>
@@ -254,6 +368,104 @@ export default function DevenirConducteur() {
           onChoisir={setEtatForce}
           onFermer={() => setPanneauOuvert(false)}
         />
+      ) : null}
+    </View>
+  );
+}
+
+/**
+ * Le récapitulatif, avant d'envoyer.
+ *
+ * Il ne rejoue pas les étapes : il dit ce qui est là et ce qui manque, et il
+ * ramène d'un appui sur ce qui manque. Un récapitulatif qu'on ne peut pas
+ * corriger sur place oblige à tout reparcourir, et c'est là qu'on abandonne.
+ */
+function Recapitulatif({
+  pieces,
+  vehicule,
+  onCorriger,
+}: {
+  pieces: { titre: string; document: Document | null }[];
+  vehicule: { plaque: string; modele: string; couleur: string } | null;
+  onCorriger: (index: number) => void;
+}) {
+  const t = useT();
+
+  return (
+    <View className="mt-16">
+      <Text className="text-[17px] font-extrabold text-ink">
+        {t('dossier.recapTitre')}
+      </Text>
+      <Text className="mt-4 text-[13px] font-semibold text-muted">
+        {t('dossier.recapAide')}
+      </Text>
+
+      {pieces.map((p, i) => (
+        <Ligne
+          key={p.titre}
+          titre={p.titre}
+          etat={
+            p.document === null
+              ? t('dossier.recapManque')
+              : t(`dossier.${p.document.statut}`)
+          }
+          manque={p.document === null || p.document.statut === 'refuse'}
+          onCorriger={() => onCorriger(i + 1)}
+        />
+      ))}
+
+      <Ligne
+        titre={t('dossier.vehicule')}
+        etat={
+          vehicule
+            ? `${vehicule.plaque} · ${vehicule.modele} ${vehicule.couleur}`
+            : t('dossier.recapManque')
+        }
+        manque={!vehicule}
+        onCorriger={() => onCorriger(ETAPES.length - 2)}
+      />
+    </View>
+  );
+}
+
+function Ligne({
+  titre,
+  etat,
+  manque,
+  onCorriger,
+}: {
+  titre: string;
+  etat: string;
+  manque: boolean;
+  onCorriger: () => void;
+}) {
+  const t = useT();
+  return (
+    <View className="mt-8 flex-row items-center rounded-card bg-card p-16">
+      <View className="flex-1 pr-12">
+        <Text className="text-[14px] font-bold text-ink" numberOfLines={1}>
+          {titre}
+        </Text>
+        <Text
+          className={`mt-2 text-[12px] font-semibold ${
+            manque ? 'text-danger' : 'text-muted'
+          }`}
+          numberOfLines={1}
+        >
+          {etat}
+        </Text>
+      </View>
+      {manque ? (
+        <Pressable
+          accessibilityRole="button"
+          onPress={onCorriger}
+          className="min-h-touch justify-center pl-12"
+          style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
+        >
+          <Text className="text-[13px] font-bold text-accInk">
+            {t('dossier.recapCorriger')}
+          </Text>
+        </Pressable>
       ) : null}
     </View>
   );

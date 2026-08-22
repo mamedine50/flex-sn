@@ -163,6 +163,18 @@ export const fr = {
   },
 
   dossier: {
+    etape: 'Étape {n} sur {total}',
+    precedente: 'Précédente',
+    continuer: 'Continuer',
+    blocagePhoto: 'Ajoutez votre photo pour continuer.',
+    blocagePiece: 'Déposez cette pièce pour continuer.',
+    blocageRefus: 'Cette pièce a été refusée. Reprenez-la pour continuer.',
+    blocageVehicule: 'Déclarez votre véhicule pour continuer.',
+    recapTitre: 'Tout y est ?',
+    recapAide: 'Vérifiez avant d’envoyer. Vous pouvez revenir sur une étape.',
+    recapCorriger: 'Corriger',
+    recapManque: 'Manquant',
+    recapDepose: 'Déposé',
     photo_vehicule: 'Photo du véhicule',
     photo_vehiculeAide: 'La voiture entière, plaque visible, en plein jour',
     titre: 'Conduire avec Flex',

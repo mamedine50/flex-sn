@@ -155,6 +155,18 @@ export const en: Dictionnaire = {
   },
 
   dossier: {
+    etape: 'Step {n} of {total}',
+    precedente: 'Back',
+    continuer: 'Continue',
+    blocagePhoto: 'Add your photo to continue.',
+    blocagePiece: 'Submit this document to continue.',
+    blocageRefus: 'This document was rejected. Retake it to continue.',
+    blocageVehicule: 'Declare your vehicle to continue.',
+    recapTitre: 'Is everything there?',
+    recapAide: 'Check before sending. You can go back to any step.',
+    recapCorriger: 'Fix',
+    recapManque: 'Missing',
+    recapDepose: 'Submitted',
     photo_vehicule: 'Photo of the vehicle',
     photo_vehiculeAide: 'The whole car, plate visible, in daylight',
     titre: 'Drive with Flex',
