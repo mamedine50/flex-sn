@@ -495,7 +495,7 @@ export const fr = {
   },
 
   couverture: {
-    horsZone: 'Flex est disponible dans la région de Dakar pour le moment.',
+    horsZone: 'Flex est disponible au Sénégal pour le moment.',
   },
 
   legal: {
@@ -627,7 +627,7 @@ export const fr = {
     modePassager: 'Mode passager',
 
     sansPosition: 'Activez la localisation pour passer en ligne.',
-    horsZone: 'Vous êtes hors de la zone desservie. Flex couvre la région de Dakar.',
+    horsZone: 'Vous êtes hors de la zone desservie. Flex couvre le Sénégal.',
     confirmerHorsLigne: 'Passer hors ligne ?',
     confirmerHorsLigneAide: 'Vous ne recevrez plus de demandes.',
     resterEnLigne: 'Rester en ligne',

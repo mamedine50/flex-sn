@@ -7,7 +7,7 @@ import { ecrire, lire } from './stockage';
  *
  * - `localisation` : le pré-écran qui explique avant la boîte système. Le
  *   remontrer à chaque ouverture du sélecteur en ferait un péage.
- * - `couverture` : l'information « Flex est à Dakar pour le moment ». On
+ * - `couverture` : l'information « Flex est au Sénégal pour le moment ». On
  *   constate, on informe UNE fois, et on n'y revient pas. Répéter à quelqu'un
  *   qu'il est loin, c'est le mettre dehors.
  */

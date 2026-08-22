@@ -20,6 +20,11 @@
       "autoIncrement": true,
       "environment": "production",
       "distribution": "store"
+    },
+    "test": {
+      "extends": "production",
+      "environment": "preview",
+      "channel": "test"
     }
   },
   "submit": {

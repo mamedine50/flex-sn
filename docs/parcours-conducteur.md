@@ -29,7 +29,7 @@ stockage survivant aux deux.
 | Hors ligne | carte, gains du jour, « Appuyez sur GO » | vif |
 | Position jamais demandée | idem | **vif** — GO sert alors à demander la permission |
 | Position refusée | bandeau « Activez la localisation » | éteint |
-| Hors couverture (>50 km de Dakar) | bandeau | éteint |
+| Hors couverture (hors du Sénégal) | bandeau | éteint |
 | En ligne, sans demande | « À l'écoute des demandes autour de vous » | état EN LIGNE |
 | En ligne, demandes | la file remonte en feuille sur la carte | état EN LIGNE |
 

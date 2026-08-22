@@ -22,6 +22,35 @@ bout **sur le projet distant, avec deux vraies sessions** — voir `docs/parcour
 Code-complète ne veut pas dire lançable : le tableau ci-dessous liste ce qui manque, et
 rien de ce qui y figure ne se règle dans l'application.
 
+## Tester depuis l'étranger
+
+`EXPO_PUBLIC_ZONE_TEST=1` lève toute restriction géographique : aucun bandeau
+« hors couverture », aucun verrou sur GO, la position réelle de l'appareil est
+acceptée où qu'il soit. C'est ce qui permet de jouer une course entière entre
+deux téléphones à Gatineau.
+
+| Profil de build | Environnement EAS | `ZONE_TEST` | Ce qu'il fait |
+|---|---|---|---|
+| `test` | `preview` | **1** | Partout dans le monde. Pour les essais internes. |
+| `production` | `production` | **0** | Sénégal seulement. C'est celui qu'on soumet à Apple. |
+
+```bash
+npx eas-cli build --platform ios --profile test        # essais, sans restriction
+npx eas-cli build --platform ios --profile production  # lancement, Sénégal
+```
+
+Les deux arrivent dans TestFlight ; le numéro de build les distingue. **Basculer
+en mode Sénégal ne demande aucun nettoyage** : on construit avec l'autre profil,
+c'est tout. Il n'y a aucune coordonnée d'essai ailleurs dans le code — la zone
+vit dans `src/lib/couverture.ts`, et c'est la seule constante à changer pour
+l'élargir ou la resserrer.
+
+**La zone de production est le SÉNÉGAL ENTIER**, en boîte englobante. Elle
+déborde sur la Gambie et un peu sur les voisins, et c'est assumé : refuser une
+course à quelqu'un qui est réellement au Sénégal coûte un client ; l'accepter à
+un kilomètre de la frontière ne coûte rien, il n'y aura de toute façon aucun
+conducteur.
+
 ## Bloquants de lancement
 
 Aucun ne se contourne par du code applicatif. Tant qu'une ligne reste ouverte, on ne

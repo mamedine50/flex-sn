@@ -480,7 +480,7 @@ export const en: Dictionnaire = {
   },
 
   couverture: {
-    horsZone: 'Flex is available in the Dakar area for now.',
+    horsZone: 'Flex is available in Senegal for now.',
   },
 
   legal: {
@@ -612,7 +612,7 @@ export const en: Dictionnaire = {
     modePassager: 'Passenger mode',
 
     sansPosition: 'Turn on location to go online.',
-    horsZone: 'You are outside the served area. Flex covers the Dakar region.',
+    horsZone: 'You are outside the served area. Flex covers Senegal.',
     confirmerHorsLigne: 'Go offline?',
     confirmerHorsLigneAide: 'You will stop receiving requests.',
     resterEnLigne: 'Stay online',
