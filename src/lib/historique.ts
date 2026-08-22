@@ -21,6 +21,16 @@ export type LigneHistorique = Course & {
     Database['public']['Tables']['ride_requests']['Row'],
     'depart_libelle' | 'destination_libelle'
   > | null;
+  /**
+   * Le prénom de l'autre, lu par `profils_publics`.
+   *
+   * En une requête séparée plutôt que par une jointure : PostgREST joint par
+   * clé étrangère, et il n'y en a pas vers une VUE. Aller chercher le prénom
+   * dans `profiles` marcherait ici — mais c'est la table qui porte le nom
+   * complet et le numéro, et on ne s'habitue pas à la lire quand une projection
+   * publique existe.
+   */
+  contrepartie_prenom: string | null;
 };
 
 export function useHistorique() {
@@ -50,7 +60,29 @@ export function useHistorique() {
         setStatut('erreur');
         return;
       }
-      setCourses((data ?? []) as LigneHistorique[]);
+      const lignes = (data ?? []) as LigneHistorique[];
+
+      const autres = [
+        ...new Set(
+          lignes.map((c) => (c.conducteur_id === uid ? c.passager_id : c.conducteur_id)),
+        ),
+      ];
+
+      if (autres.length > 0) {
+        const { data: profils } = await supabase
+          .from('profils_publics')
+          .select('id, prenom')
+          .in('id', autres);
+        if (vivant.annule) return;
+        const parId = new Map((profils ?? []).map((p) => [p.id, p.prenom]));
+        for (const ligne of lignes) {
+          ligne.contrepartie_prenom =
+            parId.get(ligne.conducteur_id === uid ? ligne.passager_id : ligne.conducteur_id) ??
+            null;
+        }
+      }
+
+      setCourses(lignes);
       setStatut('pret');
     })();
     return () => {

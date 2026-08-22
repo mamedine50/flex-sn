@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import FeuilleBlocage from '../src/components/FeuilleBlocage';
 import FeuilleSignalement from '../src/components/FeuilleSignalement';
 import { useI18n, useT } from '../src/i18n';
 import { formatXof } from '../src/lib/format';
@@ -33,6 +34,7 @@ export default function Historique() {
   const marges = useSafeAreaInsets();
   const { courses, statut, moi } = useHistorique();
   const [aSignaler, setASignaler] = useState<string | null>(null);
+  const [aBloquer, setABloquer] = useState<{ id: string; prenom: string } | null>(null);
   const [envoye, setEnvoye] = useState(false);
 
   configurerGabarit('historique', GABARIT);
@@ -85,10 +87,32 @@ export default function Historique() {
               suisConducteur={item.conducteur_id === moi}
               date={date(item.terminee_le ?? item.verrouillee_le)}
               onSignaler={() => setASignaler(item.id)}
+              onBloquer={() =>
+                setABloquer({
+                  id: item.conducteur_id === moi ? item.passager_id : item.conducteur_id,
+                  prenom: item.contrepartie_prenom ?? '',
+                })
+              }
             />
           )}
         />
       )}
+
+      {/* BLOQUER VIT ICI, à côté de SIGNALER : les deux gestes d'après-course au
+          même endroit. Il était sur l'écran de course, empilé sous « Annuler la
+          course » dans le même rouge — deux alarmes qui se disputaient l'œil,
+          pour une action qui n'agit que sur les appariements FUTURS. Voir
+          `FeuilleBlocage`. */}
+      {aBloquer ? (
+        <FeuilleBlocage
+          profilId={aBloquer.id}
+          prenom={aBloquer.prenom}
+          onFermer={(bloque) => {
+            setABloquer(null);
+            if (bloque) setEnvoye(true);
+          }}
+        />
+      ) : null}
 
       {aSignaler ? (
         <FeuilleSignalement
@@ -121,12 +145,14 @@ function Ligne({
   suisConducteur,
   date,
   onSignaler,
+  onBloquer,
 }: {
   nom?: string;
   course: LigneHistorique;
   suisConducteur: boolean;
   date: string;
   onSignaler: () => void;
+  onBloquer: () => void;
 }) {
   const t = useT();
   const annulee = course.statut === 'annulee';
@@ -151,16 +177,31 @@ function Ligne({
         {/* Une course ANNULÉE n'a rien produit : il n'y a rien à signaler.
             Le lien ne sort donc que sur une course qui a eu lieu. */}
         {annulee ? null : (
-          <Pressable
-            accessibilityRole="button"
-            onPress={onSignaler}
-            className="min-h-touch justify-center self-start"
-            style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
-          >
-            <Text className="text-[12px] font-bold text-muted">
-              {t('signalement.signaler')}
-            </Text>
-          </Pressable>
+          <View className="flex-row items-center gap-16">
+            <Pressable
+              accessibilityRole="button"
+              onPress={onSignaler}
+              className="min-h-touch justify-center"
+              style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
+            >
+              <Text className="text-[12px] font-bold text-muted">
+                {t('signalement.signaler')}
+              </Text>
+            </Pressable>
+            {/* Discret et en `muted`, pas en `danger` : c'est une porte, pas
+                une alarme. Le rouge est réservé au geste lui-même, dans la
+                feuille de confirmation. */}
+            <Pressable
+              accessibilityRole="button"
+              onPress={onBloquer}
+              className="min-h-touch justify-center"
+              style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
+            >
+              <Text className="text-[12px] font-bold text-muted">
+                {t('blocages.bloquer')}
+              </Text>
+            </Pressable>
+          </View>
         )}
       </View>
 
