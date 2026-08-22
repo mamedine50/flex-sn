@@ -41,7 +41,10 @@ import { useTheme } from '../../src/theme/ThemeProvider';
  * stockage qui autorise l'admin, pas un contournement côté client.
  */
 
-const GABARIT = { comparaison: 160, action: 48 };
+// 200 pour la rangée de trois : c'est la hauteur en dessous de laquelle un
+// visage n'est plus comparable. L'assertion l'a prouvé une fois — trois
+// vignettes à 120 rendaient 137, et personne ne l'aurait vu sur une capture.
+const GABARIT = { comparaison: 200, action: 48 };
 
 // « Le visage ne correspond pas » est le motif du selfie tenant le permis :
 // c'est le refus qui compte, celui qui dit qu'on a affaire à quelqu'un d'autre.
@@ -174,7 +177,7 @@ export default function DossierAdmin() {
                 ] as const
               ).map(([cle, legende, uri]) => (
                 <View key={cle} className="flex-1">
-                  <Vignette titre={legende} uri={uri} montrerTitre={false} />
+                  <Vignette titre={legende} uri={uri} comparaison montrerTitre={false} />
                   <Text
                     className="mt-4 text-center text-[11px] font-bold text-muted"
                     numberOfLines={1}
@@ -328,15 +331,26 @@ export default function DossierAdmin() {
  * qui décide de la largeur — la rangée de comparaison enveloppe chaque vignette
  * dans son propre `flex-1`.
  */
+/**
+ * Trois hauteurs, et le portrait n'est pas un caprice.
+ *
+ * `comparaison` sert la rangée de trois : un visage se compare EN HAUTEUR. À
+ * trois de front, la largeur d'une vignette tombe à un tiers de l'écran — si on
+ * garde une boîte large et basse, il ne reste du visage qu'une bande. Le
+ * portrait rend au visage la place qu'il lui faut sans déborder en largeur.
+ * L'assertion de gabarit a attrapé exactement ça : 137 pt là où il en faut 200.
+ */
 function Vignette({
   titre,
   uri,
   grande = false,
+  comparaison = false,
   montrerTitre = true,
 }: {
   titre: string;
   uri: string | null;
   grande?: boolean;
+  comparaison?: boolean;
   /** Faux dans une carte de pièce : le titre y est déjà, une ligne plus haut. */
   montrerTitre?: boolean;
 }) {
@@ -351,12 +365,14 @@ function Vignette({
           source={{ uri }}
           resizeMode="cover"
           accessibilityLabel={titre}
-          className={`w-full rounded-card bg-card2 ${grande ? 'h-[220px]' : 'h-[120px]'}`}
+          className={`w-full rounded-card bg-card2 ${
+            grande ? 'h-[220px]' : comparaison ? 'h-[200px]' : 'h-[120px]'
+          }`}
         />
       ) : (
         <View
           className={`w-full items-center justify-center rounded-card bg-card2 ${
-            grande ? 'h-[220px]' : 'h-[120px]'
+            grande ? 'h-[220px]' : comparaison ? 'h-[200px]' : 'h-[120px]'
           }`}
         >
           <Text className="px-8 text-center text-[12px] font-semibold text-muted">
