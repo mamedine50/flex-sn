@@ -25,7 +25,12 @@
       "permissions": [
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION",
-        "android.permission.CAMERA"
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
       ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/icone-adaptative.png",
@@ -71,6 +76,12 @@
         "projectId": "afa3a344-8ed0-47f7-b3a5-65806e9f71a2"
       }
     },
-    "icon": "./assets/icone.png"
+    "icon": "./assets/icone.png",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/afa3a344-8ed0-47f7-b3a5-65806e9f71a2"
+    }
   }
 }
