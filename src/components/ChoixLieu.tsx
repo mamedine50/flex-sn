@@ -5,6 +5,7 @@ import { useT } from '../i18n';
 import { communesPour, useCommunes, type Commune } from '../lib/communes';
 import { useFavoris, type Favori } from '../lib/favoris';
 import { chercherLieux, GLYPHE, useLieux } from '../lib/lieux';
+import { lieuLePlusProche } from '../lib/lieuxOrdre';
 import { lieuDepuisFavori } from '../lib/lieuNeutre';
 import { noterMesure } from '../lib/gabarit';
 import { useTheme } from '../theme/ThemeProvider';
@@ -135,6 +136,12 @@ function SurCarte({
     longitude: region.longitude,
   });
   const [libelle, setLibelle] = useState('');
+
+  // Le nom du quartier touché dans la recherche. Il survit au recentrage, et
+  // c'est lui qui nomme le point si l'utilisateur ne précise rien.
+  const [nomChoisi, setNomChoisi] = useState<string | null>(null);
+
+
   const [etatCarte, setEtatCarte] = useState<EtatCarte>('attente');
 
   // La recherche DÉPLACE la carte ; elle ne choisit pas le point. Le point reste
@@ -156,6 +163,31 @@ function SurCarte({
   const surEtat = useCallback((etat: Exclude<EtatCarte, 'attente'>) => {
     setEtatCarte(etat);
   }, []);
+
+  /**
+   * COMMENT ON NOMME UN POINT POSÉ SUR LA CARTE, dans l'ordre :
+   *
+   *   1. ce que la personne a écrit — rien ne vaut ses propres mots ;
+   *   2. le quartier qu'elle a touché dans la recherche ;
+   *   3. le lieu connu le plus proche, annoncé comme APPROCHANT — « près de
+   *      Ouakam », jamais « Ouakam » : le repère vient d'une table de
+   *      centroïdes, présenter une approximation comme un fait est le défaut
+   *      que la règle des communes interdit déjà ailleurs ;
+   *   4. et seulement là, « Point sur la carte ».
+   *
+   * L'ancien code sautait directement au quatrième.
+   */
+  const nommer = () => {
+    const ecrit = libelle.trim();
+    if (ecrit) return ecrit;
+    if (nomChoisi) return nomChoisi;
+    const proche = lieuLePlusProche(lieux, {
+      lat: centre.latitude,
+      lon: centre.longitude,
+    });
+    if (proche) return t('prix.presDe', { lieu: proche.nom });
+    return t('prix.pointSurLaCarte');
+  };
 
   return (
     <Modal visible animationType="slide" onRequestClose={onFermer}>
@@ -231,8 +263,20 @@ function SurCarte({
                   onPress={() => {
                     // On recentre, on ne CHOISIT pas : l'utilisateur affine
                     // ensuite au repère, et c'est le repère qui fait foi.
+                    //
+                    // MAIS ON RETIENT LE NOM. Il était jeté : après avoir tapé
+                    // « Ouakam » et l'avoir touché, la demande partait sous le
+                    // nom « Point sur la carte » — ce qui ne dit rien au
+                    // conducteur qui le lira, ni au passager qui relira sa
+                    // propre demande.
+                    //
+                    // Et le clavier se range ICI, à l'instant du choix : il
+                    // masquait la carte qu'on venait de recentrer, c'est-à-dire
+                    // exactement ce qu'on voulait regarder.
+                    Keyboard.dismiss();
                     setRecentrage({ latitude: lieu.lat, longitude: lieu.lon });
                     setRecherche('');
+                    setNomChoisi(lieu.nom);
                   }}
                   className="min-h-touch flex-row items-center px-16 py-8"
                   style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
@@ -270,9 +314,7 @@ function SurCarte({
               onChoisir({
                 lat: centre.latitude,
                 lon: centre.longitude,
-                // À défaut de précision, on garde une trace lisible : sans
-                // libellé la contrainte de longueur en base refuserait la ligne.
-                libelle: libelle.trim() || t('prix.pointSurLaCarte'),
+                libelle: nommer(),
               })
             }
             className="mt-12 min-h-driving items-center justify-center rounded-button bg-accFill"
@@ -366,6 +408,7 @@ function DansLaListe({ titre, onChoisir, onFermer }: Omit<Props, 'visible' | 'mo
 
   const choisir = (commune: Commune) =>
     onChoisir({ lat: commune.lat, lon: commune.lon, libelle: commune.nom });
+
 
   return (
     <Modal visible animationType="slide" onRequestClose={onFermer}>

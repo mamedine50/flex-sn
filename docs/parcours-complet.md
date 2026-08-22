@@ -170,6 +170,77 @@ On repart de l'accueil, pas de la connexion.
 
 ---
 
+### 11. Proposer un prix → la négociation, dans les deux sens
+
+Une négociation est un **fil** entre une demande et un conducteur. Chaque message
+est une offre, signée de son auteur et numérotée :
+
+```
+tour 1  le conducteur répond        (accepte le prix, ou en propose un autre)
+tour 2  le passager contre-propose  ← premier aller-retour
+tour 3  le conducteur contre-propose
+tour 4  le passager contre-propose  ← second aller-retour
+puis    accepter ou refuser, rien d'autre
+```
+
+**Deux allers-retours, et c'est tout.** La limite n'est pas une prudence
+technique : un marchandage sans fin fait perdre la course aux deux — le passager
+attend, le conducteur ne roule pas, et la demande expire pendant qu'on discute.
+Le cinquième message est refusé par le SERVEUR, et l'écran le dit avant.
+
+**Une seule offre vivante par fil.** Contre-proposer rend la précédente caduque :
+à tout instant, une seule des deux parties a la balle.
+
+**Le conducteur doit VOIR la réponse.** Sa file ne montre que les demandes
+ouvertes ; un fil où le passager vient de répondre n'y ressort pas. D'où
+`negociations_conducteur`, et « on vous a répondu » **en tête** de sa file — ce
+qui lui est adressé passe devant ce qui est ouvert à tous. La vue ne porte pas
+le libellé exact du départ : la course n'est pas acceptée.
+
+### 12. Accepter → le cycle de course
+
+`verrouillee → en_route → arrive → commencee → terminee`, piloté par le
+conducteur. Le passager regarde avancer.
+
+**Deux gestes se GLISSENT, les autres se tapent.** Démarrer et terminer décident
+de l'argent : une course démarrée trop tôt fait payer une attente, terminée trop
+tôt elle coupe le suivi en pleine route. Ces deux-là ne doivent pas pouvoir se
+faire dans une poche. Partir, signaler son arrivée, appeler, écrire, noter
+restent des appuis — un glissement sur une action fréquente est une punition.
+
+**Le règlement est en espèces, et c'est écrit.** « à régler » côté passager,
+« à encaisser · 0 % comm. » côté conducteur. Un prix sans mode de règlement
+laisse croire à un prélèvement.
+
+**La position n'est suivie que pendant le déplacement**, et seulement par le
+passager de la course. Un conducteur simplement disponible n'est suivi par
+personne — prouvé hors course, pas seulement pendant.
+
+### 13. Terminer → la notation, qui est un péage
+
+La note est **obligatoire** et la course reste « la sienne » tant qu'elle n'est
+pas donnée : c'est ce qui tient l'écran de notation à l'écran. Sans cette règle,
+l'écran disparaissait à la seconde où le conducteur appuyait sur « Terminer ».
+
+Double aveugle : aucune des deux personnes ne voit la note de l'autre avant
+d'avoir donné la sienne, ou avant sept jours. Les **puces** — « Ponctuel »,
+« Conduite sûre » — sont facultatives et validées contre la cible : on ne dit
+pas d'un passager que sa voiture est propre.
+
+Une fois notée, le conducteur **retourne en ligne** sans re-tapper GO.
+
+### 14. Devenir conducteur : une étape à la fois
+
+Huit étapes, une seule question à l'écran. **On n'avance pas sur une pièce
+refusée** : un refus au milieu d'une longue liste passe inaperçu pendant des
+jours. Le bouton dit POURQUOI il n'avance pas, au lieu de rester gris.
+
+Cinq pièces, dont le **selfie tenant le permis** — une photo de permis seule
+prouve qu'on possède l'image d'un permis, pas qu'on en est le titulaire.
+L'administrateur compare trois images côte à côte : le selfie, le permis, la
+photo de profil. **Aucune reconnaissance faciale** : la comparaison est humaine,
+et la politique de confidentialité le dit.
+
 ## Ce qui a été mesuré, et comment
 
 | Transition | Preuve |
@@ -184,6 +255,9 @@ On repart de l'accueil, pas de la connexion.
 | Les deux entrées mènent au même monde | `src/lib/__tests__/monde.test.ts` — un abonné qui n'a pas basculé est prévenu |
 | Suppression de compte | `supabase/tests/260_supprimer_mon_compte.sql`, 17 assertions |
 | Signalement | `supabase/tests/270_signalements.sql`, 10 assertions |
+| Négociation, quatre tours et le cinquième refusé | `supabase/tests/280_negociation.sql` (16) et `scripts/parcours-negociation.mjs`, à la clé anonyme |
+| Puces de notation | `supabase/tests/290_puces_notation.sql`, 9 assertions |
+| Routes, clés, RPC, tables : tout ce que le code appelle existe | `pnpm diagnostic` |
 | Retour passager après reconnexion | Capture : accueil passager + « Passer en ligne », pour un conducteur validé |
 
 **Ce qui n'a pas été mesuré :** les appuis eux-mêmes. Le simulateur ne reçoit pas

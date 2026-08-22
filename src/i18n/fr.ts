@@ -63,6 +63,7 @@ export const fr = {
   },
 
   prix: {
+    presDe: 'près de {lieu}',
     titre: 'Fixez votre prix',
     depart: 'Départ',
     destination: 'Destination',
