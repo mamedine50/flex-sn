@@ -108,6 +108,14 @@ export const fr = {
   },
 
   offres: {
+    pasDe: 'par {pas}',
+    contreProposer: 'Contre-proposer',
+    votreContreOffre: 'Votre contre-proposition',
+    envoyerContreOffre: 'Envoyer',
+    negociationEpuisee: 'Vous avez fait deux allers-retours. Acceptez ou refusez.',
+    vousAvezPropose: 'Vous avez proposé {prix}',
+    enAttenteReponse: 'En attente de sa réponse',
+    dernierTour: 'Dernier échange : acceptez ou refusez.',
     delaiApproche: 'avant son arrivée',
     propositionPartie: 'Votre proposition est partie',
     chercheChauffeurs: 'On cherche des chauffeurs près de vous',
@@ -155,16 +163,18 @@ export const fr = {
   },
 
   dossier: {
+    photo_vehicule: 'Photo du véhicule',
+    photo_vehiculeAide: 'La voiture entière, plaque visible, en plein jour',
     titre: 'Conduire avec Flex',
-    intro: 'Quatre pièces à fournir. Nous les vérifions à la main, sous 48 heures.',
-    piece_identite: 'Pièce d’identité',
-    piece_identiteAide: 'Carte nationale ou passeport, recto lisible',
+    intro: 'Cinq pièces à fournir. Nous les vérifions à la main, sous 48 heures.',
+    piece_identite: 'Carte nationale d’identité',
+    piece_identiteAide: 'Recto lisible. Le permis se dépose séparément.',
     permis: 'Permis de conduire',
     permisAide: 'En cours de validité',
     carte_grise: 'Carte grise',
     carte_griseAide: 'Du véhicule que vous conduirez',
-    selfie: 'Photo de vous',
-    selfieAide: 'Visage dégagé, elle sera comparée à votre pièce',
+    selfie: 'Photo de vous avec votre permis',
+    selfieAide: 'Prenez-vous en photo en tenant votre permis près de votre visage, bien lisible.',
 
     ajouter: 'Ajouter',
     remplacer: 'Remplacer',
@@ -267,6 +277,10 @@ export const fr = {
   },
 
   conducteur: {
+    negociations: 'On vous a répondu',
+    negociationsVide: 'Aucune contre-proposition.',
+    contrePropositionDe: '{prenom} propose {prix}',
+    vousAviezPropose: 'Vous aviez proposé {prix}',
     titre: 'Mode conducteur',
     // « vers Plateau », jamais « Plateau ». La commune vient d'une table de
     // centroïdes approximatifs : le mot de couverture coûte zéro et évite de
@@ -512,6 +526,14 @@ export const fr = {
   },
 
   admin: {
+    dejaValidee: 'Décidée. Le candidat doit redéposer pour qu’elle revienne ici.',
+    dejaRefusee: 'Refusée. Le candidat doit redéposer pour qu’elle revienne ici.',
+    motifVisageDifferent: 'Le visage ne correspond pas',
+    comparez: 'La même personne ?',
+    comparezAide: 'Le selfie tient le permis. Comparez le visage, le nom et la photo du permis.',
+    selfieCourt: 'Selfie + permis',
+    permisCourt: 'Permis',
+    profilCourt: 'Photo de profil',
     titre: 'Dossiers à valider',
     section: 'Administration',
     file: 'File d’attente',

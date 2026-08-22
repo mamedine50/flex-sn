@@ -109,6 +109,61 @@ export function useDemandesProches(enLigne: boolean) {
   return { ...etat, relire: () => void relire(null) };
 }
 
+/** Une liste vide stable : une nouvelle à chaque rendu relancerait les enfants. */
+const VIDE: Negociation[] = [];
+
+/** Une contre-proposition que le passager a renvoyée au conducteur. */
+export type Negociation =
+  Database['public']['Views']['negociations_conducteur']['Row'];
+
+/**
+ * Les contre-propositions reçues.
+ *
+ * SANS ELLES, LA MOITIÉ DE LA NÉGOCIATION EST BORGNE. La file du conducteur ne
+ * montre que les demandes OUVERTES ; un fil où le passager vient de répondre
+ * n'y ressort pas. Le conducteur croirait que sa contre-offre est restée sans
+ * réponse, et le passager attendrait une réponse qui ne vient pas.
+ *
+ * Même cadence que la file, et pour la même raison : le canal se ferme en
+ * arrière-plan et les réponses de l'intervalle ne sont jamais rejouées.
+ */
+export function useNegociations(enLigne: boolean) {
+  const [negociations, setNegociations] = useState<Negociation[]>([]);
+
+  const relire = useCallback(
+    async (marqueur: { annule: boolean } | null) => {
+      if (!enLigne) return;
+      const { data } = await supabase.from('negociations_conducteur').select('*');
+      if (marqueur?.annule) return;
+      setNegociations(data ?? []);
+    },
+    [enLigne],
+  );
+
+  // Hors ligne, la liste se vide — mais depuis le RENDU, pas depuis l'effet :
+  // un `setState` synchrone dans un effet déclenche une cascade de rendus.
+  const visibles = enLigne ? negociations : VIDE;
+
+  useEffect(() => {
+    if (!enLigne) return undefined;
+    const marqueur = { annule: false };
+    // Faux positif : `relire` attend la réponse réseau avant tout `setState`.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void relire(marqueur);
+    const battement = setInterval(() => void relire(marqueur), 10000);
+    const abonnement = AppState.addEventListener('change', (etatApp) => {
+      if (etatApp === 'active') void relire(marqueur);
+    });
+    return () => {
+      marqueur.annule = true;
+      clearInterval(battement);
+      abonnement.remove();
+    };
+  }, [enLigne, relire]);
+
+  return { negociations: visibles, relire: () => void relire(null) };
+}
+
 /**
  * L'état « en ligne » vit en BASE, pas dans l'écran.
  *

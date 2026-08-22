@@ -70,37 +70,46 @@ const cache = new Map<string, { url: string; expire: number }>();
  * L'URL signée d'une photo. `null` tant qu'elle n'est pas prête, et `null` pour
  * toujours si la signature échoue — l'avatar retombe alors sur l'initiale, ce
  * qui est exactement ce qu'il faut montrer.
+ *
+ * Le SEAU est un paramètre depuis que la photo du véhicule existe : elle vit
+ * avec les pièces du dossier, pas avec les photos de profil. Le cache est donc
+ * indexé par seau ET chemin — sans quoi deux fichiers de même nom dans deux
+ * seaux se serviraient l'un pour l'autre.
  */
-export function useUrlPhoto(chemin?: string | null): string | null {
+export function useUrlPhoto(
+  chemin?: string | null,
+  seau: string = DEPOT,
+): string | null {
   const [signees, setSignees] = useState<Record<string, string>>({});
+  const cle = chemin ? `${seau}/${chemin}` : null;
 
   useEffect(() => {
-    if (!chemin) return;
+    if (!chemin || !cle) return;
 
-    const connue = cache.get(chemin);
+    const connue = cache.get(cle);
     if (connue && connue.expire > Date.now()) return;
 
     const vivant = { annule: false };
     void (async () => {
       const { data } = await supabase.storage
-        .from(DEPOT)
+        .from(seau)
         .createSignedUrl(chemin, VALIDITE_S);
       if (vivant.annule || !data?.signedUrl) return;
 
       // On périme une minute avant l'échéance réelle : une image qui commence à
       // se charger à la seconde près échouerait.
-      cache.set(chemin, {
+      cache.set(cle, {
         url: data.signedUrl,
         expire: Date.now() + (VALIDITE_S - 60) * 1000,
       });
-      setSignees((etat) => ({ ...etat, [chemin]: data.signedUrl }));
+      setSignees((etat) => ({ ...etat, [cle]: data.signedUrl }));
     })();
 
     return () => {
       vivant.annule = true;
     };
-  }, [chemin]);
+  }, [chemin, cle, seau]);
 
-  if (!chemin) return null;
-  return signees[chemin] ?? cache.get(chemin)?.url ?? null;
+  if (!cle) return null;
+  return signees[cle] ?? cache.get(cle)?.url ?? null;
 }

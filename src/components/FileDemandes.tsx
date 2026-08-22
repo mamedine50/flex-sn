@@ -7,6 +7,8 @@ import {
   delaiEstimeMin,
   distanceM,
   useDemandesProches,
+  useNegociations,
+  type Negociation,
   type DemandeProche,
 } from '../lib/conducteur';
 import { cleErreur } from '../lib/erreursServeur';
@@ -65,6 +67,7 @@ export default function FileDemandes({
 }) {
   const t = useT();
   const file = useDemandesProches(enLigne);
+  const { negociations, relire: relireNegociations } = useNegociations(enLigne);
 
   const [ecartees, setEcartees] = useState<string[]>([]);
   const [action, setAction] = useState<EtatAction>({ statut: 'repos' });
@@ -107,6 +110,30 @@ export default function FileDemandes({
     [file],
   );
 
+  const repondreNegociation = useCallback(
+    async (n: Negociation, quoi: 'accepter' | 'refuser') => {
+      if (!n.id) return;
+      setAction({ statut: 'envoi', demande: n.id });
+      const { error } =
+        quoi === 'accepter'
+          ? await supabase.rpc('accept_offer', { p_offre_id: n.id })
+          : await supabase.rpc('refuse_offer', { p_offre_id: n.id });
+
+      if (error) {
+        setAction({ statut: 'echec', cle: cleErreur(error) });
+        void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        relireNegociations();
+        return;
+      }
+
+      setAction({ statut: 'repos' });
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      relireNegociations();
+      file.relire();
+    },
+    [file, relireNegociations],
+  );
+
   const visibles = useMemo(
     () => file.demandes.filter((d) => d.id && !ecartees.includes(d.id)),
     [file.demandes, ecartees],
@@ -125,11 +152,34 @@ export default function FileDemandes({
 
       {raisonInactive ? <Bandeau texte={raisonInactive} /> : null}
 
+      {/* ON VOUS A RÉPONDU. En TÊTE de la file, et c'est délibéré : une
+          contre-proposition attend une réponse de VOUS, alors qu'une demande
+          nouvelle attend n'importe qui. Ce qui vous est adressé passe devant ce
+          qui est ouvert à tous. */}
+      {negociations.length > 0 ? (
+        <View className="px-16 pb-8">
+          <Text className="pb-8 text-[12px] font-bold uppercase tracking-wider text-accInk">
+            {t('conducteur.negociations')}
+          </Text>
+          {negociations.map((n) => (
+            <CarteNegociation
+              key={n.id ?? ''}
+              negociation={n}
+              gele={gele || action.statut === 'envoi'}
+              accepterInactif={Boolean(raisonInactive)}
+              occupe={action.statut === 'envoi' && action.demande === n.id}
+              onAccepter={() => void repondreNegociation(n, 'accepter')}
+              onRefuser={() => void repondreNegociation(n, 'refuser')}
+            />
+          ))}
+        </View>
+      ) : null}
+
       {file.statut === 'chargement' ? (
         <Squelettes />
-      ) : visibles.length === 0 ? (
+      ) : visibles.length === 0 && negociations.length === 0 ? (
         <Message titre={t('conducteur.aucuneDemande')} />
-      ) : (
+      ) : visibles.length === 0 ? null : (
         <FlatList
           data={visibles}
           keyExtractor={(d) => d.id ?? ''}
@@ -164,6 +214,95 @@ export default function FileDemandes({
         />
       ) : null}
     </>
+  );
+}
+
+/**
+ * Une contre-proposition du passager.
+ *
+ * PAS DE CONTRE-PROPOSITION EN RETOUR ICI, et ce n'est pas un oubli : quand le
+ * passager a répondu, le fil est au tour 2 ou 4. Au tour 4 la négociation est
+ * close ; au tour 2 le conducteur pourrait relancer, mais l'écran ne le propose
+ * pas — deux allers-retours se décident sur un chiffre, pas sur une
+ * conversation, et un conducteur au volant ne doit pas marchander. Il accepte,
+ * ou il refuse.
+ */
+function CarteNegociation({
+  negociation,
+  gele,
+  accepterInactif,
+  occupe,
+  onAccepter,
+  onRefuser,
+}: {
+  negociation: Negociation;
+  gele: boolean;
+  accepterInactif: boolean;
+  occupe: boolean;
+  onAccepter: () => void;
+  onRefuser: () => void;
+}) {
+  const t = useT();
+  const actif = !gele && !occupe;
+
+  return (
+    <View className="mb-8 rounded-card bg-card p-16">
+      <Text className="text-[12px] font-semibold text-muted">
+        {t('conducteur.vousAviezPropose', {
+          prix: formatXof(negociation.prix_demande_xof ?? 0),
+        })}
+      </Text>
+      <Text
+        className="mt-4 text-[24px] font-extrabold text-moneyInk"
+        style={chiffresTabulaires}
+      >
+        {formatXof(negociation.prix_xof ?? 0)}
+      </Text>
+      <Text className="mt-2 text-[13px] font-bold text-ink" numberOfLines={1}>
+        {negociation.passager_prenom}
+        {negociation.passager_note !== null
+          ? ` · ${t('offres.note', {
+              note: String(negociation.passager_note).replace('.', ','),
+            })}`
+          : ''}
+      </Text>
+      <Text className="mt-1 text-[12px] font-semibold text-muted" numberOfLines={1}>
+        {t('conducteur.versDestination', {
+          commune: negociation.destination_libelle ?? '',
+        })}
+      </Text>
+
+      <View className="mt-12 flex-row gap-8">
+        <Pressable
+          accessibilityRole="button"
+          disabled={!actif || accepterInactif}
+          onPress={onAccepter}
+          className={`min-h-driving flex-1 items-center justify-center rounded-button ${
+            actif && !accepterInactif ? 'bg-accFill' : 'bg-card2'
+          }`}
+          style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+        >
+          <Text
+            className={`text-[14px] font-extrabold ${
+              actif && !accepterInactif ? 'text-onAcc' : 'text-muted'
+            }`}
+          >
+            {t('conducteur.accepterA', {
+              prix: formatXof(negociation.prix_xof ?? 0),
+            })}
+          </Text>
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          disabled={!actif}
+          onPress={onRefuser}
+          className="min-h-driving w-48 items-center justify-center rounded-button bg-card2"
+          style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+        >
+          <Text className="text-[16px] font-bold text-muted">✕</Text>
+        </Pressable>
+      </View>
+    </View>
   );
 }
 

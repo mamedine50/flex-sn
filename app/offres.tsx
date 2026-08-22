@@ -6,6 +6,7 @@ import { FlatList, Modal, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import Avatar from '../src/components/Avatar';
+import PhotoVehicule from '../src/components/PhotoVehicule';
 import MinuteurCirculaire from '../src/components/MinuteurCirculaire';
 import RadarAttente from '../src/components/RadarAttente';
 import PanneauDev, { type EtatForce } from '../src/components/PanneauDev';
@@ -58,6 +59,10 @@ export default function OffresRecues() {
   const offres = useOffres(demande?.id ?? null);
 
   const [enAction, setEnAction] = useState<string | null>(null);
+  // La contre-proposition en cours de saisie. `null` = la feuille est fermée.
+  const [contre, setContre] = useState<Offre | null>(null);
+  const [montant, setMontant] = useState('');
+  const [envoiContre, setEnvoiContre] = useState(false);
   const [echec, setEchec] = useState<ReturnType<typeof cleErreur> | null>(null);
 
   // Deux gabarits pour deux états : la liste ne se mesure que quand elle existe.
@@ -137,6 +142,34 @@ export default function OffresRecues() {
   );
 
   const enAttente = offres.offres.filter((o) => o.statut === 'en_attente');
+
+  const contreProposer = useCallback(async () => {
+    if (!contre?.id) return;
+    const prix = Number.parseInt(montant.replace(/[^0-9]/g, ''), 10);
+    if (!Number.isFinite(prix) || prix <= 0) return;
+
+    setEnvoiContre(true);
+    setEchec(null);
+    const { error } = await supabase.rpc('contre_proposer', {
+      p_offre_id: contre.id,
+      p_prix_xof: prix,
+    });
+    setEnvoiContre(false);
+
+    if (error) {
+      setEchec(cleErreur(error));
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      // L'échec vient souvent d'un fil qui a bougé — le conducteur a répondu
+      // pendant qu'on tapait. On relit plutôt que d'insister.
+      offres.relire();
+      return;
+    }
+
+    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    setContre(null);
+    setMontant('');
+    offres.relire();
+  }, [contre, montant, offres]);
 
   // LE TRI SE FAIT À L'AFFICHAGE, pas en base : la vue sert les offres, elle ne
   // décide pas de l'ordre dans lequel on les compare. La moins chère en haut,
@@ -304,6 +337,10 @@ export default function OffresRecues() {
                     desactive={horsLigne || enAction !== null}
                     onAccepter={() => void agir(item, 'accepter')}
                     onRefuser={() => void agir(item, 'refuser')}
+                    onContreProposer={() => {
+                      setContre(item);
+                      setMontant(String(item.prix_xof ?? demande.prix_xof));
+                    }}
                   />
                 )}
               />
@@ -338,6 +375,83 @@ export default function OffresRecues() {
           </View>
         </>
       )}
+
+      {/* CONTRE-PROPOSER. Le montant s'ouvre sur celui du conducteur, pas sur le
+          sien : on répond à une proposition, on ne repart pas de zéro. Les pas
+          de 100 FCFA sont ceux de tout le produit. */}
+      <Modal visible={contre !== null} transparent animationType="fade">
+        <Pressable
+          className="flex-1 items-center justify-center bg-bg/70 px-24"
+          onPress={() => (envoiContre ? undefined : setContre(null))}
+        >
+          <Pressable className="w-full rounded-card bg-card p-16">
+            <Text className="text-[17px] font-extrabold text-ink">
+              {t('offres.votreContreOffre')}
+            </Text>
+            <Text className="mt-4 text-[13px] font-semibold text-muted">
+              {contre
+                ? `${contre.conducteur_prenom} · ${formatXof(contre.prix_xof ?? 0)}`
+                : ''}
+            </Text>
+
+            <Text
+              className="mt-16 text-center text-[34px] font-extrabold text-moneyInk"
+              style={chiffresTabulaires}
+            >
+              {formatXof(Number.parseInt(montant || '0', 10))}
+            </Text>
+
+            <View className="mt-12 flex-row items-center justify-center gap-16">
+              <Pas
+                signe="−"
+                onPress={() =>
+                  setMontant((m) =>
+                    String(Math.max(0, (Number.parseInt(m || '0', 10) || 0) - 100)),
+                  )
+                }
+              />
+              <Text className="text-[13px] font-bold text-muted">
+                {t('offres.pasDe', { pas: formatXof(100) })}
+              </Text>
+              <Pas
+                signe="+"
+                onPress={() =>
+                  setMontant((m) => String((Number.parseInt(m || '0', 10) || 0) + 100))
+                }
+              />
+            </View>
+
+            <Pressable
+              accessibilityRole="button"
+              disabled={envoiContre}
+              onPress={() => void contreProposer()}
+              className={`mt-16 min-h-driving items-center justify-center rounded-button ${
+                envoiContre ? 'bg-card2' : 'bg-accFill'
+              }`}
+              style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+            >
+              <Text
+                className={`text-[15px] font-extrabold ${
+                  envoiContre ? 'text-muted' : 'text-onAcc'
+                }`}
+              >
+                {t('offres.envoyerContreOffre')}
+              </Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              disabled={envoiContre}
+              onPress={() => setContre(null)}
+              className="mt-8 min-h-driving items-center justify-center rounded-button bg-card2"
+              style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+            >
+              <Text className="text-[15px] font-extrabold text-ink">
+                {t('commun.annuler')}
+              </Text>
+            </Pressable>
+          </Pressable>
+        </Pressable>
+      </Modal>
 
       {/* Une demande retirée ne se récupère pas : on confirme. */}
       <Modal
@@ -402,6 +516,7 @@ function CarteOffre({
   desactive,
   onAccepter,
   onRefuser,
+  onContreProposer,
 }: {
   offre: Offre;
   meilleure: boolean;
@@ -409,11 +524,16 @@ function CarteOffre({
   desactive: boolean;
   onAccepter: () => void;
   onRefuser: () => void;
+  onContreProposer: () => void;
 }) {
   const t = useT();
   const contreOffre = offre.type === 'contre_offre';
   const disponible = offre.statut === 'en_attente';
   const prix = offre.prix_xof ?? 0;
+  /** La balle est dans MON camp quand la dernière offre vient du conducteur. */
+  const aMoi = disponible && offre.auteur === 'passager';
+  /** Quatre messages au maximum. Le serveur le refuse ; l'écran le dit avant. */
+  const peutContreProposer = disponible && (offre.tour ?? 1) < 4;
 
   return (
     <View
@@ -433,7 +553,16 @@ function CarteOffre({
       ) : null}
 
       <View className="flex-row items-center">
-        <Avatar prenom={offre.conducteur_prenom} photo={offre.conducteur_photo} />
+        {/* LES DEUX PHOTOS. On monte avec quelqu'un ET dans une voiture : le
+            visage dit qui vient, la voiture dit ce qu'on cherche des yeux dans
+            la rue. L'une sans l'autre laisse la moitié du travail au passager. */}
+        <View className="items-center gap-4">
+          <Avatar prenom={offre.conducteur_prenom} photo={offre.conducteur_photo} />
+          <PhotoVehicule
+            chemin={offre.vehicule_photo}
+            etiquette={`${offre.vehicule_modele ?? ''} ${offre.vehicule_couleur ?? ''}`.trim()}
+          />
+        </View>
 
         <View className="ml-12 flex-1">
           <Text className="text-[15px] font-extrabold text-ink" numberOfLines={1}>
@@ -492,31 +621,61 @@ function CarteOffre({
         </Text>
       </View>
 
-      {disponible ? (
-        <View className="flex-row gap-8">
-          <Action
-            nom="accepter"
-            /* Le montant sur le bouton quand il DIFFÈRE de ce qu'on a proposé :
-               c'est la dernière occasion de voir ce qu'on accepte. */
-            texte={
-              contreOffre
-                ? t('offres.accepterA', { prix: formatXof(prix) })
-                : t('offres.accepter')
-            }
-            principale
-            desactive={desactive}
-            occupe={occupe}
-            onPress={onAccepter}
-          />
-          <Action
-            nom="refuser"
-            texte="✕"
-            etroit
-            desactive={desactive}
-            occupe={occupe}
-            onPress={onRefuser}
-          />
-        </View>
+      {aMoi ? (
+        /* MA propre contre-proposition, en attente de SA réponse. On ne peut ni
+           l'accepter ni la refuser : c'est la sienne qu'on attend. */
+        <Text className="text-[13px] font-semibold text-accInk">
+          {t('offres.enAttenteReponse')}
+        </Text>
+      ) : disponible ? (
+        <>
+          <View className="flex-row gap-8">
+            <Action
+              nom="accepter"
+              /* Le montant sur le bouton quand il DIFFÈRE de ce qu'on a proposé :
+                 c'est la dernière occasion de voir ce qu'on accepte. */
+              texte={
+                contreOffre
+                  ? t('offres.accepterA', { prix: formatXof(prix) })
+                  : t('offres.accepter')
+              }
+              principale
+              desactive={desactive}
+              occupe={occupe}
+              onPress={onAccepter}
+            />
+            <Action
+              nom="refuser"
+              texte="✕"
+              etroit
+              desactive={desactive}
+              occupe={occupe}
+              onPress={onRefuser}
+            />
+          </View>
+
+          {/* CONTRE-PROPOSER, TANT QU'IL RESTE UN TOUR. Au quatrième message la
+              négociation est close : le bouton disparaît des deux côtés, et une
+              ligne dit pourquoi. Un bouton grisé aurait laissé croire à un
+              défaut ; une phrase dit la règle. */}
+          {peutContreProposer ? (
+            <Pressable
+              accessibilityRole="button"
+              disabled={desactive}
+              onPress={onContreProposer}
+              className="mt-8 min-h-touch items-center justify-center rounded-field"
+              style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
+            >
+              <Text className="text-[13px] font-bold text-accInk">
+                {t('offres.contreProposer')}
+              </Text>
+            </Pressable>
+          ) : (
+            <Text className="mt-8 text-center text-[12px] font-semibold text-muted">
+              {t('offres.dernierTour')}
+            </Text>
+          )}
+        </>
       ) : (
         <Text className="text-[13px] font-semibold text-muted">
           {offre.statut === 'caduque'
@@ -529,6 +688,21 @@ function CarteOffre({
         </Text>
       )}
     </View>
+  );
+}
+
+/** Un pas de prix. Zone de 48, comme toute action hors conduite. */
+function Pas({ signe, onPress }: { signe: string; onPress: () => void }) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={signe}
+      onPress={onPress}
+      className="min-h-touch w-48 items-center justify-center rounded-field bg-card2"
+      style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+    >
+      <Text className="text-[20px] font-extrabold text-ink">{signe}</Text>
+    </Pressable>
   );
 }
 

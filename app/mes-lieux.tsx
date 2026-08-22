@@ -76,9 +76,12 @@ export default function MesLieux() {
       type: enCours.type,
       lat: lieu.lat,
       lon: lieu.lon,
-      // Pour « autre », le nom vient du champ de cet écran ; le libellé du
-      // sélecteur, lui, ne sert qu'à la demande de course.
-      libelle: enCours.type === 'autre' ? nom : null,
+      // Pour « autre », le nom vient du champ de cet écran — et À DÉFAUT, du
+      // NOM DU LIEU CHOISI. Sans ce repli, choisir « Ouakam » sans rien taper
+      // enregistrait un favori sans nom : la ligne s'affichait vide, et le seul
+      // repère restant était le point sur la carte. Le sélecteur ne rend jamais
+      // de coordonnées — c'est un nom de quartier, ou « Point sur la carte ».
+      libelle: enCours.type === 'autre' ? nom.trim() || lieu.libelle : null,
       precision: precision || null,
       id: enCours.id ?? null,
     });

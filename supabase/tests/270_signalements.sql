@@ -38,11 +38,11 @@ select conducteur, 'DK-SIG-01', 'Hyundai i10', 'noire' from f;
 
 insert into public.documents_conducteur (profil_id, type, chemin)
 select conducteur, t, conducteur || '/' || t || '.jpg'
-from f, unnest(array['piece_identite','permis','carte_grise','selfie']::public.type_document[]) t;
+from f, unnest(array['piece_identite','permis','carte_grise','selfie','photo_vehicule']::public.type_document[]) t;
 
 select set_config('request.jwt.claims', '', true);
 select public.decider_document((select conducteur from f), t, true)
-from unnest(array['piece_identite','permis','carte_grise','selfie']::public.type_document[]) t;
+from unnest(array['piece_identite','permis','carte_grise','selfie','photo_vehicule']::public.type_document[]) t;
 
 select public.t_devenir((select conducteur from f));
 set local role authenticated;

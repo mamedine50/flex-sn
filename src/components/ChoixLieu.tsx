@@ -1,5 +1,5 @@
 import { lazy, Suspense, useCallback, useMemo, useState } from 'react';
-import { FlatList, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { FlatList, Keyboard, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { useT } from '../i18n';
 import { communesPour, useCommunes, type Commune } from '../lib/communes';
@@ -83,11 +83,34 @@ export default function ChoixLieu({
   onChoisir,
   onFermer,
 }: Props) {
+  // LE CLAVIER SE FERME AU CHOIX, ET ICI PLUTÔT QU'À CHAQUE APPEL. Il y a trois
+  // chemins pour choisir — un favori, un résultat de recherche, un point sur la
+  // carte — et le clavier restait ouvert sur les trois : il masquait la moitié
+  // de l'écran suivant, et il fallait le chasser à la main pour voir ce qu'on
+  // venait de choisir. Envelopper le rappel une fois vaut mieux que trois
+  // `Keyboard.dismiss()` qu'on oubliera d'ajouter au quatrième chemin.
+  const choisirEtFermerLeClavier = useCallback(
+    (lieu: Lieu) => {
+      Keyboard.dismiss();
+      onChoisir(lieu);
+    },
+    [onChoisir],
+  );
+
   if (!visible) return null;
   return mode === 'carte' ? (
-    <SurCarte titre={titre} depart={depart} onChoisir={onChoisir} onFermer={onFermer} />
+    <SurCarte
+      titre={titre}
+      depart={depart}
+      onChoisir={choisirEtFermerLeClavier}
+      onFermer={onFermer}
+    />
   ) : (
-    <DansLaListe titre={titre} onChoisir={onChoisir} onFermer={onFermer} />
+    <DansLaListe
+      titre={titre}
+      onChoisir={choisirEtFermerLeClavier}
+      onFermer={onFermer}
+    />
   );
 }
 

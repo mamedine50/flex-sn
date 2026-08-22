@@ -1,0 +1,14 @@
+-- Flex — la photo du véhicule entre dans le dossier conducteur.
+--
+-- SEULE dans sa migration, et c'est une contrainte de Postgres, pas un choix :
+-- une valeur d'énumération ajoutée ne peut pas être UTILISÉE dans la même
+-- transaction que son ajout. La migration suivante s'en sert ; celle-ci ne fait
+-- que la créer.
+--
+-- POURQUOI UNE PIÈCE DE DOSSIER, ET PAS UNE COLONNE SUR `vehicles`. Une colonne
+-- aurait demandé son propre statut, sa propre file d'attente et son propre motif
+-- de refus — un second circuit de validation à côté de celui qui marche. En
+-- passant par `documents_conducteur`, la photo hérite de tout : l'écran
+-- d'administration la montre, `decider_document()` la tranche, le journal des
+-- décisions la trace, et le refus porte un motif.
+alter type public.type_document add value 'photo_vehicule';

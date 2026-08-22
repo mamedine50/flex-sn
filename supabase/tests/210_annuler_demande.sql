@@ -32,10 +32,10 @@ select conducteur, 'DK-ANN-01', 'Suzuki Alto', 'rouge' from f;
 
 insert into public.documents_conducteur (profil_id, type, chemin)
 select conducteur, t, conducteur || '/' || t || '.jpg'
-from f, unnest(array['piece_identite', 'permis', 'carte_grise', 'selfie']::public.type_document[]) t;
+from f, unnest(array['piece_identite', 'permis', 'carte_grise', 'selfie', 'photo_vehicule']::public.type_document[]) t;
 
 select public.decider_document((select conducteur from f), t, true)
-from unnest(array['piece_identite', 'permis', 'carte_grise', 'selfie']::public.type_document[]) t;
+from unnest(array['piece_identite', 'permis', 'carte_grise', 'selfie', 'photo_vehicule']::public.type_document[]) t;
 
 -- Le conducteur est en ligne, à 400 m du départ.
 select public.t_devenir((select conducteur from f));

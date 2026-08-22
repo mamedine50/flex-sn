@@ -28,10 +28,10 @@ grant select on f to authenticated;
 -- Les quatre pièces validées, et RIEN d'autre.
 insert into public.documents_conducteur (profil_id, type, chemin)
 select candidat, t, candidat || '/' || t || '.jpg'
-from f, unnest(array['piece_identite', 'permis', 'carte_grise', 'selfie']::public.type_document[]) t;
+from f, unnest(array['piece_identite', 'permis', 'carte_grise', 'selfie', 'photo_vehicule']::public.type_document[]) t;
 
 select public.decider_document((select candidat from f), t, true)
-from unnest(array['piece_identite', 'permis', 'carte_grise', 'selfie']::public.type_document[]) t;
+from unnest(array['piece_identite', 'permis', 'carte_grise', 'selfie', 'photo_vehicule']::public.type_document[]) t;
 
 -- C'EST LE DÉFAUT : dossier complet, et pourtant rien d'ouvert.
 select is(public.est_conducteur((select candidat from f)), false,

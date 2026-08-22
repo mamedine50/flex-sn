@@ -17,12 +17,21 @@ export type TypeDocument = Database['public']['Enums']['type_document'];
 export type StatutDocument = Database['public']['Enums']['statut_document'];
 export type Document = Database['public']['Tables']['documents_conducteur']['Row'];
 
-/** Les quatre pièces, dans l'ordre où on les demande. */
+/**
+ * Les cinq pièces, dans l'ordre où on les demande.
+ *
+ * L'ORDRE N'EST PAS ALPHABÉTIQUE. On commence par ce que le candidat a déjà en
+ * poche — carte d'identité, permis, carte grise — et on finit par les deux
+ * photos qu'il doit PRENDRE : le selfie tenant son permis, puis sa voiture.
+ * Demander une photo à faire en premier, c'est renvoyer quelqu'un dehors avant
+ * qu'il ait commencé.
+ */
 export const PIECES: TypeDocument[] = [
   'piece_identite',
   'permis',
   'carte_grise',
   'selfie',
+  'photo_vehicule',
 ];
 
 const LARGEUR_MAX = 1200;

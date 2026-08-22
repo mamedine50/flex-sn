@@ -100,6 +100,14 @@ export const en: Dictionnaire = {
   },
 
   offres: {
+    pasDe: 'by {pas}',
+    contreProposer: 'Counter',
+    votreContreOffre: 'Your counter-offer',
+    envoyerContreOffre: 'Send',
+    negociationEpuisee: 'You have had two rounds. Accept or decline.',
+    vousAvezPropose: 'You offered {prix}',
+    enAttenteReponse: 'Waiting for their answer',
+    dernierTour: 'Last exchange: accept or decline.',
     delaiApproche: 'until pickup',
     propositionPartie: 'Your offer is out',
     chercheChauffeurs: 'Looking for drivers near you',
@@ -147,16 +155,18 @@ export const en: Dictionnaire = {
   },
 
   dossier: {
+    photo_vehicule: 'Photo of the vehicle',
+    photo_vehiculeAide: 'The whole car, plate visible, in daylight',
     titre: 'Drive with Flex',
-    intro: 'Four documents. We check them by hand, within 48 hours.',
+    intro: 'Five documents. We check them by hand, within 48 hours.',
     piece_identite: 'ID document',
-    piece_identiteAide: 'National card or passport, front side legible',
+    piece_identiteAide: 'Front side legible. The licence is submitted separately.',
     permis: 'Driving licence',
     permisAide: 'Currently valid',
     carte_grise: 'Vehicle registration',
     carte_griseAide: 'For the vehicle you will drive',
-    selfie: 'Photo of you',
-    selfieAide: 'Face clear — it is compared with your ID',
+    selfie: 'Photo of you with your licence',
+    selfieAide: 'Take a photo of yourself holding your driving licence near your face, clearly readable.',
 
     ajouter: 'Add',
     remplacer: 'Replace',
@@ -259,6 +269,10 @@ export const en: Dictionnaire = {
   },
 
   conducteur: {
+    negociations: 'They answered you',
+    negociationsVide: 'No counter-offer.',
+    contrePropositionDe: '{prenom} offers {prix}',
+    vousAviezPropose: 'You offered {prix}',
     titre: 'Driver mode',
     versCommune: 'towards {commune}',
 
@@ -497,6 +511,14 @@ export const en: Dictionnaire = {
   },
 
   admin: {
+    dejaValidee: 'Decided. The applicant must resubmit for it to come back here.',
+    dejaRefusee: 'Rejected. The applicant must resubmit for it to come back here.',
+    motifVisageDifferent: 'The face does not match',
+    comparez: 'Same person?',
+    comparezAide: 'The selfie holds the licence. Compare the face, the name and the licence photo.',
+    selfieCourt: 'Selfie + licence',
+    permisCourt: 'Licence',
+    profilCourt: 'Profile photo',
     titre: 'Files to review',
     section: 'Administration',
     file: 'Queue',

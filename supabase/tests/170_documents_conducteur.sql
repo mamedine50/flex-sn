@@ -2,7 +2,7 @@
 begin;
 create extension if not exists pgtap with schema public;
 
-select plan(14);
+select plan(15);
 
 create function public.t_utilisateur(p_prenom text) returns uuid
 language plpgsql as $$
@@ -60,10 +60,15 @@ select isnt_empty(
          (select candidat from f) || '/selfie.jpg'),
   'le selfie aussi'
 );
+select isnt_empty(
+  format($$ select 1 from public.soumettre_document('photo_vehicule', %L) $$,
+         (select candidat from f) || '/vehicule.jpg'),
+  'et la photo du véhicule — cinquième pièce du dossier'
+);
 
 -- Déposer ne rend PAS conducteur : c'est la validation qui le fait.
 select is(public.est_conducteur((select candidat from f)), false,
-  'quatre pièces déposées ne suffisent pas — il faut qu''on les valide');
+  'les pièces déposées ne suffisent pas — il faut qu''on les valide');
 set local role postgres;
 
 -- ============================================== le dossier reste privé --
@@ -107,16 +112,17 @@ select ok(
 set local role postgres;
 select set_config('request.jwt.claims', '', true);
 
--- ================================================ les quatre, et alors --
+-- ================================================ les cinq, et alors --
 select public.decider_document((select candidat from f), 'piece_identite'::public.type_document, true);
 select public.decider_document((select candidat from f), 'permis'::public.type_document, true);
 select public.decider_document((select candidat from f), 'carte_grise'::public.type_document, true);
-select is(public.est_conducteur((select candidat from f)), false,
-  'trois pièces sur quatre ne suffisent pas');
-
 select public.decider_document((select candidat from f), 'selfie'::public.type_document, true);
+select is(public.est_conducteur((select candidat from f)), false,
+  'quatre pièces sur cinq ne suffisent pas — la photo du véhicule en fait partie');
+
+select public.decider_document((select candidat from f), 'photo_vehicule'::public.type_document, true);
 select is(public.est_conducteur((select candidat from f)), true,
-  'les quatre validées, et la capacité de conduire s''ouvre');
+  'les cinq validées, et la capacité de conduire s''ouvre');
 
 -- Un refus ultérieur la referme.
 select public.decider_document((select candidat from f), 'permis'::public.type_document, false, 'Permis expiré');

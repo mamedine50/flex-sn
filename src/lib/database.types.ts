@@ -516,6 +516,7 @@ export type Database = {
       }
       offers: {
         Row: {
+          auteur: Database["public"]["Enums"]["auteur_offre"]
           conducteur_id: string
           cree_le: string
           delai_arrivee_min: number
@@ -524,10 +525,12 @@ export type Database = {
           id: string
           prix_xof: number
           statut: Database["public"]["Enums"]["statut_offre"]
+          tour: number
           type: Database["public"]["Enums"]["type_offre"]
           vehicule_id: string
         }
         Insert: {
+          auteur?: Database["public"]["Enums"]["auteur_offre"]
           conducteur_id: string
           cree_le?: string
           delai_arrivee_min: number
@@ -536,10 +539,12 @@ export type Database = {
           id?: string
           prix_xof: number
           statut?: Database["public"]["Enums"]["statut_offre"]
+          tour?: number
           type: Database["public"]["Enums"]["type_offre"]
           vehicule_id: string
         }
         Update: {
+          auteur?: Database["public"]["Enums"]["auteur_offre"]
           conducteur_id?: string
           cree_le?: string
           delai_arrivee_min?: number
@@ -548,6 +553,7 @@ export type Database = {
           id?: string
           prix_xof?: number
           statut?: Database["public"]["Enums"]["statut_offre"]
+          tour?: number
           type?: Database["public"]["Enums"]["type_offre"]
           vehicule_id?: string
         }
@@ -880,6 +886,13 @@ export type Database = {
             columns: ["demande_id"]
             isOneToOne: true
             referencedRelation: "ride_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rides_offre_id_fkey"
+            columns: ["offre_id"]
+            isOneToOne: true
+            referencedRelation: "negociations_conducteur"
             referencedColumns: ["id"]
           },
           {
@@ -1270,8 +1283,44 @@ export type Database = {
           },
         ]
       }
+      negociations_conducteur: {
+        Row: {
+          cree_le: string | null
+          delai_arrivee_min: number | null
+          demande_id: string | null
+          destination_libelle: string | null
+          expires_at: string | null
+          id: string | null
+          passager_note: number | null
+          passager_photo: string | null
+          passager_prenom: string | null
+          prix_demande_xof: number | null
+          prix_xof: number | null
+          service: Database["public"]["Enums"]["service_course"] | null
+          tour: number | null
+          zone_depart_lat: number | null
+          zone_depart_lon: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offers_demande_id_fkey"
+            columns: ["demande_id"]
+            isOneToOne: false
+            referencedRelation: "demandes_ouvertes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offers_demande_id_fkey"
+            columns: ["demande_id"]
+            isOneToOne: false
+            referencedRelation: "ride_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       offres_recues: {
         Row: {
+          auteur: Database["public"]["Enums"]["auteur_offre"] | null
           conducteur_est_nouveau: boolean | null
           conducteur_id: string | null
           conducteur_nb_courses: number | null
@@ -1286,9 +1335,11 @@ export type Database = {
           id: string | null
           prix_xof: number | null
           statut: Database["public"]["Enums"]["statut_offre"] | null
+          tour: number | null
           type: Database["public"]["Enums"]["type_offre"] | null
           vehicule_couleur: string | null
           vehicule_modele: string | null
+          vehicule_photo: string | null
         }
         Relationships: [
           {
@@ -1423,18 +1474,21 @@ export type Database = {
           couleur: string | null
           id: string | null
           modele: string | null
+          photo_chemin: string | null
         }
         Insert: {
           conducteur_id?: string | null
           couleur?: string | null
           id?: string | null
           modele?: string | null
+          photo_chemin?: never
         }
         Update: {
           conducteur_id?: string | null
           couleur?: string | null
           id?: string | null
           modele?: string | null
+          photo_chemin?: never
         }
         Relationships: [
           {
@@ -1581,6 +1635,33 @@ export type Database = {
       commune_la_plus_proche: {
         Args: { p_lat: number; p_lon: number; p_rayon_max_m?: number }
         Returns: string
+      }
+      contre_proposer: {
+        Args: {
+          p_delai_arrivee_min?: number
+          p_offre_id: string
+          p_prix_xof: number
+        }
+        Returns: {
+          auteur: Database["public"]["Enums"]["auteur_offre"]
+          conducteur_id: string
+          cree_le: string
+          delai_arrivee_min: number
+          demande_id: string
+          expires_at: string
+          id: string
+          prix_xof: number
+          statut: Database["public"]["Enums"]["statut_offre"]
+          tour: number
+          type: Database["public"]["Enums"]["type_offre"]
+          vehicule_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "offers"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       course_active: {
         Args: { p_statut: Database["public"]["Enums"]["statut_course"] }
@@ -1865,6 +1946,7 @@ export type Database = {
       refuse_offer: {
         Args: { p_offre_id: string }
         Returns: {
+          auteur: Database["public"]["Enums"]["auteur_offre"]
           conducteur_id: string
           cree_le: string
           delai_arrivee_min: number
@@ -1873,6 +1955,7 @@ export type Database = {
           id: string
           prix_xof: number
           statut: Database["public"]["Enums"]["statut_offre"]
+          tour: number
           type: Database["public"]["Enums"]["type_offre"]
           vehicule_id: string
         }
@@ -1921,6 +2004,7 @@ export type Database = {
           p_type: Database["public"]["Enums"]["type_offre"]
         }
         Returns: {
+          auteur: Database["public"]["Enums"]["auteur_offre"]
           conducteur_id: string
           cree_le: string
           delai_arrivee_min: number
@@ -1929,6 +2013,7 @@ export type Database = {
           id: string
           prix_xof: number
           statut: Database["public"]["Enums"]["statut_offre"]
+          tour: number
           type: Database["public"]["Enums"]["type_offre"]
           vehicule_id: string
         }
@@ -1945,6 +2030,7 @@ export type Database = {
       taille_cellule_deg: { Args: never; Returns: number }
     }
     Enums: {
+      auteur_offre: "conducteur" | "passager"
       categorie_lieu:
         | "quartier"
         | "arret"
@@ -1982,7 +2068,12 @@ export type Database = {
         | "refusee"
         | "expiree"
         | "caduque"
-      type_document: "piece_identite" | "permis" | "carte_grise" | "selfie"
+      type_document:
+        | "piece_identite"
+        | "permis"
+        | "carte_grise"
+        | "selfie"
+        | "photo_vehicule"
       type_lieu_favori: "domicile" | "travail" | "autre"
       type_offre: "acceptation" | "contre_offre"
     }
@@ -2115,6 +2206,7 @@ export const Constants = {
   },
   public: {
     Enums: {
+      auteur_offre: ["conducteur", "passager"],
       categorie_lieu: [
         "quartier",
         "arret",
@@ -2150,7 +2242,13 @@ export const Constants = {
       statut_demande: ["ouverte", "verrouillee", "expiree", "annulee"],
       statut_document: ["en_attente", "valide", "refuse"],
       statut_offre: ["en_attente", "acceptee", "refusee", "expiree", "caduque"],
-      type_document: ["piece_identite", "permis", "carte_grise", "selfie"],
+      type_document: [
+        "piece_identite",
+        "permis",
+        "carte_grise",
+        "selfie",
+        "photo_vehicule",
+      ],
       type_lieu_favori: ["domicile", "travail", "autre"],
       type_offre: ["acceptation", "contre_offre"],
     },

@@ -31,10 +31,10 @@ grant select on f to authenticated;
 -- Le drapeau se pose à la main, par service_role. Aucune RPC ne le fait.
 update public.profiles set est_admin = true where id = (select admin from f);
 
--- Le candidat dépose ses quatre pièces.
+-- Le candidat dépose ses cinq pièces.
 insert into public.documents_conducteur (profil_id, type, chemin)
 select candidat, t, candidat || '/' || t || '.jpg'
-from f, unnest(array['piece_identite','permis','carte_grise','selfie']::public.type_document[]) t;
+from f, unnest(array['piece_identite','permis','carte_grise','selfie','photo_vehicule']::public.type_document[]) t;
 
 insert into public.vehicles (conducteur_id, plaque, modele, couleur)
 select candidat, 'DK-ADM-01', 'Kia Picanto', 'grise' from f;
@@ -42,12 +42,12 @@ select candidat, 'DK-ADM-01', 'Kia Picanto', 'grise' from f;
 -- Un conducteur déjà validé, pour prouver qu'être conducteur n'est pas être admin.
 insert into public.documents_conducteur (profil_id, type, chemin)
 select conducteur, t, conducteur || '/' || t || '.jpg'
-from f, unnest(array['piece_identite','permis','carte_grise','selfie']::public.type_document[]) t;
+from f, unnest(array['piece_identite','permis','carte_grise','selfie','photo_vehicule']::public.type_document[]) t;
 insert into public.vehicles (conducteur_id, plaque, modele, couleur)
 select conducteur, 'DK-ADM-02', 'Toyota Yaris', 'blanche' from f;
 select set_config('request.jwt.claims', '', true);
 select public.decider_document((select conducteur from f), t, true)
-from unnest(array['piece_identite','permis','carte_grise','selfie']::public.type_document[]) t;
+from unnest(array['piece_identite','permis','carte_grise','selfie','photo_vehicule']::public.type_document[]) t;
 
 -- ─────────────────────────────────────── le drapeau ne s'attrape pas ──────
 select public.t_devenir((select candidat from f));
@@ -75,8 +75,8 @@ select is(
 
 select is(
   (select count(*)::integer from public.documents_conducteur),
-  4,
-  'en revanche il voit SON propre dossier, par la table — quatre pièces'
+  5,
+  'en revanche il voit SON propre dossier, par la table — cinq pièces'
 );
 
 -- ──────────────────────────── un conducteur validé n'est pas un admin ─────
@@ -102,8 +102,8 @@ set local role authenticated;
 select is(
   (select pieces_en_attente from public.dossiers_en_attente
    where profil_id = (select candidat from f)),
-  4::bigint,
-  'l''admin voit le dossier en attente, avec ses quatre pièces'
+  5::bigint,
+  'l''admin voit le dossier en attente, avec ses cinq pièces'
 );
 
 select throws_ok(

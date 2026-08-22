@@ -26,7 +26,7 @@ côté conducteur.
 
 À lancer **après** avoir créé le numéro de test et ouvert une première session
 avec, sinon le compte n'existe pas encore. Le bloc trouve le profil par son
-numéro, valide les quatre pièces et pose un véhicule actif.
+numéro, valide les cinq pièces et pose un véhicule actif.
 
 ```sql
 -- Flex — faire de Conducteur Test 0002 un conducteur validé.
@@ -48,7 +48,7 @@ begin
   -- Les quatre pièces. Le chemin pointe vers ce que le compte a déjà envoyé ;
   -- s'il n'a rien envoyé, la ligne est créée avec un chemin de remplissage :
   -- la revue teste le PARCOURS, pas la lisibilité d'un scan.
-  foreach v_type in array array['piece_identite','permis','carte_grise','selfie']::public.type_document[]
+  foreach v_type in array array['piece_identite','permis','carte_grise','selfie','photo_vehicule']::public.type_document[]
   loop
     insert into public.documents_conducteur (profil_id, type, chemin, statut)
     values (v_uid, v_type, v_uid || '/' || v_type || '.jpg', 'valide')
@@ -91,6 +91,7 @@ sous la règle 1.2, qui demande quatre choses. Les quatre sont en place.
 | Exigence | Où |
 |---|---|
 | Filtrer le contenu grossier | `src/lib/filtreMots.ts`, appliqué à l'affichage des avis |
+| Vérifier l'identité | Le selfie tient le permis : l'admin compare visage, permis et photo de profil côte à côte |
 | Signaler | Bouton sur un avis reçu et sur une course terminée → `signaler()` |
 | Bloquer | Profil → Personnes bloquées ; la règle tient **dans l'appariement** |
 | Publier un contact | `site/support.html`, en ligne |
