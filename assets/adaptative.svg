@@ -1,9 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
-  <g transform="translate(512 512) scale(0.82) translate(-512 -512)">
-    <g fill="#FFFFFF">
-      <rect x="263" y="210" width="150" height="604" rx="44"/>
-      <rect x="263" y="210" width="498" height="150" rx="44"/>
-    </g>
-    <path d="M263 448 H583 a44 44 0 0 1 44 44 V554 a44 44 0 0 1 -44 44 H263 Z" fill="#F5A524"/>
-  </g>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024"><g transform="translate(512 512) scale(0.80) translate(-512 -512)"><g transform="translate(-6 -8)"><g fill="#FFFFFF"><rect x="210" y="190" width="130" height="640" rx="38"/><rect x="210" y="190" width="400" height="130" rx="38"/><rect x="210" y="430" width="262" height="130" rx="38"/></g><g stroke="#F5A524" stroke-width="112" stroke-linecap="round" fill="none"><path d="M472 495 L772 795"/><path d="M772 495 L472 795"/></g></g></g></svg>
