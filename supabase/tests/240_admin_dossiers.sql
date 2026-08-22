@@ -2,7 +2,7 @@
 begin;
 create extension if not exists pgtap with schema public;
 
-select plan(11);
+select plan(14);
 
 create function public.t_utilisateur(p_prenom text) returns uuid
 language plpgsql as $$
@@ -127,6 +127,37 @@ select is(
   (select admin from f),
   'le journal garde QUI a décidé — sans quoi une contestation est indéfendable'
 );
+
+-- ──────────────────────── le candidat vu par l'administration ────────────
+-- La page de DÉTAIL lisait l'identité dans la file d'attente, laquelle se vide
+-- dès que tout est décidé : le nom, la photo et le véhicule disparaissaient
+-- sous les yeux de celui qui venait de trancher. Cette vue-ci ne dépend de
+-- rien qui se vide — mais elle porte un nom, un téléphone et une adresse de
+-- photo, donc elle doit être aussi fermée que la file.
+reset role;
+select public.t_devenir((select admin from f));
+set local role authenticated;
+
+select is(
+  (select prenom from public.candidat_admin where profil_id = (select candidat from f)),
+  'Ousmane',
+  'l''admin lit le nom du candidat, même une fois tout décidé');
+
+reset role;
+select public.t_devenir((select candidat from f));
+set local role authenticated;
+
+select is_empty(
+  'select 1 from public.candidat_admin',
+  'le candidat ne voit RIEN par cette vue — pas même sa propre ligne : elle est faite pour l''administration, pas pour lui');
+
+reset role;
+select public.t_devenir((select conducteur from f));
+set local role authenticated;
+
+select is_empty(
+  'select 1 from public.candidat_admin',
+  'et un conducteur déjà validé encore moins — c''est un annuaire de noms et de téléphones');
 
 select * from finish();
 rollback;

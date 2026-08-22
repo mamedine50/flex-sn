@@ -17,11 +17,12 @@ import {
   deciderPiece,
   urlPiece,
   useDossier,
-  useFileDossiers,
+  useCandidat,
   type Piece,
   type TypeDocument,
 } from '../../src/lib/admin';
 import { cleErreur } from '../../src/lib/erreursServeur';
+import { PIECES } from '../../src/lib/documents';
 import { configurerGabarit, noterMesure } from '../../src/lib/gabarit';
 import { useUrlPhoto } from '../../src/lib/photos';
 import { useGardeSession } from '../../src/lib/garde';
@@ -67,8 +68,10 @@ export default function DossierAdmin() {
   const { profil } = useLocalSearchParams<{ profil: string }>();
 
   const { pieces, statut, relire } = useDossier(profil);
-  const file = useFileDossiers();
-  const entree = file.dossiers.find((d) => d.profil_id === profil) ?? null;
+  // L'identité vient de `candidat_admin`, pas de la file : la file se vide dès
+  // que tout est décidé, et l'écran perdait alors le nom et le véhicule sous les
+  // yeux de celui qui venait de trancher.
+  const entree = useCandidat(profil);
 
   const [urls, setUrls] = useState<Record<string, string | null>>({});
 
@@ -115,8 +118,12 @@ export default function DossierAdmin() {
       return;
     }
     relire();
-    file.relire();
   };
+
+  /** Ce qui empêche encore la conduite, nommé plutôt que compté. */
+  const manquantes = PIECES.filter(
+    (type) => (parType.get(type)?.statut ?? null) !== 'valide',
+  ).map((type) => t(`dossier.${type}`));
 
   const motifFinal =
     motif === 'motifAutre' ? precision.trim() : motif ? t(`admin.${motif}`) : '';
@@ -188,7 +195,36 @@ export default function DossierAdmin() {
               ))}
             </View>
 
-            {/* Le véhicule : sans lui, valider les quatre pièces n'ouvre rien. */}
+            {/* LE VERDICT, EN TÊTE. Un administrateur tranche pièce par pièce
+                et n'a nulle part où lire le RÉSULTAT de ce qu'il vient de
+                faire : la conduite est-elle ouverte, et sinon que manque-t-il ?
+                Il fallait le déduire en recomptant les pastilles. */}
+            <View
+              className={`mt-16 rounded-card p-16 ${
+                entree?.est_conducteur ? 'bg-card' : 'bg-card2'
+              }`}
+            >
+              <Text
+                className={`text-[15px] font-extrabold ${
+                  entree?.est_conducteur ? 'text-ok' : 'text-ink'
+                }`}
+              >
+                {entree?.est_conducteur
+                  ? t('admin.verdictOuvert')
+                  : t('admin.verdictFerme')}
+              </Text>
+              {!entree?.est_conducteur ? (
+                <Text className="mt-4 text-[13px] font-semibold text-muted">
+                  {manquantes.length > 0
+                    ? t('admin.verdictManque', { pieces: manquantes.join(', ') })
+                    : !entree?.plaque
+                      ? t('admin.verdictSansVehicule')
+                      : t('admin.verdictEnAttente')}
+                </Text>
+              ) : null}
+            </View>
+
+            {/* Le véhicule : sans lui, valider les cinq pièces n'ouvre rien. */}
             <Text className="mt-24 text-[12px] font-bold uppercase tracking-wider text-muted">
               {t('admin.vehicule')}
             </Text>
@@ -363,7 +399,11 @@ function Vignette({
       {uri ? (
         <Image
           source={{ uri }}
-          resizeMode="cover"
+          // `contain`, pas `cover`. Une carte grise est large, un permis est en
+          // travers : rogner au centre coupe précisément le numéro et la date
+          // qu'on doit lire. Mieux vaut des marges que de décider sur un
+          // document dont on ne voit que le milieu.
+          resizeMode="contain"
           accessibilityLabel={titre}
           className={`w-full rounded-card bg-card2 ${
             grande ? 'h-[220px]' : comparaison ? 'h-[200px]' : 'h-[120px]'
@@ -465,9 +505,15 @@ function PieceAdmin({
             <Text className="text-[14px] font-bold text-danger">{t('admin.refuser')}</Text>
           </Pressable>
         </View>
-      ) : statut ? (
+      ) : statut === 'valide' ? (
+        // Rien de plus. Une pièce validée n'appelle aucune action, et lui
+        // coller « le candidat doit redéposer » sous le nez — ce que faisait
+        // l'ancienne phrase, la MÊME pour les deux issues — laissait croire
+        // qu'elle avait été refusée.
+        null
+      ) : statut === 'refuse' ? (
         <Text className="mt-12 text-[13px] font-semibold text-muted">
-          {t(statut === 'valide' ? 'admin.dejaValidee' : 'admin.dejaRefusee')}
+          {t('admin.dejaRefusee')}
         </Text>
       ) : null}
     </View>

@@ -72,7 +72,10 @@ function groupes(langue) {
     const g = ligne.match(/^ {2}([a-zA-Z_]+): \{/);
     if (g) { groupe = g[1]; continue; }
     if (/^ {2}\},/.test(ligne)) { groupe = null; continue; }
-    const c = ligne.match(/^ {4}([a-zA-Z_0-9]+):/);
+    // L'indentation fait foi, et c'est une limite assumée : une clé mal
+    // indentée passe pour absente. Le faux positif est utile — il signale un
+    // fichier qu'on a édité à la main sans reformater, et c'est arrivé.
+    const c = ligne.match(/^ {4,}([a-zA-Z_0-9]+):/);
     if (c && groupe) cles.add(`${groupe}.${c[1]}`);
   }
   return cles;

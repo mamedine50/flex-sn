@@ -541,8 +541,12 @@ export const en: Dictionnaire = {
   },
 
   admin: {
-    dejaValidee: 'Decided. The applicant must resubmit for it to come back here.',
-    dejaRefusee: 'Rejected. The applicant must resubmit for it to come back here.',
+    verdictOuvert: 'File complete. Driving is open.',
+    verdictFerme: 'Driving stays closed.',
+    verdictManque: 'Missing: {pieces}.',
+    verdictSansVehicule: 'All documents approved, but no vehicle is declared. The applicant must do it from the app.',
+    verdictEnAttente: 'Documents approved. Capacity will open on the next refresh.',
+    dejaRefusee: 'The applicant must resubmit this document for it to come back here.',
     motifVisageDifferent: 'The face does not match',
     comparez: 'Same person?',
     comparezAide: 'The selfie holds the licence. Compare the face, the name and the licence photo.',

@@ -58,6 +58,13 @@ export type Database = {
             foreignKeyName: "blocages_bloque_fkey"
             columns: ["bloque"]
             isOneToOne: false
+            referencedRelation: "candidat_admin"
+            referencedColumns: ["profil_id"]
+          },
+          {
+            foreignKeyName: "blocages_bloque_fkey"
+            columns: ["bloque"]
+            isOneToOne: false
             referencedRelation: "dossiers_en_attente"
             referencedColumns: ["profil_id"]
           },
@@ -74,6 +81,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profils_publics"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "blocages_bloqueur_fkey"
+            columns: ["bloqueur"]
+            isOneToOne: false
+            referencedRelation: "candidat_admin"
+            referencedColumns: ["profil_id"]
           },
           {
             foreignKeyName: "blocages_bloqueur_fkey"
@@ -188,6 +202,13 @@ export type Database = {
             foreignKeyName: "decisions_documents_decide_par_fkey"
             columns: ["decide_par"]
             isOneToOne: false
+            referencedRelation: "candidat_admin"
+            referencedColumns: ["profil_id"]
+          },
+          {
+            foreignKeyName: "decisions_documents_decide_par_fkey"
+            columns: ["decide_par"]
+            isOneToOne: false
             referencedRelation: "dossiers_en_attente"
             referencedColumns: ["profil_id"]
           },
@@ -204,6 +225,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profils_publics"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "decisions_documents_profil_id_fkey"
+            columns: ["profil_id"]
+            isOneToOne: false
+            referencedRelation: "candidat_admin"
+            referencedColumns: ["profil_id"]
           },
           {
             foreignKeyName: "decisions_documents_profil_id_fkey"
@@ -261,6 +289,13 @@ export type Database = {
             foreignKeyName: "documents_conducteur_profil_id_fkey"
             columns: ["profil_id"]
             isOneToOne: false
+            referencedRelation: "candidat_admin"
+            referencedColumns: ["profil_id"]
+          },
+          {
+            foreignKeyName: "documents_conducteur_profil_id_fkey"
+            columns: ["profil_id"]
+            isOneToOne: false
             referencedRelation: "dossiers_en_attente"
             referencedColumns: ["profil_id"]
           },
@@ -313,6 +348,13 @@ export type Database = {
             foreignKeyName: "evaluations_auteur_id_fkey"
             columns: ["auteur_id"]
             isOneToOne: false
+            referencedRelation: "candidat_admin"
+            referencedColumns: ["profil_id"]
+          },
+          {
+            foreignKeyName: "evaluations_auteur_id_fkey"
+            columns: ["auteur_id"]
+            isOneToOne: false
             referencedRelation: "dossiers_en_attente"
             referencedColumns: ["profil_id"]
           },
@@ -329,6 +371,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profils_publics"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evaluations_cible_id_fkey"
+            columns: ["cible_id"]
+            isOneToOne: false
+            referencedRelation: "candidat_admin"
+            referencedColumns: ["profil_id"]
           },
           {
             foreignKeyName: "evaluations_cible_id_fkey"
@@ -498,6 +547,13 @@ export type Database = {
             foreignKeyName: "lieux_favoris_proprietaire_fkey"
             columns: ["proprietaire"]
             isOneToOne: false
+            referencedRelation: "candidat_admin"
+            referencedColumns: ["profil_id"]
+          },
+          {
+            foreignKeyName: "lieux_favoris_proprietaire_fkey"
+            columns: ["proprietaire"]
+            isOneToOne: false
             referencedRelation: "dossiers_en_attente"
             referencedColumns: ["profil_id"]
           },
@@ -561,6 +617,13 @@ export type Database = {
           vehicule_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "offers_conducteur_id_fkey"
+            columns: ["conducteur_id"]
+            isOneToOne: false
+            referencedRelation: "candidat_admin"
+            referencedColumns: ["profil_id"]
+          },
           {
             foreignKeyName: "offers_conducteur_id_fkey"
             columns: ["conducteur_id"]
@@ -641,6 +704,13 @@ export type Database = {
           maj_le?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "positions_conducteurs_conducteur_id_fkey"
+            columns: ["conducteur_id"]
+            isOneToOne: true
+            referencedRelation: "candidat_admin"
+            referencedColumns: ["profil_id"]
+          },
           {
             foreignKeyName: "positions_conducteurs_conducteur_id_fkey"
             columns: ["conducteur_id"]
@@ -787,6 +857,13 @@ export type Database = {
             foreignKeyName: "ride_requests_passager_id_fkey"
             columns: ["passager_id"]
             isOneToOne: false
+            referencedRelation: "candidat_admin"
+            referencedColumns: ["profil_id"]
+          },
+          {
+            foreignKeyName: "ride_requests_passager_id_fkey"
+            columns: ["passager_id"]
+            isOneToOne: false
             referencedRelation: "dossiers_en_attente"
             referencedColumns: ["profil_id"]
           },
@@ -854,6 +931,13 @@ export type Database = {
             foreignKeyName: "rides_annulee_par_fkey"
             columns: ["annulee_par"]
             isOneToOne: false
+            referencedRelation: "candidat_admin"
+            referencedColumns: ["profil_id"]
+          },
+          {
+            foreignKeyName: "rides_annulee_par_fkey"
+            columns: ["annulee_par"]
+            isOneToOne: false
             referencedRelation: "dossiers_en_attente"
             referencedColumns: ["profil_id"]
           },
@@ -870,6 +954,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profils_publics"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rides_conducteur_id_fkey"
+            columns: ["conducteur_id"]
+            isOneToOne: false
+            referencedRelation: "candidat_admin"
+            referencedColumns: ["profil_id"]
           },
           {
             foreignKeyName: "rides_conducteur_id_fkey"
@@ -926,6 +1017,13 @@ export type Database = {
             isOneToOne: true
             referencedRelation: "offres_recues"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rides_passager_id_fkey"
+            columns: ["passager_id"]
+            isOneToOne: false
+            referencedRelation: "candidat_admin"
+            referencedColumns: ["profil_id"]
           },
           {
             foreignKeyName: "rides_passager_id_fkey"
@@ -997,6 +1095,13 @@ export type Database = {
             foreignKeyName: "signalements_auteur_fkey"
             columns: ["auteur"]
             isOneToOne: false
+            referencedRelation: "candidat_admin"
+            referencedColumns: ["profil_id"]
+          },
+          {
+            foreignKeyName: "signalements_auteur_fkey"
+            columns: ["auteur"]
+            isOneToOne: false
             referencedRelation: "dossiers_en_attente"
             referencedColumns: ["profil_id"]
           },
@@ -1013,6 +1118,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profils_publics"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "signalements_cible_fkey"
+            columns: ["cible"]
+            isOneToOne: false
+            referencedRelation: "candidat_admin"
+            referencedColumns: ["profil_id"]
           },
           {
             foreignKeyName: "signalements_cible_fkey"
@@ -1077,6 +1189,13 @@ export type Database = {
             foreignKeyName: "vehicles_conducteur_id_fkey"
             columns: ["conducteur_id"]
             isOneToOne: false
+            referencedRelation: "candidat_admin"
+            referencedColumns: ["profil_id"]
+          },
+          {
+            foreignKeyName: "vehicles_conducteur_id_fkey"
+            columns: ["conducteur_id"]
+            isOneToOne: false
             referencedRelation: "dossiers_en_attente"
             referencedColumns: ["profil_id"]
           },
@@ -1098,6 +1217,21 @@ export type Database = {
       }
     }
     Views: {
+      candidat_admin: {
+        Row: {
+          couleur: string | null
+          documents_valides_le: string | null
+          est_conducteur: boolean | null
+          modele: string | null
+          nom_complet: string | null
+          photo_url: string | null
+          plaque: string | null
+          prenom: string | null
+          profil_id: string | null
+          telephone: string | null
+        }
+        Relationships: []
+      }
       demandes_ouvertes: {
         Row: {
           cree_le: string | null
@@ -1117,6 +1251,13 @@ export type Database = {
           zone_destination_lon: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "ride_requests_passager_id_fkey"
+            columns: ["passager_id"]
+            isOneToOne: false
+            referencedRelation: "candidat_admin"
+            referencedColumns: ["profil_id"]
+          },
           {
             foreignKeyName: "ride_requests_passager_id_fkey"
             columns: ["passager_id"]
@@ -1171,6 +1312,13 @@ export type Database = {
             foreignKeyName: "evaluations_auteur_id_fkey"
             columns: ["auteur_id"]
             isOneToOne: false
+            referencedRelation: "candidat_admin"
+            referencedColumns: ["profil_id"]
+          },
+          {
+            foreignKeyName: "evaluations_auteur_id_fkey"
+            columns: ["auteur_id"]
+            isOneToOne: false
             referencedRelation: "dossiers_en_attente"
             referencedColumns: ["profil_id"]
           },
@@ -1187,6 +1335,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profils_publics"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evaluations_cible_id_fkey"
+            columns: ["cible_id"]
+            isOneToOne: false
+            referencedRelation: "candidat_admin"
+            referencedColumns: ["profil_id"]
           },
           {
             foreignKeyName: "evaluations_cible_id_fkey"
@@ -1227,6 +1382,13 @@ export type Database = {
           profil_id: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "blocages_bloque_fkey"
+            columns: ["profil_id"]
+            isOneToOne: false
+            referencedRelation: "candidat_admin"
+            referencedColumns: ["profil_id"]
+          },
           {
             foreignKeyName: "blocages_bloque_fkey"
             columns: ["profil_id"]
@@ -1278,6 +1440,13 @@ export type Database = {
           total_xof: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "rides_conducteur_id_fkey"
+            columns: ["profil_id"]
+            isOneToOne: false
+            referencedRelation: "candidat_admin"
+            referencedColumns: ["profil_id"]
+          },
           {
             foreignKeyName: "rides_conducteur_id_fkey"
             columns: ["profil_id"]
@@ -1364,6 +1533,13 @@ export type Database = {
             foreignKeyName: "offers_conducteur_id_fkey"
             columns: ["conducteur_id"]
             isOneToOne: false
+            referencedRelation: "candidat_admin"
+            referencedColumns: ["profil_id"]
+          },
+          {
+            foreignKeyName: "offers_conducteur_id_fkey"
+            columns: ["conducteur_id"]
+            isOneToOne: false
             referencedRelation: "dossiers_en_attente"
             referencedColumns: ["profil_id"]
           },
@@ -1446,6 +1622,13 @@ export type Database = {
             foreignKeyName: "signalements_cible_fkey"
             columns: ["cible"]
             isOneToOne: false
+            referencedRelation: "candidat_admin"
+            referencedColumns: ["profil_id"]
+          },
+          {
+            foreignKeyName: "signalements_cible_fkey"
+            columns: ["cible"]
+            isOneToOne: false
             referencedRelation: "dossiers_en_attente"
             referencedColumns: ["profil_id"]
           },
@@ -1509,6 +1692,13 @@ export type Database = {
           photo_chemin?: never
         }
         Relationships: [
+          {
+            foreignKeyName: "vehicles_conducteur_id_fkey"
+            columns: ["conducteur_id"]
+            isOneToOne: false
+            referencedRelation: "candidat_admin"
+            referencedColumns: ["profil_id"]
+          },
           {
             foreignKeyName: "vehicles_conducteur_id_fkey"
             columns: ["conducteur_id"]

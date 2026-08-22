@@ -556,8 +556,12 @@ export const fr = {
   },
 
   admin: {
-    dejaValidee: 'Décidée. Le candidat doit redéposer pour qu’elle revienne ici.',
-    dejaRefusee: 'Refusée. Le candidat doit redéposer pour qu’elle revienne ici.',
+    verdictOuvert: 'Dossier complet. La conduite est ouverte.',
+    verdictFerme: 'La conduite reste fermée.',
+    verdictManque: 'Il manque : {pieces}.',
+    verdictSansVehicule: 'Toutes les pièces sont validées, mais aucun véhicule n’est déclaré. Le candidat doit le faire depuis l’application.',
+    verdictEnAttente: 'Les pièces sont validées. La capacité s’ouvrira au prochain rafraîchissement.',
+    dejaRefusee: 'Le candidat doit redéposer cette pièce pour qu’elle revienne ici.',
     motifVisageDifferent: 'Le visage ne correspond pas',
     comparez: 'La même personne ?',
     comparezAide: 'Le selfie tient le permis. Comparez le visage, le nom et la photo du permis.',

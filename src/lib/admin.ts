@@ -53,6 +53,39 @@ export function useEstAdmin() {
   return etat;
 }
 
+/** Le candidat vu par l'administration : identité, véhicule, capacité. */
+export type Candidat = Database['public']['Views']['candidat_admin']['Row'];
+
+/**
+ * L'identité du candidat, LUE À PART.
+ *
+ * Elle venait de la file d'attente — laquelle se vide par construction dès que
+ * toutes les pièces sont décidées. L'écran perdait alors le nom (« 's file »),
+ * la photo, et annonçait « aucun véhicule » alors qu'il y en avait un. Une page
+ * de détail ne dépend pas d'une liste dont l'objet est de se vider.
+ */
+export function useCandidat(profil: string | undefined) {
+  const [candidat, setCandidat] = useState<Candidat | null>(null);
+
+  useEffect(() => {
+    if (!profil) return undefined;
+    const vivant = { annule: false };
+    void (async () => {
+      const { data } = await supabase
+        .from('candidat_admin')
+        .select('*')
+        .eq('profil_id', profil)
+        .maybeSingle();
+      if (!vivant.annule) setCandidat(data ?? null);
+    })();
+    return () => {
+      vivant.annule = true;
+    };
+  }, [profil]);
+
+  return candidat;
+}
+
 export function useFileDossiers() {
   const [dossiers, setDossiers] = useState<DossierEnAttente[]>([]);
   const [statut, setStatut] = useState<'chargement' | 'pret' | 'erreur'>('chargement');
