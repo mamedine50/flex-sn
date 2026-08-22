@@ -15,7 +15,7 @@ bout **sur le projet distant, avec deux vraies sessions** — voir `docs/parcour
 | | |
 |---|---|
 | Écrans | Accroche · Connexion (pays, numéro, code, prénom) · Accueil · Fixez votre prix · Offres reçues · Mode conducteur · En route · Profil · Mon profil · Mes lieux · Mes courses · Mes avis · Affichage · Maison du conducteur (GO, en ligne, file) · Conduire avec Flex · À propos · Conditions · Confidentialité · Administration (file + dossier) |
-| Base | 57 migrations, **381 assertions pgTAP**, RLS sur chaque table, logique métier en RPC |
+| Base | 58 migrations, **389 assertions pgTAP**, RLS sur chaque table, logique métier en RPC |
 | Gardes | `pnpm typecheck` · `pnpm lint` · `pnpm test` · `pnpm tokens:check` (44 paires) · `pnpm diagnostic` · `supabase test db` · les trois parcours |
 | Étiquette | `v1.0.0-dev` |
 
@@ -293,7 +293,7 @@ s'il ne le sait pas.
 pnpm tokens:check          # échoue si une paire texte/fond passe sous 4,5:1, dans les deux thèmes
 pnpm typecheck
 pnpm lint
-supabase test db --local   # 381 assertions pgTAP
+supabase test db --local   # 389 assertions pgTAP
 pnpm diagnostic                       # routes, clés, RPC, tables : tout ce que le code appelle existe
 node scripts/parcours-v1.mjs          # le parcours passager, deux sessions
 node scripts/parcours-conducteur.mjs  # le parcours conducteur : GO → course → note

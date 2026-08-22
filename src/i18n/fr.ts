@@ -634,6 +634,9 @@ export const fr = {
 
     sansPosition: 'Activez la localisation pour passer en ligne.',
     horsZone: 'Vous êtes hors de la zone desservie. Flex couvre le Sénégal.',
+    dossierIncomplet:
+        'Votre dossier n’est plus complet. Ajoutez la pièce manquante depuis Profil pour repasser en ligne.',
+    goEchec: 'Impossible de passer en ligne. Vérifiez votre connexion et réessayez.',
     confirmerHorsLigne: 'Passer hors ligne ?',
     confirmerHorsLigneAide: 'Vous ne recevrez plus de demandes.',
     resterEnLigne: 'Rester en ligne',

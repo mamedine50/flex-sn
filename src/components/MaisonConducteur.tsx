@@ -91,6 +91,16 @@ export default function MaisonConducteur({
   const [carteLoc, setCarteLoc] = useState(false);
   const [locDejaVue, setLocDejaVue] = useState<boolean | null>(null);
   const [occupe, setOccupe] = useState(false);
+  /**
+   * Le refus du SERVEUR, quand il ne coïncide pas avec ce que l'écran croyait.
+   *
+   * Cet écran ne s'affiche qu'à qui a la capacité — mais la capacité peut
+   * tomber pendant qu'il est ouvert : un document refusé, une pièce ajoutée au
+   * dossier. Le serveur refuse alors le GO, et sans ce message le bouton
+   * passerait au vert sur un refus. Un bouton qui ment est pire qu'un bouton
+   * qui bloque.
+   */
+  const [refus, setRefus] = useState<string | null>(null);
 
   configurerGabarit(enLigne ? 'maison+enligne' : 'maison', GABARIT);
 
@@ -136,9 +146,21 @@ export default function MaisonConducteur({
       return;
     }
     setOccupe(true);
-    await majEnLigne(position, true);
-    setEnLigne(true);
+    setRefus(null);
+    const { error } = await majEnLigne(position, true);
     setOccupe(false);
+    if (error) {
+      // On ne passe PAS au vert. L'ancien code posait `enLigne` sans regarder
+      // la réponse : le bouton disait « EN LIGNE » pendant que le serveur
+      // refusait, et la file restait vide sans que rien ne l'explique.
+      setRefus(
+        error.message.includes('dossier_incomplet')
+          ? t('maison.dossierIncomplet')
+          : t('maison.goEchec'),
+      );
+      return;
+    }
+    setEnLigne(true);
   };
 
   const passerHorsLigne = async () => {
@@ -225,7 +247,9 @@ export default function MaisonConducteur({
           </Pressable>
         ) : null}
 
-        {empeche === 'position' ? (
+        {refus !== null ? (
+          <Bandeau texte={refus} />
+        ) : empeche === 'position' ? (
           <Bandeau texte={t('maison.sansPosition')} />
         ) : empeche === 'zone' ? (
           <Bandeau texte={t('maison.horsZone')} />

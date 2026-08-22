@@ -619,6 +619,9 @@ export const en: Dictionnaire = {
 
     sansPosition: 'Turn on location to go online.',
     horsZone: 'You are outside the served area. Flex covers Senegal.',
+    dossierIncomplet:
+        'Your file is no longer complete. Add the missing document from Profile to go back online.',
+    goEchec: 'Could not go online. Check your connection and try again.',
     confirmerHorsLigne: 'Go offline?',
     confirmerHorsLigneAide: 'You will stop receiving requests.',
     resterEnLigne: 'Stay online',
