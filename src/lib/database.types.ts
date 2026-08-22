@@ -288,6 +288,7 @@ export type Database = {
           course_id: string
           cree_le: string
           note: number
+          puces: string[]
         }
         Insert: {
           auteur_id: string
@@ -296,6 +297,7 @@ export type Database = {
           course_id: string
           cree_le?: string
           note: number
+          puces?: string[]
         }
         Update: {
           auteur_id?: string
@@ -304,6 +306,7 @@ export type Database = {
           course_id?: string
           cree_le?: string
           note?: number
+          puces?: string[]
         }
         Relationships: [
           {
@@ -703,6 +706,21 @@ export type Database = {
           prenom?: string
           role?: Database["public"]["Enums"]["role_utilisateur"]
           telephone?: string | null
+        }
+        Relationships: []
+      }
+      puces_evaluation: {
+        Row: {
+          cle: string
+          pour: Database["public"]["Enums"]["role_utilisateur"]
+        }
+        Insert: {
+          cle: string
+          pour: Database["public"]["Enums"]["role_utilisateur"]
+        }
+        Update: {
+          cle?: string
+          pour?: Database["public"]["Enums"]["role_utilisateur"]
         }
         Relationships: []
       }
@@ -1914,7 +1932,12 @@ export type Database = {
         }
       }
       noter_course: {
-        Args: { p_commentaire?: string; p_course_id: string; p_note: number }
+        Args: {
+          p_commentaire?: string
+          p_course_id: string
+          p_note: number
+          p_puces?: string[]
+        }
         Returns: {
           auteur_id: string
           cible_id: string
@@ -1922,6 +1945,7 @@ export type Database = {
           course_id: string
           cree_le: string
           note: number
+          puces: string[]
         }
         SetofOptions: {
           from: "*"

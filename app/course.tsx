@@ -9,12 +9,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { EtatCarte } from '../src/components/CarteFond';
 import Avatar from '../src/components/Avatar';
 import PanneauDev, { type EtatForce } from '../src/components/PanneauDev';
+import GlisserPourConfirmer from '../src/components/GlisserPourConfirmer';
 import { useT } from '../src/i18n';
 import {
   annulerCourse,
   avancerCourse,
   ETAPE_SUIVANTE,
   noterCourse,
+  PUCES,
   useCourse,
   useDejaNote,
   usePositionConducteur,
@@ -49,6 +51,13 @@ const CarteFond = lazy(() => import('../src/components/CarteFond'));
  * conteste à l'arrivée si personne ne l'a sous les yeux.
  */
 
+/**
+ * 56 pour l'action : c'est la taille au volant. La piste à GLISSER fait 64 —
+ * elle dépasse, et c'est voulu : un geste demande plus de place qu'un appui.
+ *
+ * Les variantes existaient déjà, et c'est ce qui rend l'assertion capable
+ * d'échouer : `action` n'apparaît que pour le conducteur, qui pilote.
+ */
 const GABARIT = { prix: 72, action: 56 };
 
 /** Au-delà, on signale au passager que la voiture ne bouge pas. */
@@ -83,6 +92,13 @@ export default function EnRoute() {
   const [confirmeAnnulation, setConfirmeAnnulation] = useState(false);
   const [etatCarte, setEtatCarte] = useState<EtatCarte>('attente');
   const [note, setNote] = useState(0);
+  const [puces, setPuces] = useState<string[]>([]);
+
+  const basculerPuce = useCallback((cle: string) => {
+    setPuces((liste) =>
+      liste.includes(cle) ? liste.filter((c) => c !== cle) : [...liste, cle],
+    );
+  }, []);
 
   const horsLigne = etatForce === 'hors_ligne' || reseau.isInternetReachable === false;
   const moi = session.statut === 'connecte' ? session.session.user.id : null;
@@ -179,7 +195,7 @@ export default function EnRoute() {
   const envoyerNote = useCallback(async () => {
     if (!course || note === 0) return;
     setOccupe(true);
-    const { error } = await noterCourse(course.id, note);
+    const { error } = await noterCourse(course.id, note, puces);
     setOccupe(false);
     if (error) {
       setEchec(cleErreur(error));
@@ -187,7 +203,7 @@ export default function EnRoute() {
     }
     void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     router.replace('/');
-  }, [course, note]);
+  }, [course, note, puces]);
 
   if (statut === 'chargement') return <Squelette />;
 
@@ -314,6 +330,29 @@ export default function EnRoute() {
               {formatXof(course.prix_convenu_xof)}
             </Text>
 
+            {/* LE CASH EST ASSUMÉ, DONC IL EST ÉCRIT. Un prix sans mode de
+                règlement laisse croire à un prélèvement : le passager attend un
+                débit qui ne vient pas, le conducteur attend un virement qui ne
+                viendra pas non plus. Et le « 0 % » n'est pas un argument de
+                vente ici — c'est la réponse à la question que le conducteur se
+                pose en tendant la main : combien on me retient sur ce billet. */}
+            {!annulee ? (
+              <View className="mt-4 flex-row flex-wrap items-center gap-8">
+                <Text className="text-[13px] font-semibold text-muted">
+                  {suisConducteur
+                    ? t('enRoute.aEncaisserEspeces')
+                    : t('enRoute.aReglerEspeces')}
+                </Text>
+                {suisConducteur ? (
+                  <View className="rounded-full bg-card2 px-8 py-4">
+                    <Text className="text-[11px] font-extrabold text-ok">
+                      {t('enRoute.zeroCommission')}
+                    </Text>
+                  </View>
+                ) : null}
+              </View>
+            ) : null}
+
             <Text className="mt-8 text-[15px] font-bold text-ink">
               {annulee
                 ? course.annulee_par === moi
@@ -362,22 +401,42 @@ export default function EnRoute() {
             />
           ) : null}
 
-          {/* Le conducteur pilote. Une seule action, celle de l'étape suivante. */}
+          {/* LE CONDUCTEUR PILOTE, ET DEUX DE SES GESTES SE GLISSENT.
+              Démarrer et terminer décident de l'argent : une course démarrée
+              trop tôt fait payer une attente, une course terminée trop tôt coupe
+              le suivi en pleine route. Ces deux-là ne doivent pas pouvoir se
+              faire dans une poche, ni d'un doigt qui frôle un téléphone posé sur
+              un tableau de bord.
+
+              Partir et signaler son arrivée restent des appuis : ils
+              n'engagent rien qu'on ne puisse reprendre. */}
           {suisConducteur && suivante && !annulee ? (
-            <Action
-              nom="action"
-              texte={
-                suivante === 'en_route'
-                  ? t('enRoute.partir')
-                  : suivante === 'arrive'
-                    ? t('enRoute.signalerArrivee')
-                    : suivante === 'commencee'
-                      ? t('enRoute.demarrer')
-                      : t('enRoute.terminer')
-              }
-              actif={!occupe && !horsLigne}
-              onPress={() => void avancer()}
-            />
+            suivante === 'commencee' || suivante === 'terminee' ? (
+              <View className="mt-12">
+                <GlisserPourConfirmer
+                  nom="action"
+                  texte={
+                    suivante === 'commencee'
+                      ? t('enRoute.glisserDemarrer')
+                      : t('enRoute.glisserTerminer')
+                  }
+                  occupe={occupe}
+                  raisonInactive={horsLigne ? t('enRoute.horsLigne') : null}
+                  onConfirmer={() => void avancer()}
+                />
+              </View>
+            ) : (
+              <Action
+                nom="action"
+                texte={
+                  suivante === 'en_route'
+                    ? t('enRoute.partir')
+                    : t('enRoute.signalerArrivee')
+                }
+                actif={!occupe && !horsLigne}
+                onPress={() => void avancer()}
+              />
+            )
           ) : null}
 
           {/* Annuler : tant que la course n'a pas commencé. */}
@@ -408,6 +467,9 @@ export default function EnRoute() {
               </View>
             ) : (
               <Notation
+                puces={puces}
+                onPuce={basculerPuce}
+                pourConducteur={!suisConducteur}
                 note={note}
                 onNote={setNote}
                 occupe={occupe}
@@ -623,15 +685,23 @@ function Contrepartie({
 function Notation({
   note,
   onNote,
+  puces,
+  onPuce,
+  pourConducteur,
   occupe,
   onEnvoyer,
 }: {
   note: number;
   onNote: (n: number) => void;
+  puces: string[];
+  onPuce: (cle: string) => void;
+  /** Les puces dépendent de qui est NOTÉ, pas de qui note. */
+  pourConducteur: boolean;
   occupe: boolean;
   onEnvoyer: () => void;
 }) {
   const t = useT();
+  const proposees = pourConducteur ? PUCES.conducteur : PUCES.passager;
   return (
     <View className="mt-16 rounded-card bg-card p-16">
       <Text className="text-[15px] font-bold text-ink">{t('enRoute.noter')}</Text>
@@ -665,6 +735,41 @@ function Notation({
           </Pressable>
         ))}
       </View>
+
+      {/* LES PUCES SONT FACULTATIVES, ET ELLES NE S'OUVRENT QU'APRÈS L'ÉTOILE.
+          Les proposer avant, c'est demander pourquoi avant de demander combien —
+          et beaucoup cocheraient sans avoir noté. Elles disent ce que l'étoile
+          ne dit pas : trois étoiles sans rien n'apprend rien à personne. */}
+      {note > 0 ? (
+        <View className="mt-12 flex-row flex-wrap gap-8">
+          {proposees.map((cle) => {
+            const cochee = puces.includes(cle);
+            return (
+              <Pressable
+                key={cle}
+                accessibilityRole="button"
+                accessibilityState={{ selected: cochee }}
+                onPress={() => {
+                  onPuce(cle);
+                  void Haptics.selectionAsync();
+                }}
+                className={`min-h-touch justify-center rounded-full px-16 ${
+                  cochee ? 'bg-accFill' : 'bg-card2'
+                }`}
+                style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+              >
+                <Text
+                  className={`text-[13px] font-bold ${
+                    cochee ? 'text-onAcc' : 'text-muted'
+                  }`}
+                >
+                  {t(`enRoute.puce_${cle}` as never)}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      ) : null}
 
       <Pressable
         accessibilityRole="button"

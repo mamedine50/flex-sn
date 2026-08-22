@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flex — Cycle de course</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root[data-theme="dark"]{
+  --bg:#0E1C2C; --card:#12253A; --card2:#1A3049; --line:#1E3752;
+  --ink:#F1F6FA; --muted:#8CA3B8;
+  --accFill:#D6F9EB; --onAcc:#0E1C2C; --accInk:#9FE8CE;
+  --moneyInk:#FBBF24; --ok:#34D399; --danger:#FF7A7A;
+  --map:#16283C; --mapline:#22344A; --water:#123047;
+  --bubbleMe:#D6F9EB; --bubbleMeInk:#0E1C2C; --bubbleThem:#1A3049; --bubbleThemInk:#F1F6FA;
+}
+:root[data-theme="light"]{
+  --bg:#F8FAFC; --card:#FFFFFF; --card2:#EEF3F7; --line:#E2E9F0;
+  --ink:#0E1C2C; --muted:#5B7186;
+  --accFill:#0B7A5F; --onAcc:#FFFFFF; --accInk:#0A6B53;
+  --moneyInk:#8A5A05; --ok:#0B7A55; --danger:#C2352B;
+  --map:#E7EEF3; --mapline:#D3DEE7; --water:#CFE4EF;
+  --bubbleMe:#0B7A5F; --bubbleMeInk:#FFFFFF; --bubbleThem:#EEF3F7; --bubbleThemInk:#0E1C2C;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Inter",-apple-system,sans-serif;background:var(--bg);color:var(--ink);padding:22px 16px 64px;-webkit-font-smoothing:antialiased}
+.hd{max-width:1280px;margin:0 auto 16px;text-align:center}
+.hd h1{font-size:32px;font-weight:800;letter-spacing:-.04em}
+.hd h1 em{font-style:normal;color:var(--accInk)}
+.hd p{color:var(--muted);font-size:14px;font-weight:500;margin-top:6px}
+.bar{max-width:1280px;margin:0 auto 26px;display:flex;gap:10px;justify-content:center}
+.seg{display:flex;background:var(--card);border-radius:14px;padding:4px}
+.seg button{border:0;background:none;color:var(--muted);font:700 13px/1 "Inter";padding:9px 18px;border-radius:10px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accFill);color:var(--onAcc)}
+
+.rowlab{max-width:1280px;margin:0 auto 8px;font-size:13px;font-weight:800;color:var(--accInk);letter-spacing:.02em;padding-left:4px}
+.grid{max-width:1280px;margin:0 auto 30px;display:flex;flex-wrap:wrap;gap:22px;justify-content:center}
+.cell{width:238px}
+.cap{font-size:11.5px;font-weight:700;color:var(--muted);margin-bottom:9px;text-align:center}
+.phone{width:238px;height:508px;border-radius:30px;background:var(--bg);overflow:hidden;display:flex;flex-direction:column;box-shadow:0 0 0 1px var(--line);position:relative}
+.st{height:28px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;font-size:10px;font-weight:700;flex:0 0 auto;z-index:5;position:relative}
+.st .r{color:var(--muted);font-weight:600}
+
+.map{position:absolute;inset:0;background:var(--map);overflow:hidden}
+.map .road{position:absolute;background:var(--mapline);border-radius:2px}
+.map .water{position:absolute;background:var(--water);border-radius:40%}
+.pin{position:absolute;width:14px;height:14px;border-radius:99px;z-index:2}
+.pin.me{background:var(--accInk);box-shadow:0 0 0 5px color-mix(in srgb,var(--accInk) 22%,transparent)}
+.pin.dest{background:var(--danger)}
+.carmark{position:absolute;width:22px;height:22px;border-radius:7px;background:var(--ink);display:flex;align-items:center;justify-content:center;font-size:11px;z-index:3}
+.trail{position:absolute;height:3px;background:var(--accInk);opacity:.4;transform-origin:left;z-index:1;border-radius:2px}
+
+/* feuille bas */
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--card);border-radius:20px 20px 0 0;padding:13px 14px 15px;z-index:6;box-shadow:0 -6px 24px rgba(0,0,0,.18)}
+.status{font-size:10px;font-weight:800;color:var(--accInk);letter-spacing:.04em;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.status .dot{width:7px;height:7px;border-radius:99px;background:var(--accInk)}
+.eta{font-size:19px;font-weight:800;letter-spacing:-.03em;margin-bottom:10px}
+.eta b{color:var(--accInk)}
+.who{display:flex;align-items:center;gap:10px;margin-bottom:11px}
+.who .av{width:40px;height:40px;border-radius:99px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-weight:800;color:#0E1C2C;font-size:15px}
+.who .w{flex:1;min-width:0}
+.who .nm{font-size:13.5px;font-weight:800}
+.who .s{font-size:10.5px;color:var(--muted);font-weight:600;margin-top:1px}
+.who .rt{font-size:10.5px;color:var(--muted);font-weight:600}
+.plate{background:var(--card2);border-radius:8px;padding:4px 8px;font-size:12px;font-weight:800;letter-spacing:.05em;flex:0 0 auto}
+.veh{display:flex;align-items:center;gap:8px;background:var(--card2);border-radius:10px;padding:7px 9px;margin-bottom:11px}
+.veh .vph{width:38px;height:28px;border-radius:6px;background:linear-gradient(135deg,#3a5a72,#24445f);flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:13px}
+.veh .vi{flex:1}
+.veh .vt{font-size:11.5px;font-weight:700}
+.veh .vs{font-size:10px;color:var(--muted);font-weight:500}
+.actions{display:flex;gap:7px}
+.ab{flex:1;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;font-weight:800}
+.ab.mint{background:var(--accFill);color:var(--onAcc)}
+.ab.soft{background:var(--card2);color:var(--ink)}
+.ab.danger{background:transparent;color:var(--danger);box-shadow:inset 0 0 0 2px var(--danger)}
+.price-tag{margin-left:auto;font-size:15px;font-weight:800;color:var(--moneyInk);font-variant-numeric:tabular-nums}
+.pay{display:flex;align-items:center;justify-content:space-between;background:var(--card2);border-radius:10px;padding:9px 11px;margin-bottom:11px}
+.pay .l{font-size:11px;font-weight:600;color:var(--muted)}
+.pay .v{font-size:16px;font-weight:800;color:var(--moneyInk);font-variant-numeric:tabular-nums}
+.cash{font-size:9.5px;font-weight:700;color:var(--accInk);background:color-mix(in srgb,var(--accInk) 14%,transparent);border-radius:99px;padding:3px 8px;margin-left:6px}
+
+/* notation */
+.rate{position:absolute;inset:0;background:var(--bg);z-index:8;display:flex;flex-direction:column;align-items:center;padding:34px 22px 22px;text-align:center}
+.rate .av{width:66px;height:66px;border-radius:99px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#0E1C2C;font-size:26px;margin-bottom:13px}
+.rate .q{font-size:17px;font-weight:800;letter-spacing:-.02em}
+.rate .s{font-size:11px;color:var(--muted);font-weight:500;margin:5px 0 18px}
+.stars{display:flex;gap:8px;margin-bottom:16px}
+.stars span{font-size:28px;color:var(--moneyInk)}
+.stars span.off{color:var(--line)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:auto}
+.chip{font-size:10.5px;font-weight:700;padding:6px 11px;border-radius:99px;background:var(--card2);color:var(--muted)}
+.chip.on{background:var(--accFill);color:var(--onAcc)}
+.rate .send{width:100%;height:48px;border-radius:14px;background:var(--accFill);color:var(--onAcc);display:flex;align-items:center;justify-content:center;font-size:13.5px;font-weight:800}
+.rate .paidrow{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);font-weight:600;margin-bottom:14px}
+.rate .paidrow b{color:var(--moneyInk);font-variant-numeric:tabular-nums}
+
+/* chat */
+.chat{position:absolute;inset:0;display:flex;flex-direction:column;z-index:7;background:var(--bg)}
+.chhead{display:flex;align-items:center;gap:9px;padding:8px 12px;background:var(--card);border-bottom:1px solid var(--line);flex:0 0 auto}
+.chead .bk{font-size:14px;color:var(--accInk);font-weight:700}
+.chead .av{width:30px;height:30px;border-radius:99px;background:#D9B6F0;display:flex;align-items:center;justify-content:center;font-weight:800;color:#0E1C2C;font-size:12px}
+.chead .nm{font-size:12.5px;font-weight:800}
+.chead .s{font-size:9.5px;color:var(--muted);font-weight:600}
+.chead .call{margin-left:auto;font-size:15px}
+.msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:7px}
+.b{max-width:78%;padding:8px 11px;border-radius:14px;font-size:11.5px;font-weight:500;line-height:1.35}
+.b.them{background:var(--bubbleThem);color:var(--bubbleThemInk);align-self:flex-start;border-bottom-left-radius:5px}
+.b.me{background:var(--bubbleMe);color:var(--bubbleMeInk);align-self:flex-end;border-bottom-right-radius:5px}
+.quick{display:flex;gap:6px;padding:8px 10px;flex-wrap:wrap;border-top:1px solid var(--line);flex:0 0 auto}
+.q{font-size:10.5px;font-weight:700;padding:7px 11px;border-radius:99px;background:var(--card2);color:var(--ink);white-space:nowrap}
+.cbar{display:flex;align-items:center;gap:8px;padding:9px 11px;background:var(--card);border-top:1px solid var(--line);flex:0 0 auto}
+.cbar .in{flex:1;background:var(--card2);border-radius:99px;padding:9px 13px;font-size:11.5px;color:var(--muted)}
+.cbar .snd{width:34px;height:34px;border-radius:99px;background:var(--accFill);color:var(--onAcc);display:flex;align-items:center;justify-content:center;font-size:15px;flex:0 0 auto}
+.privacy{font-size:9px;color:var(--muted);text-align:center;padding:5px;background:var(--card2)}
+</style>
+</head>
+<body>
+
+<div class="hd">
+  <h1>Cycle de course — Fle<em>x</em></h1>
+  <p data-fr="Acceptée → arrivée → en course → terminée + notation, côté passager et côté conducteur. Plus la messagerie interne."
+     data-en="Accepted → arriving → in ride → done + rating, passenger and driver sides. Plus in-app chat.">Acceptée → arrivée → en course → terminée + notation, côté passager et côté conducteur. Plus la messagerie interne.</p>
+</div>
+
+<div class="bar">
+  <div class="seg" id="theme">
+    <button aria-pressed="false" data-t="dark" data-fr="Sombre" data-en="Dark">Sombre</button>
+    <button aria-pressed="true" data-t="light" data-fr="Clair" data-en="Light">Clair</button>
+  </div>
+  <div class="seg" id="lang">
+    <button aria-pressed="true" data-l="fr">FR</button>
+    <button aria-pressed="false" data-l="en">EN</button>
+  </div>
+</div>
+
+<!-- ===================== CÔTÉ PASSAGER ===================== -->
+<div class="rowlab" data-fr="CÔTÉ PASSAGER" data-en="PASSENGER SIDE">CÔTÉ PASSAGER</div>
+<div class="grid">
+
+  <!-- P1 conducteur en route -->
+  <div class="cell">
+    <div class="cap" data-fr="1 · Votre chauffeur arrive" data-en="1 · Your driver is coming">1 · Votre chauffeur arrive</div>
+    <div class="phone">
+      <div class="map">
+        <div class="road" style="top:34%;left:-5%;width:110%;height:6px;transform:rotate(-6deg)"></div>
+        <div class="road" style="top:0;left:44%;width:5px;height:70%"></div>
+        <div class="trail" style="left:32%;top:26%;width:90px;transform:rotate(28deg)"></div>
+        <div class="pin me" style="left:30%;top:52%"></div>
+        <div class="carmark" style="left:56%;top:22%">🚗</div>
+      </div>
+      <div class="st"><span>6:20</span><span class="r">4G</span></div>
+      <div class="sheet">
+        <div class="status"><span class="dot"></span><span data-fr="EN ROUTE VERS VOUS" data-en="ON THE WAY">EN ROUTE VERS VOUS</span></div>
+        <div class="eta"><b data-fr="4 min" data-en="4 min">4 min</b> <span style="font-size:13px;font-weight:600;color:var(--muted)" data-fr="d'attente" data-en="away">d'attente</span></div>
+        <div class="who">
+          <span class="av" style="background:#D9B6F0">O</span>
+          <div class="w"><div class="nm">Ousmane</div><div class="rt">★ 4,8 · 127 <span data-fr="courses" data-en="rides">courses</span></div></div>
+          <span class="plate">DK 4821 A</span>
+        </div>
+        <div class="veh">
+          <span class="vph">🚗</span>
+          <div class="vi"><div class="vt">Kia Picanto</div><div class="vs" data-fr="grise" data-en="grey">grise</div></div>
+        </div>
+        <div class="actions">
+          <div class="ab mint">💬 <span data-fr="Message" data-en="Chat">Message</span></div>
+          <div class="ab soft">📞 <span data-fr="Appeler" data-en="Call">Appeler</span></div>
+          <div class="ab danger" style="flex:0 0 42px">✕</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- P2 arrivé -->
+  <div class="cell">
+    <div class="cap" data-fr="2 · Votre chauffeur est là" data-en="2 · Your driver has arrived">2 · Votre chauffeur est là</div>
+    <div class="phone">
+      <div class="map">
+        <div class="road" style="top:34%;left:-5%;width:110%;height:6px;transform:rotate(-6deg)"></div>
+        <div class="pin me" style="left:44%;top:44%"></div>
+        <div class="carmark" style="left:48%;top:40%">🚗</div>
+      </div>
+      <div class="st"><span>6:24</span><span class="r">4G</span></div>
+      <div class="sheet">
+        <div class="status"><span class="dot" style="background:var(--ok)"></span><span style="color:var(--ok)" data-fr="VOTRE CHAUFFEUR EST ARRIVÉ" data-en="YOUR DRIVER HAS ARRIVED">VOTRE CHAUFFEUR EST ARRIVÉ</span></div>
+        <div class="eta" style="font-size:15px" data-fr="Cherchez la Picanto grise" data-en="Look for the grey Picanto">Cherchez la Picanto grise</div>
+        <div class="who">
+          <span class="av" style="background:#D9B6F0">O</span>
+          <div class="w"><div class="nm">Ousmane</div><div class="rt">★ 4,8</div></div>
+          <span class="plate" style="background:var(--accFill);color:var(--onAcc)">DK 4821 A</span>
+        </div>
+        <div class="actions">
+          <div class="ab mint">💬 <span data-fr="Message" data-en="Chat">Message</span></div>
+          <div class="ab soft">📞 <span data-fr="Appeler" data-en="Call">Appeler</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- P3 en course -->
+  <div class="cell">
+    <div class="cap" data-fr="3 · En route vers Ouakam" data-en="3 · Heading to Ouakam">3 · En route vers Ouakam</div>
+    <div class="phone">
+      <div class="map">
+        <div class="road" style="top:44%;left:-5%;width:110%;height:6px;transform:rotate(-4deg)"></div>
+        <div class="trail" style="left:26%;top:56%;width:120px;transform:rotate(-18deg)"></div>
+        <div class="carmark" style="left:34%;top:52%">🚗</div>
+        <div class="pin dest" style="left:74%;top:26%"></div>
+      </div>
+      <div class="st"><span>6:32</span><span class="r">4G</span></div>
+      <div class="sheet">
+        <div class="status"><span class="dot"></span><span data-fr="EN COURSE · VERS OUAKAM" data-en="IN RIDE · TO OUAKAM">EN COURSE · VERS OUAKAM</span></div>
+        <div class="eta"><span data-fr="Arrivée dans" data-en="Arriving in">Arrivée dans</span> <b>12 min</b></div>
+        <div class="pay">
+          <span class="l" data-fr="Prix convenu — à régler en espèces" data-en="Agreed price — pay in cash">Prix convenu — à régler en espèces</span>
+          <span class="v">3 300 F</span>
+        </div>
+        <div class="actions">
+          <div class="ab mint">💬 <span data-fr="Message" data-en="Chat">Message</span></div>
+          <div class="ab soft">🛡 <span data-fr="Sécurité" data-en="Safety">Sécurité</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- P4 notation -->
+  <div class="cell">
+    <div class="cap" data-fr="4 · Course terminée · notez" data-en="4 · Ride done · rate">4 · Course terminée · notez</div>
+    <div class="phone">
+      <div class="st"><span>6:44</span><span class="r">4G</span></div>
+      <div class="rate">
+        <div class="av" style="background:#D9B6F0">O</div>
+        <div class="q" data-fr="Comment était Ousmane ?" data-en="How was Ousmane?">Comment était Ousmane ?</div>
+        <div class="s" data-fr="Votre note reste secrète jusqu'à la sienne" data-en="Your rating stays hidden until theirs">Votre note reste secrète jusqu'à la sienne</div>
+        <div class="stars"><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span></div>
+        <div class="chips">
+          <span class="chip on" data-fr="Ponctuel" data-en="On time">Ponctuel</span>
+          <span class="chip" data-fr="Conduite sûre" data-en="Safe driving">Conduite sûre</span>
+          <span class="chip on" data-fr="Sympa" data-en="Friendly">Sympa</span>
+          <span class="chip" data-fr="Voiture propre" data-en="Clean car">Voiture propre</span>
+        </div>
+        <div class="paidrow"><span data-fr="Payé en espèces" data-en="Paid in cash">Payé en espèces</span> · <b>3 300 F</b></div>
+        <div class="send" data-fr="Envoyer" data-en="Submit">Envoyer</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===================== CÔTÉ CONDUCTEUR ===================== -->
+<div class="rowlab" data-fr="CÔTÉ CONDUCTEUR" data-en="DRIVER SIDE">CÔTÉ CONDUCTEUR</div>
+<div class="grid">
+
+  <!-- D1 va chercher -->
+  <div class="cell">
+    <div class="cap" data-fr="1 · Allez chercher le passager" data-en="1 · Go to passenger">1 · Allez chercher le passager</div>
+    <div class="phone">
+      <div class="map">
+        <div class="road" style="top:40%;left:-5%;width:110%;height:6px;transform:rotate(-6deg)"></div>
+        <div class="trail" style="left:30%;top:52%;width:90px;transform:rotate(-24deg)"></div>
+        <div class="carmark" style="left:28%;top:56%">🚗</div>
+        <div class="pin me" style="left:64%;top:30%"></div>
+      </div>
+      <div class="st"><span>6:20</span><span class="r">4G</span></div>
+      <div class="sheet">
+        <div class="status"><span class="dot"></span><span data-fr="ALLEZ CHERCHER AWA" data-en="PICK UP AWA">ALLEZ CHERCHER AWA</span></div>
+        <div class="eta"><b>4 min</b> · <span style="font-size:13px;font-weight:600;color:var(--muted)" data-fr="HLM, près de la pharmacie" data-en="HLM, by the pharmacy">HLM, près de la pharmacie</span></div>
+        <div class="who">
+          <span class="av" style="background:#A8D8F0">A</span>
+          <div class="w"><div class="nm">Awa</div><div class="rt">★ 4,9</div></div>
+          <span class="price-tag">3 300 F</span>
+        </div>
+        <div class="actions">
+          <div class="ab mint">💬 <span data-fr="Message" data-en="Chat">Message</span></div>
+          <div class="ab soft">📞</div>
+          <div class="ab danger" style="flex:0 0 42px">✕</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- D2 arrivé -->
+  <div class="cell">
+    <div class="cap" data-fr="2 · Vous êtes au point de rdv" data-en="2 · At the pickup point">2 · Vous êtes au point de rdv</div>
+    <div class="phone">
+      <div class="map">
+        <div class="pin me" style="left:46%;top:44%"></div>
+        <div class="carmark" style="left:42%;top:46%">🚗</div>
+      </div>
+      <div class="st"><span>6:24</span><span class="r">4G</span></div>
+      <div class="sheet">
+        <div class="status"><span class="dot" style="background:var(--ok)"></span><span style="color:var(--ok)" data-fr="VOUS ÊTES ARRIVÉ" data-en="YOU'VE ARRIVED">VOUS ÊTES ARRIVÉ</span></div>
+        <div class="eta" style="font-size:14px" data-fr="Awa a été prévenue. Attendez-la." data-en="Awa was notified. Wait for her.">Awa a été prévenue. Attendez-la.</div>
+        <div class="who">
+          <span class="av" style="background:#A8D8F0">A</span>
+          <div class="w"><div class="nm">Awa</div><div class="rt" data-fr="Devant la pharmacie, HLM" data-en="By the pharmacy, HLM">Devant la pharmacie, HLM</div></div>
+        </div>
+        <div class="actions">
+          <div class="ab mint" data-fr="Démarrer la course" data-en="Start the ride">Démarrer la course</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- D3 en course -->
+  <div class="cell">
+    <div class="cap" data-fr="3 · Course en cours" data-en="3 · Ride in progress">3 · Course en cours</div>
+    <div class="phone">
+      <div class="map">
+        <div class="road" style="top:44%;left:-5%;width:110%;height:6px;transform:rotate(-4deg)"></div>
+        <div class="trail" style="left:26%;top:56%;width:120px;transform:rotate(-18deg)"></div>
+        <div class="carmark" style="left:34%;top:52%">🚗</div>
+        <div class="pin dest" style="left:74%;top:26%"></div>
+      </div>
+      <div class="st"><span>6:32</span><span class="r">4G</span></div>
+      <div class="sheet">
+        <div class="status"><span class="dot"></span><span data-fr="EN COURSE · VERS OUAKAM" data-en="IN RIDE · TO OUAKAM">EN COURSE · VERS OUAKAM</span></div>
+        <div class="pay">
+          <span class="l" data-fr="À encaisser en espèces" data-en="Collect in cash">À encaisser en espèces</span>
+          <span class="v">3 300 F <span class="cash" data-fr="0 % comm." data-en="0% comm.">0 % comm.</span></span>
+        </div>
+        <div class="actions">
+          <div class="ab mint" data-fr="Terminer la course" data-en="End the ride">Terminer la course</div>
+          <div class="ab soft">🛡</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- D4 notation -->
+  <div class="cell">
+    <div class="cap" data-fr="4 · Terminée · notez le passager" data-en="4 · Done · rate rider">4 · Terminée · notez le passager</div>
+    <div class="phone">
+      <div class="st"><span>6:44</span><span class="r">4G</span></div>
+      <div class="rate">
+        <div class="av" style="background:#A8D8F0">A</div>
+        <div class="q" data-fr="Comment était Awa ?" data-en="How was Awa?">Comment était Awa ?</div>
+        <div class="s" data-fr="Notez pour voir la prochaine demande" data-en="Rate to see the next request">Notez pour voir la prochaine demande</div>
+        <div class="stars"><span>★</span><span>★</span><span>★</span><span>★</span><span>★</span></div>
+        <div class="chips">
+          <span class="chip on" data-fr="Ponctuelle" data-en="On time">Ponctuelle</span>
+          <span class="chip" data-fr="Respectueuse" data-en="Respectful">Respectueuse</span>
+          <span class="chip on" data-fr="Bonne communication" data-en="Good comms">Bonne communication</span>
+        </div>
+        <div class="paidrow"><span data-fr="Encaissé" data-en="Collected">Encaissé</span> · <b>3 300 F</b></div>
+        <div class="send" data-fr="Envoyer et continuer" data-en="Submit and continue">Envoyer et continuer</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===================== MESSAGERIE ===================== -->
+<div class="rowlab" data-fr="MESSAGERIE INTERNE (numéros cachés)" data-en="IN-APP CHAT (numbers hidden)">MESSAGERIE INTERNE (numéros cachés)</div>
+<div class="grid">
+  <div class="cell">
+    <div class="cap" data-fr="Chat pendant la course" data-en="Chat during the ride">Chat pendant la course</div>
+    <div class="phone">
+      <div class="chat">
+        <div class="chead">
+          <span class="bk">‹</span>
+          <span class="av">O</span>
+          <div><div class="nm">Ousmane</div><div class="s" data-fr="Picanto grise · DK 4821 A" data-en="Grey Picanto · DK 4821 A">Picanto grise · DK 4821 A</div></div>
+          <span class="call">📞</span>
+        </div>
+        <div class="msgs">
+          <div class="b them" data-fr="Je suis à 3 minutes, j'arrive par la VDN" data-en="I'm 3 min away, coming via the VDN">Je suis à 3 minutes, j'arrive par la VDN</div>
+          <div class="b me" data-fr="Ok, je suis devant la pharmacie" data-en="Ok, I'm in front of the pharmacy">Ok, je suis devant la pharmacie</div>
+          <div class="b them" data-fr="Vous portez quoi ?" data-en="What are you wearing?">Vous portez quoi ?</div>
+          <div class="b me" data-fr="Boubou bleu" data-en="Blue boubou">Boubou bleu</div>
+          <div class="b them" data-fr="Je vous vois, j'arrive 👍" data-en="I see you, coming 👍">Je vous vois, j'arrive 👍</div>
+        </div>
+        <div class="quick">
+          <span class="q" data-fr="J'arrive" data-en="On my way">J'arrive</span>
+          <span class="q" data-fr="Je suis là" data-en="I'm here">Je suis là</span>
+          <span class="q" data-fr="2 minutes" data-en="2 minutes">2 minutes</span>
+          <span class="q" data-fr="Où êtes-vous ?" data-en="Where are you?">Où êtes-vous ?</span>
+        </div>
+        <div class="cbar">
+          <span class="in" data-fr="Message…" data-en="Message…">Message…</span>
+          <span class="snd">➤</span>
+        </div>
+        <div class="privacy" data-fr="🔒 Vos numéros restent privés — la conversation se ferme après la course"
+             data-en="🔒 Your numbers stay private — chat closes after the ride">🔒 Vos numéros restent privés — la conversation se ferme après la course</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cell" style="width:520px">
+    <div class="cap" data-fr="Pourquoi la messagerie interne" data-en="Why in-app chat">Pourquoi la messagerie interne</div>
+    <div style="background:var(--card);border-radius:20px;padding:22px;height:508px;display:flex;flex-direction:column;gap:14px;font-size:13px;line-height:1.5;color:var(--muted)">
+      <div><b style="color:var(--ink)" data-fr="Les numéros restent cachés" data-en="Numbers stay hidden">Les numéros restent cachés</b><br><span data-fr="Aujourd'hui « Écrire » ouvre le SMS du téléphone — le passager et le conducteur voient leurs numéros. La messagerie interne ferme ça : on discute sans jamais échanger de numéro." data-en="Today « Write » opens phone SMS — both see each other's numbers. In-app chat closes that: talk without ever sharing a number.">Aujourd'hui « Écrire » ouvre le SMS du téléphone — le passager et le conducteur voient leurs numéros. La messagerie interne ferme ça : on discute sans jamais échanger de numéro.</span></div>
+      <div><b style="color:var(--ink)" data-fr="La conversation se ferme après la course" data-en="Chat closes after the ride">La conversation se ferme après la course</b><br><span data-fr="Pas de harcèlement possible une fois le trajet fini. L'historique reste lisible pour un signalement, jamais ré-ouvrable." data-en="No harassment possible once the trip ends. History stays readable for a report, never re-openable.">Pas de harcèlement possible une fois le trajet fini. L'historique reste lisible pour un signalement, jamais ré-ouvrable.</span></div>
+      <div><b style="color:var(--ink)" data-fr="Réponses rapides prêtes" data-en="Quick replies ready">Réponses rapides prêtes</b><br><span data-fr="« J'arrive », « Je suis là », « Où êtes-vous ? » — un tap. La plupart des échanges course sont ces quatre phrases, dans les deux sens." data-en="« On my way », « I'm here », « Where are you? » — one tap. Most ride chats are these four phrases, both ways.">« J'arrive », « Je suis là », « Où êtes-vous ? » — un tap. La plupart des échanges course sont ces quatre phrases, dans les deux sens.</span></div>
+      <div><b style="color:var(--ink)" data-fr="L'appel reste possible" data-en="Calling still works">L'appel reste possible</b><br><span data-fr="Le bouton téléphone passe par un relais qui masque les deux numéros (à brancher plus tard). En V1, l'appel direct reste, la messagerie interne est le premier pas." data-en="The call button routes through a relay that masks both numbers (later). In V1, direct call stays, in-app chat is the first step.">Le bouton téléphone passe par un relais qui masque les deux numéros (à brancher plus tard). En V1, l'appel direct reste, la messagerie interne est le premier pas.</span></div>
+      <div style="margin-top:auto;font-size:11.5px"><span data-fr="Statut : à construire. Le SMS actuel fonctionne mais expose les numéros — c'est au backlog, ce dessin en est la cible." data-en="Status: to build. Current SMS works but exposes numbers — it's on the backlog, this is the target.">Statut : à construire. Le SMS actuel fonctionne mais expose les numéros — c'est au backlog, ce dessin en est la cible.</span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  var lang='fr';
+  function applyLang(){
+    document.querySelectorAll('[data-fr]').forEach(function(el){el.textContent=el.getAttribute('data-'+lang);});
+    document.documentElement.lang=lang;
+  }
+  document.getElementById('lang').addEventListener('click',function(e){
+    var b=e.target.closest('button'); if(!b)return;
+    lang=b.dataset.l;
+    this.querySelectorAll('button').forEach(function(x){x.setAttribute('aria-pressed',x===b);});
+    applyLang();
+  });
+  document.getElementById('theme').addEventListener('click',function(e){
+    var b=e.target.closest('button'); if(!b)return;
+    document.documentElement.setAttribute('data-theme',b.dataset.t);
+    this.querySelectorAll('button').forEach(function(x){x.setAttribute('aria-pressed',x===b);});
+  });
+</script>
+</body>
+</html>

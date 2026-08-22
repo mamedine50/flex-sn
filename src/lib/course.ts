@@ -187,11 +187,29 @@ export async function annulerCourse(courseId: string, motif?: string) {
   });
 }
 
-export async function noterCourse(courseId: string, note: number, commentaire?: string) {
+/**
+ * Les puces cochables, par rôle de la personne NOTÉE.
+ *
+ * La liste vit ici ET en base (`puces_evaluation`) : ici pour l'ordre
+ * d'affichage et la traduction, là-bas pour refuser ce que le client
+ * inventerait. La base tranche ; ce tableau ne fait que proposer.
+ */
+export const PUCES = {
+  conducteur: ['ponctuel', 'conduite_sure', 'sympa', 'voiture_propre'],
+  passager: ['ponctuelle', 'respectueuse', 'bonne_communication'],
+} as const;
+
+export async function noterCourse(
+  courseId: string,
+  note: number,
+  puces: string[] = [],
+  commentaire?: string,
+) {
   return supabase.rpc('noter_course', {
     p_course_id: courseId,
     p_note: note,
     p_commentaire: commentaire ?? undefined,
+    p_puces: puces,
   });
 }
 
