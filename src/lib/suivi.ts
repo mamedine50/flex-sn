@@ -11,9 +11,14 @@ export { ageSecondes, doitEmettre, etaMinutes } from './geo';
  * Le suivi en direct, des deux côtés.
  *
  * Côté conducteur : le téléphone émet sa position toutes les cinq secondes,
- * UNIQUEMENT pendant une course qui bouge. Un conducteur simplement disponible
- * n'émet rien — sa position n'est lue par personne, et on ne collecte pas ce
- * qu'on ne sert pas.
+ * UNIQUEMENT pendant une course qui bouge — c'est le passager qui regarde la
+ * voiture approcher, et cinq secondes est la cadence de son écran.
+ *
+ * UN CONDUCTEUR QUI ATTEND ÉMET AUSSI, mais ailleurs et bien plus lentement :
+ * voir `useBattementPosition()` dans `conducteur.ts`. Ce commentaire a dit le
+ * contraire — « sa position n'est lue par personne » — et c'était faux : elle
+ * est lue par `demandes_proches()`, pour filtrer SA PROPRE file. La phrase a
+ * coûté un conducteur figé au trottoir où il avait appuyé sur GO.
  *
  * En PREMIER PLAN seulement. La localisation en arrière-plan coûte une
  * dépendance de build, un écran de permission qui fait peur et une batterie

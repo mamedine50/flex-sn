@@ -1,11 +1,13 @@
-import { useCallback, useEffect, useState } from 'react';
+import * as Location from 'expo-location';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppState } from 'react-native';
 
 import { ZONE_TEST } from './couverture';
 import type { Database } from './database.types';
+import { doitRepublier } from './geo';
 import { supabase } from './supabase';
 
-export { delaiEstimeMin, distanceM } from './geo';
+export { DERIVE_MIN_M, delaiEstimeMin, distanceM, doitRepublier } from './geo';
 
 /**
  * Le côté conducteur : capacité, mise en ligne, file des demandes proches.
@@ -260,4 +262,75 @@ export async function majEnLigne(
     p_lon: position.longitude,
     p_en_ligne: enLigne,
   });
+}
+
+/**
+ * Cadence de rafraîchissement de la position d'un conducteur EN ATTENTE.
+ *
+ * Trente secondes, pas cinq : personne ne regarde ce point-là bouger. Il ne
+ * sert qu'à filtrer SA PROPRE file. À vitesse de ville, trente secondes valent
+ * quatre cents mètres — largement dans le rayon.
+ */
+export const BATTEMENT_ATTENTE_MS = 30_000;
+
+/**
+ * La position d'un conducteur qui ATTEND.
+ *
+ * ── LE DÉFAUT QUE CE CROCHET RÉPARE ────────────────────────────────────────
+ * La position n'était publiée qu'UNE FOIS, à l'appui sur GO. Ensuite, plus
+ * rien : `useEmissionPosition` ne s'allume que pendant une course qui roule.
+ * Un conducteur qui se mettait en ligne chez lui puis traversait la ville
+ * restait apparié, pour toujours, au point où il avait appuyé. Avec un rayon
+ * de trois kilomètres à Dakar, sa file devenait fausse en dix minutes : les
+ * demandes autour de lui invisibles, celles autour d'un endroit qu'il avait
+ * quitté servies pour rien.
+ *
+ * Et un PREMIER point erroné ne se corrigeait jamais. C'est ce qu'on lit sur
+ * le distant : un conducteur figé à neuf cents kilomètres de là où il teste.
+ *
+ * Le commentaire de `suivi.ts` disait « sa position n'est lue par personne ».
+ * C'était faux : elle est lue par `demandes_proches()`, pour lui.
+ *
+ * ── CE QU'ON N'ÉLARGIT PAS ─────────────────────────────────────────────────
+ * Premier plan seulement, et rien pendant une course — `useEmissionPosition`
+ * tient déjà ce cas à cinq secondes, et deux battements sur le même point se
+ * marcheraient dessus. Aucune permission nouvelle : c'est la même que GO a
+ * déjà obtenue.
+ */
+export function useBattementPosition(enLigne: boolean, enCourse: boolean) {
+  const dernier = useRef<{ latitude: number; longitude: number } | null>(null);
+
+  useEffect(() => {
+    if (!enLigne || enCourse) return undefined;
+    let vivant = true;
+
+    const battre = async () => {
+      try {
+        const { coords } = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+        });
+        if (!vivant) return;
+        if (!doitRepublier(dernier.current, coords)) return;
+        const { error } = await majEnLigne(coords, true);
+        if (!error) dernier.current = { latitude: coords.latitude, longitude: coords.longitude };
+      } catch {
+        // Un point manqué n'est pas un incident : le suivant arrive dans trente
+        // secondes, et le précédent reste servi entre-temps.
+      }
+    };
+
+    void battre();
+    const battement = setInterval(() => void battre(), BATTEMENT_ATTENTE_MS);
+    const abonnement = AppState.addEventListener('change', (etatApp) => {
+      // Au retour au premier plan : le téléphone a pu parcourir la ville pendant
+      // que l'application dormait, et aucun battement n'a tourné.
+      if (etatApp === 'active') void battre();
+    });
+
+    return () => {
+      vivant = false;
+      clearInterval(battement);
+      abonnement.remove();
+    };
+  }, [enLigne, enCourse]);
 }

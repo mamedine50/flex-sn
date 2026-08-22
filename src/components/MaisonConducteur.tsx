@@ -9,7 +9,12 @@ import FileDemandes from './FileDemandes';
 import type { EtatCarte } from './CarteFond';
 import { useT } from '../i18n';
 import { useCourse } from '../lib/course';
-import { majEnLigne, quitterLaLigne, useEnLigne } from '../lib/conducteur';
+import {
+  majEnLigne,
+  quitterLaLigne,
+  useBattementPosition,
+  useEnLigne,
+} from '../lib/conducteur';
 import { horsCouverture } from '../lib/couverture';
 import { formatXof } from '../lib/format';
 import { GAINS_VIDES, useGains } from '../lib/gains';
@@ -75,6 +80,10 @@ export default function MaisonConducteur({
   // Le second est un péage de deux secondes, pas un mur — et il faut qu'on
   // sache lequel des deux nous retient.
   const aNoter = course.course?.statut === 'terminee';
+
+  // Tant qu'il attend, son point suit sa voiture. Sans ça il resterait apparié
+  // au trottoir où il a appuyé sur GO — voir useBattementPosition().
+  useBattementPosition(enLigne, enCourse);
 
   const [monterCarte, setMonterCarte] = useState(false);
   const [etatCarte, setEtatCarte] = useState<EtatCarte>('attente');

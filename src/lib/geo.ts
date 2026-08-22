@@ -57,3 +57,23 @@ export function etaMinutes(
   if (!conducteur || !cible) return null;
   return delaiEstimeMin(distanceM(conducteur, cible));
 }
+
+/**
+ * En deçà, on ne réécrit pas : un conducteur arrêté à un feu n'a pas bougé.
+ * Cent mètres est aussi le bruit d'un point GPS en ville — écrire moins que ça,
+ * c'est écrire du bruit.
+ */
+export const DERIVE_MIN_M = 100;
+
+/**
+ * Faut-il réécrire le point ? Sortie de la boucle pour être éprouvée : c'est la
+ * règle qui décide si la file d'un conducteur suit sa voiture ou pas.
+ */
+export function doitRepublier(
+  avant: { latitude: number; longitude: number } | null,
+  maintenant: { latitude: number; longitude: number },
+): boolean {
+  // Le premier point passe toujours : c'est lui qui corrige un GO tiré sur une
+  // position fausse.
+  return avant === null || distanceM(avant, maintenant) >= DERIVE_MIN_M;
+}
