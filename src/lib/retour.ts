@@ -40,8 +40,27 @@ export async function apresConnexion(retour?: string | null) {
   reprendre(retour);
 }
 
-/** Reprend le chemin d'origine, ou l'accueil s'il n'y en a pas. */
+/**
+ * Reprend le chemin d'origine, ou l'accueil s'il n'y en a pas.
+ *
+ * `dismissAll()` AVANT le `replace`, et c'est tout le sujet. La connexion est un
+ * PARCOURS, pas un écran : `connexion/index` empile `connexion/code`, qui empile
+ * parfois `connexion/prenom`. Un `replace` seul ne remplace que le sommet — les
+ * écrans du dessous survivent. Résultat observé sur un téléphone : depuis le
+ * profil, un balayage vers l'arrière ramenait l'écran « Votre numéro », déjà
+ * connecté, avec le numéro encore dedans.
+ *
+ * Ce n'est pas cosmétique. Un écran de connexion accessible d'un geste après
+ * s'être connecté invite à se reconnecter, envoie un second code, et laisse
+ * croire que la session n'a pas pris.
+ *
+ * `dismissAll` vide la pile de tout ce qui a été empilé, `replace` pose la
+ * destination à la place de ce qui reste. Il ne subsiste donc rien de la
+ * connexion. Le bouton « Retour » de la destination continue de fonctionner :
+ * tous les écrans retombent sur l'accueil quand la pile est vide.
+ */
 export function reprendre(retour?: string | null) {
   const chemin = retour && retour.startsWith('/') ? retour : '/';
+  if (router.canDismiss()) router.dismissAll();
   router.replace(chemin as Href);
 }
