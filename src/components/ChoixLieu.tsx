@@ -258,6 +258,34 @@ function SurCarte({
             returnKeyType="search"
           />
 
+          {/* AUCUN QUARTIER CONNU NE CORRESPOND — et hors de Dakar, ce sera
+              toujours le cas : la table ne contient que des lieux dakarois, et
+              chercher une adresse ailleurs demanderait un géocodeur, facturé à
+              l'appel et exclu du produit.
+              
+              Plutôt que de laisser la recherche muette, on propose de PRENDRE
+              LE TEXTE TEL QUEL comme nom du point. La position vient du repère
+              sur la carte, le nom vient de ce qu'on a écrit — et c'est ce nom
+              que le conducteur lira. C'est exactement ce qu'il lui faut : une
+              adresse écrite à la main vaut mieux qu'un « Point sur la carte ». */}
+          {recherche.trim().length >= 3 && suggestions.length === 0 ? (
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => {
+                Keyboard.dismiss();
+                setLibelle(recherche.trim());
+                setNomChoisi(recherche.trim());
+                setRecherche('');
+              }}
+              className="mt-8 min-h-touch justify-center rounded-field bg-card2 px-16"
+              style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+            >
+              <Text className="text-[14px] font-bold text-accInk" numberOfLines={1}>
+                {t('prix.utiliserCeTexte', { texte: recherche.trim() })}
+              </Text>
+            </Pressable>
+          ) : null}
+
           {suggestions.length > 0 ? (
             <View className="mt-8 overflow-hidden rounded-field bg-card2">
               {suggestions.map((lieu) => (

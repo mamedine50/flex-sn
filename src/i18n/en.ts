@@ -60,6 +60,7 @@ export const en: Dictionnaire = {
   },
 
   prix: {
+    utiliserCeTexte: 'Use “{texte}” as the address',
     maPosition: 'My location',
     presDe: 'near {lieu}',
     titre: 'Set your price',

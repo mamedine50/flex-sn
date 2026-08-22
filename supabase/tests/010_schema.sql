@@ -112,6 +112,10 @@ select is(
        'decider_document', 'dossier_du_candidat',
        'commune_la_plus_proche', 'contre_proposer', 'create_ride_request',
        'declarer_vehicule',
+       -- Les durées se lisent en base depuis qu'elles se règlent sans
+       -- migration : les fonctions qui les servent doivent donc être
+       -- appelables, comme `prix_suggere` l'est pour la grille de prix.
+       'duree_demande', 'duree_offre',
        'demandes_proches',
        'enregistrer_lieu_favori', 'est_admin', 'est_conducteur', 'maj_photo_profil',
        'maj_position', 'maj_profil',
