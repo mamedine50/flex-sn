@@ -21,6 +21,9 @@ import { ThemeProvider, useTheme } from '../src/theme/ThemeProvider';
  */
 void SplashScreen.preventAutoHideAsync();
 
+/** Ce qu'on peut voir sans compte : le tour, la connexion, et les textes légaux. */
+const SANS_SESSION = ['bienvenue', 'connexion', 'conditions', 'confidentialite'];
+
 function Porte() {
   const session = useSession();
   const segments = useSegments();
@@ -32,18 +35,22 @@ function Porte() {
     if (!pret) return;
     void SplashScreen.hideAsync();
 
-    // La porte ne réclame RIEN. On regarde d'abord, on s'inscrit quand on
-    // agit : l'accueil et le choix de lieu se consultent sans compte, et
-    // chaque écran qui exige vraiment une session porte sa propre garde
-    // (`useGardeSession`) — laquelle emporte le chemin de retour. Une porte
-    // globale qui renverrait tout le monde vers la connexion rendrait ces
-    // gardes inatteignables et ferait demander un numéro de téléphone à
-    // quelqu'un qui vient juste d'ouvrir l'application.
+    // LA PORTE RÉCLAME UN COMPTE, et c'est ce que fait toute application de
+    // transport — Uber, Bolt, Yango, inDrive. On ne télécharge pas ce genre
+    // d'application pour flâner : on la télécharge parce qu'on a besoin d'une
+    // course maintenant. Laisser regarder d'abord vaut pour un catalogue, pas
+    // pour un service qu'on utilise dans les deux minutes.
     //
-    // Seule exception, et elle ne demande rien non plus : le mini-tour, qu'on
-    // montre une fois avant tout le reste.
-    if (session.statut === 'anonyme' && !accrocheVue && segments[0] !== 'bienvenue') {
-      router.replace('/bienvenue');
+    // L'ordre : le mini-tour une fois, puis le numéro. On explique le produit
+    // avant de demander quoi que ce soit — mais on le demande ensuite.
+    //
+    // Les gardes par écran (`useGardeSession`) restent en place. Elles ne
+    // servent plus à grand-chose une fois la porte fermée, et c'est très bien :
+    // une protection qui ne s'appuie pas sur une seule ligne est une protection
+    // qui survit à un changement de cette ligne.
+    const dehors = SANS_SESSION.includes(segments[0] ?? '');
+    if (session.statut === 'anonyme' && !dehors) {
+      router.replace(accrocheVue ? '/connexion' : '/bienvenue');
     }
   }, [pret, session.statut, accrocheVue, segments]);
 

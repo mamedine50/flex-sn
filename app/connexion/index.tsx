@@ -98,21 +98,21 @@ export default function Connexion() {
           paddingBottom: marges.bottom + 24,
         }}
       >
-        {/* Le retour est TOUJOURS offert. Il ne l'était pas tant que la
-            connexion était la porte d'entrée — il n'y avait nulle part où
-            revenir. Depuis que l'accueil se consulte sans compte, il y a
-            toujours quelque part : quelqu'un qui a ouvert cet écran par un
-            geste doit pouvoir se raviser et continuer à regarder. Une garde
-            posée par `replace` ne laisse pas d'historique, d'où le repli sur
-            l'accueil plutôt qu'un bouton qui ne ferait rien. */}
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('commun.retour')}
-          onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
-          className="min-h-touch justify-center self-start"
-        >
-          <Text className="text-[15px] font-bold text-accInk">{t('commun.retour')}</Text>
-        </Pressable>
+        {/* PAS DE RETOUR QUAND LA CONNEXION EST LA PORTE. Il n'y a nulle part
+            où revenir, et un repli sur l'accueil renverrait ici même — la porte
+            le refuse aussitôt. Un bouton qui boucle est pire qu'un bouton
+            absent. Il reparaît quand on est arrivé ici depuis un autre écran,
+            ce qui n'arrive plus que par une garde de session. */}
+        {router.canGoBack() ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('commun.retour')}
+            onPress={() => router.back()}
+            className="min-h-touch justify-center self-start"
+          >
+            <Text className="text-[15px] font-bold text-accInk">{t('commun.retour')}</Text>
+          </Pressable>
+        ) : null}
 
         <Text className="mt-16 text-[28px] font-extrabold text-ink">
           {t('connexion.titreNumero')}

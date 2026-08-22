@@ -47,8 +47,8 @@ export default function Profil() {
   const marges = useSafeAreaInsets();
   const session = useSession();
 
-  // L'accueil se consulte sans compte ; SON compte, non. Ouvrir cet onglet est
-  // déjà un geste, donc la connexion s'exige ici — et elle ramène ici.
+  // La porte exige déjà un compte. Cette garde reste : une protection qui ne
+  // s'appuie pas sur une seule ligne survit à un changement de cette ligne.
   useGardeSession('/profil');
 
   const capacite = useEstConducteur();

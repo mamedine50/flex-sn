@@ -5,7 +5,7 @@ une seule des transitions décrites ici. Quand un choix d'interface hésite, c'e
 ce document qui tranche.
 
 La règle qui gouverne tout le reste tient en une phrase :
-**on regarde d'abord, on s'inscrit quand on agit.**
+**on explique d'abord, on demande le compte ensuite, et rien avant.**
 
 ---
 
@@ -45,27 +45,33 @@ essai au simulateur.
 « Passer » mène à la **carte 3**, jamais à la sortie : la ligne légale y vit, et
 c'est le consentement qui rend l'inscription valable.
 
-### 2. Mini-tour → accueil
+### 2. Mini-tour → connexion
 
-« Continuer » va à l'**accueil**, pas à la connexion. On vient d'expliquer qu'on
-propose son prix ; le geste suivant est d'en proposer un.
+« Continuer » mène au **numéro de téléphone**. On vient d'expliquer le produit ;
+on demande maintenant de quoi s'en servir.
 
-### 3. L'accueil se consulte sans compte
+### 3. La porte réclame un compte
 
-**La porte ne réclame rien.** `app/_layout.tsx` ne redirige que vers le
-mini-tour, et seulement s'il n'a jamais été vu. Aucune garde globale.
+C'est ce que fait **toute** application de transport — Uber, Bolt, Yango, et
+inDrive dont ce parcours reprend la méthode. On ne télécharge pas ce genre
+d'application pour flâner : on la télécharge parce qu'on a besoin d'une course
+maintenant. « Laisser regarder d'abord » vaut pour un catalogue, pas pour un
+service qu'on utilise dans les deux minutes.
 
-Ce sont les écrans qui se protègent eux-mêmes, par `useGardeSession` — laquelle
-emporte toujours le chemin de retour. Une porte globale rendrait ces gardes
-inatteignables et demanderait un numéro de téléphone à quelqu'un qui vient
-d'ouvrir l'application.
+Ce qui reste visible sans compte : le mini-tour, la connexion, et **les deux
+textes légaux** — sans eux, la ligne de consentement du tour promettrait des
+documents qu'on ne pourrait pas lire.
 
-Ce qui se consulte sans compte : l'accueil, le choix de lieu, l'écran de prix,
-les pages légales, À propos.
+Les gardes par écran (`useGardeSession`) restent en place derrière la porte.
+Elles ne servent plus à grand-chose, et c'est très bien : une protection qui ne
+s'appuie pas sur une seule ligne survit à un changement de cette ligne.
 
-Ce qui exige une session : course, offres, mon profil, mes lieux, historique,
-avis, bloqués, devenir conducteur, administration, **et l'onglet Profil** —
-ouvrir son compte est déjà un geste.
+**Ce parcours a été ouvert puis refermé.** Il a existé une version où l'accueil,
+le choix de lieu et l'écran de prix se consultaient sans compte. Elle marchait —
+la grille de prix est d'ailleurs restée lisible par `anon` en base, ce qui ne
+coûte rien et reste vrai. Mais vu sur un téléphone, arriver à choisir un trajet
+sans jamais avoir dit qui on est se lit comme un oubli, pas comme une
+attention.
 
 **La grille de prix est publique en base**, pas seulement à l'écran :
 `bornes_prix` et `prix_suggere()` sont ouvertes à `anon`

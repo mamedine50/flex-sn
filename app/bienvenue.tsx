@@ -85,12 +85,12 @@ export default function Bienvenue() {
     [largeur],
   );
 
-  // Le tour mène à l'ACCUEIL, pas à la connexion. On vient d'expliquer qu'on
-  // propose son prix : le geste suivant est d'en proposer un, pas de donner son
-  // numéro. La connexion arrive au moment d'envoyer, et elle ramène ici même.
+  // Le tour mène à la CONNEXION. On vient d'expliquer le produit ; on demande
+  // maintenant de quoi s'en servir. C'est l'ordre de toutes les applications de
+  // transport, et celui d'inDrive en particulier.
   const continuer = () => {
     void marquerAccrocheVue();
-    router.replace('/');
+    router.replace('/connexion');
   };
 
   return (
