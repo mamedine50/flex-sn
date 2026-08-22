@@ -3,7 +3,7 @@ import { FlatList, Modal, Pressable, Text, TextInput, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useI18n, useT } from '../i18n';
-import { drapeau, PAYS, type Pays } from '../lib/pays';
+import { chercherPays, drapeau, PAYS, type Pays } from '../lib/pays';
 import { normaliser } from '../lib/recherche';
 import { useTheme } from '../theme/ThemeProvider';
 import { chiffresTabulaires } from '../theme/typographie';
@@ -33,14 +33,14 @@ export default function ChoixPays({
 
   const nomDe = (p: Pays) => (langue === 'en' ? (p.nomEn ?? p.nom) : p.nom);
 
-  const resultats = useMemo(() => {
-    const q = normaliser(recherche);
-    if (!q) return PAYS;
-    return PAYS.filter(
-      (p) => normaliser(nomDe(p)).includes(q) || p.indicatif.startsWith(q.replace(/\D/g, '')),
-    );
+  // Le tri et le filtrage vivent dans `src/lib/pays.ts` : c'est du texte, et un
+  // test ne doit pas monter un composant pour vérifier qu'une recherche range
+  // le Canada devant le Cameroun.
+  const resultats = useMemo(
+    () => chercherPays(PAYS, recherche, normaliser, nomDe),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [recherche, langue]);
+    [recherche, langue],
+  );
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onFermer}>

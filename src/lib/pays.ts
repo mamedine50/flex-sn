@@ -86,3 +86,47 @@ export function paysPourIndicatif(indicatif: string): Pays | null {
   const i = indicatif.replace(/[^0-9]/g, '');
   return PAYS.find((p) => p.indicatif === i) ?? null;
 }
+
+/**
+ * Cherche un pays par nom ou par indicatif, et RANGE par pertinence.
+ *
+ * DEUX DÉFAUTS RÉPARÉS ICI, et le second était invisible.
+ *
+ * 1. `p.indicatif.startsWith(q.replace(/\D/g, ''))` — pour une recherche sans
+ *    chiffre, « c », la partie numérique vaut la chaîne VIDE, et
+ *    `''.startsWith('')` est vrai. Le filtre laissait donc passer les 44 pays :
+ *    on tapait « c » et la liste ne bougeait pas. Il fallait descendre jusqu'en
+ *    bas pour trouver le Canada. L'indicatif ne se compare plus que s'il y a des
+ *    chiffres à comparer.
+ *
+ * 2. Sans classement, « c » aurait rendu la Côte d'Ivoire, le Cameroun ET la
+ *    France ou le Maroc — tout ce qui contient un « c » quelque part — dans
+ *    l'ordre de la liste, qui est un ordre de fréquence, pas de pertinence. Ce
+ *    qui COMMENCE par la recherche passe donc devant, et le reste suit.
+ *
+ * L'ordre de la liste est conservé à l'intérieur de chaque groupe : le Sénégal
+ * reste devant, et c'est voulu.
+ */
+export function chercherPays(
+  pays: Pays[],
+  recherche: string,
+  normaliser: (s: string) => string,
+  nomDe: (p: Pays) => string,
+): Pays[] {
+  const q = normaliser(recherche);
+  if (!q) return pays;
+
+  const chiffres = q.replace(/\D/g, '');
+  const debut: Pays[] = [];
+  const dedans: Pays[] = [];
+
+  for (const p of pays) {
+    const nom = normaliser(nomDe(p));
+    if (nom.startsWith(q) || (chiffres !== '' && p.indicatif.startsWith(chiffres))) {
+      debut.push(p);
+    } else if (nom.includes(q)) {
+      dedans.push(p);
+    }
+  }
+  return [...debut, ...dedans];
+}
