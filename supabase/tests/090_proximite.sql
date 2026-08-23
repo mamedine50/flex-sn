@@ -7,7 +7,7 @@
 begin;
 create extension if not exists pgtap with schema public;
 
-select plan(9);
+select plan(12);
 
 -- Les tests calculent leurs valeurs attendues avec ces utilitaires. Le PRODUIT
 -- ne les appelle que depuis des fonctions SECURITY DEFINER, qui n'ont pas besoin
@@ -125,6 +125,36 @@ select is_empty(
   'un conducteur hors ligne ne voit aucune demande'
 );
 set local role postgres;
+
+-- ═══════════ DÉJÀ RÉPONDU : LA DEMANDE QUITTE LA FILE ═══════════════════
+-- Le cul-de-sac que ça ferme : la demande restait dans la file, le conducteur
+-- appuyait, et recevait « Vous avez déjà répondu » — un message juste, à un
+-- endroit où il ne mène nulle part. Une carte qui propose un geste que le
+-- serveur va refuser est un piège.
+insert into public.positions_conducteurs (conducteur_id, lat, lon, en_ligne)
+select conducteur, 14.6928, -17.4467, true from f
+on conflict (conducteur_id) do update set en_ligne = true;
+
+select public.t_devenir((select conducteur from f));
+set local role authenticated;
+
+select is(
+  (select count(*)::int from public.demandes_proches(3000)),
+  1,
+  'Avant de répondre, la demande proche est dans la file'
+);
+
+select lives_ok(
+  format($$ select public.submit_offer(%L::uuid, 'contre_offre'::public.type_offre, 2600, 5::smallint) $$,
+         (select id from d_proche)),
+  'Le conducteur répond'
+);
+
+select is(
+  (select count(*)::int from public.demandes_proches(3000)),
+  0,
+  'et elle SORT de sa file — le fil se poursuit dans negociations_conducteur'
+);
 
 select * from finish();
 rollback;

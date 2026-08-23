@@ -355,6 +355,30 @@ export const fr = {
     rapide_ouetesvous: 'Où êtes-vous ?',
   },
 
+  /**
+   * La boîte de notifications. Le SERVEUR n'envoie qu'un genre et des
+   * identifiants : ces phrases-là sont écrites ici, dans la langue courante.
+   */
+  notifications: {
+    titre: 'Notifications',
+    vide: 'Rien de neuf.',
+    videAide: 'Vous verrez ici les réponses à vos demandes et vos courses.',
+    toutLu: 'Tout marquer comme lu',
+    illisible: 'Impossible de charger vos notifications.',
+
+    offre_recue: '{prenom} propose {montant}',
+    contre_offre: '{prenom} propose maintenant {montant}',
+    offre_acceptee: 'Course confirmée avec {prenom} à {montant}',
+    offre_caduque: 'Cette course est partie avec un autre conducteur',
+    conducteur_arrive: '{prenom} est arrivé',
+    course_annulee: 'Course annulée',
+    message: '{prenom} vous a écrit',
+    document_decide: 'Votre dossier conducteur a été examiné',
+    demande_expiree: 'Votre demande a expiré sans réponse',
+
+    quelquun: 'Quelqu’un',
+  },
+
   enRoute: {
     puce_ponctuel: 'Ponctuel',
     puce_conduite_sure: 'Conduite sûre',

@@ -26,6 +26,7 @@ export type NomIcone =
   | 'bloque'
   | 'aide'
   | 'infos'
+  | 'cloche'
   | 'sortie';
 
 const TAILLE = 20;
@@ -45,6 +46,14 @@ const CHEMINS: Record<NomIcone, () => React.ReactNode> = {
     </>
   ),
   plus: () => <Path d="M12 5 V19 M5 12 H19" />,
+  // Une cloche : le corps, le battant, et l'anse. Dessinée au même trait que
+  // les autres — un jeu d'icônes se reconnaît à sa graisse, pas à ses formes.
+  cloche: () => (
+    <>
+      <Path d="M6 16 V11 A6 6 0 0 1 18 11 V16 L20 18 H4 Z" />
+      <Path d="M10 18 A2 2 0 0 0 14 18" />
+    </>
+  ),
   volant: () => (
     <>
       <Circle cx={12} cy={12} r={9} />

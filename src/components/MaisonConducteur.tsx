@@ -21,6 +21,7 @@ import { GAINS_VIDES, useGains } from '../lib/gains';
 import { configurerGabarit, noterMesure } from '../lib/gabarit';
 import { useLocalisation } from '../lib/localisation';
 import { dejaVu, marquerVu } from '../lib/premiereFois';
+import PastilleNotifications from './PastilleNotifications';
 import { chiffresTabulaires } from '../theme/typographie';
 
 const CarteFond = lazy(() => import('./CarteFond'));
@@ -219,17 +220,20 @@ export default function MaisonConducteur({
             </Text>
           </View>
 
-          <Pressable
-            accessibilityRole="button"
-            onPress={onModePassager}
-            onLayout={(e) => noterMesure('bascule', e.nativeEvent.layout.height)}
-            className="min-h-touch justify-center rounded-field border border-line bg-card px-12"
-            style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
-          >
-            <Text className="text-[13px] font-bold text-accInk">
-              {t('maison.modePassager')}
-            </Text>
-          </Pressable>
+          <View className="flex-row items-center gap-8" pointerEvents="box-none">
+            <PastilleNotifications />
+            <Pressable
+              accessibilityRole="button"
+              onPress={onModePassager}
+              onLayout={(e) => noterMesure('bascule', e.nativeEvent.layout.height)}
+              className="min-h-touch justify-center rounded-field border border-line bg-card px-12"
+              style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+            >
+              <Text className="text-[13px] font-bold text-accInk">
+                {t('maison.modePassager')}
+              </Text>
+            </Pressable>
+          </View>
         </View>
 
         {/* Le verrou doit avoir une SORTIE. Sans ce raccourci, le conducteur

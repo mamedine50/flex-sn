@@ -623,6 +623,120 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          acteur_id: string | null
+          course_id: string | null
+          cree_le: string
+          demande_id: string | null
+          destinataire_id: string
+          genre: Database["public"]["Enums"]["genre_notification"]
+          id: string
+          lu_le: string | null
+          montant_xof: number | null
+        }
+        Insert: {
+          acteur_id?: string | null
+          course_id?: string | null
+          cree_le?: string
+          demande_id?: string | null
+          destinataire_id: string
+          genre: Database["public"]["Enums"]["genre_notification"]
+          id?: string
+          lu_le?: string | null
+          montant_xof?: number | null
+        }
+        Update: {
+          acteur_id?: string | null
+          course_id?: string | null
+          cree_le?: string
+          demande_id?: string | null
+          destinataire_id?: string
+          genre?: Database["public"]["Enums"]["genre_notification"]
+          id?: string
+          lu_le?: string | null
+          montant_xof?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_acteur_id_fkey"
+            columns: ["acteur_id"]
+            isOneToOne: false
+            referencedRelation: "candidat_admin"
+            referencedColumns: ["profil_id"]
+          },
+          {
+            foreignKeyName: "notifications_acteur_id_fkey"
+            columns: ["acteur_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers_en_attente"
+            referencedColumns: ["profil_id"]
+          },
+          {
+            foreignKeyName: "notifications_acteur_id_fkey"
+            columns: ["acteur_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_acteur_id_fkey"
+            columns: ["acteur_id"]
+            isOneToOne: false
+            referencedRelation: "profils_publics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "rides"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_demande_id_fkey"
+            columns: ["demande_id"]
+            isOneToOne: false
+            referencedRelation: "demandes_ouvertes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_demande_id_fkey"
+            columns: ["demande_id"]
+            isOneToOne: false
+            referencedRelation: "ride_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_destinataire_id_fkey"
+            columns: ["destinataire_id"]
+            isOneToOne: false
+            referencedRelation: "candidat_admin"
+            referencedColumns: ["profil_id"]
+          },
+          {
+            foreignKeyName: "notifications_destinataire_id_fkey"
+            columns: ["destinataire_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers_en_attente"
+            referencedColumns: ["profil_id"]
+          },
+          {
+            foreignKeyName: "notifications_destinataire_id_fkey"
+            columns: ["destinataire_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_destinataire_id_fkey"
+            columns: ["destinataire_id"]
+            isOneToOne: false
+            referencedRelation: "profils_publics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       offers: {
         Row: {
           auteur: Database["public"]["Enums"]["auteur_offre"]
@@ -1894,6 +2008,7 @@ export type Database = {
         Args: { p_lat: number; p_lon: number; p_rayon_max_m?: number }
         Returns: string
       }
+      conducteur_occupe: { Args: { p_conducteur: string }; Returns: boolean }
       contre_proposer: {
         Args: {
           p_delai_arrivee_min?: number
@@ -2037,6 +2152,17 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      deposer_notification: {
+        Args: {
+          p_acteur?: string
+          p_course?: string
+          p_demande?: string
+          p_destinataire: string
+          p_genre: Database["public"]["Enums"]["genre_notification"]
+          p_montant?: number
+        }
+        Returns: undefined
       }
       dossier_du_candidat: {
         Args: { p_profil: string }
@@ -2187,6 +2313,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      marquer_notifications_lues: { Args: never; Returns: number }
       noter_course: {
         Args: {
           p_commentaire?: string
@@ -2324,6 +2451,16 @@ export type Database = {
         | "centre_commercial"
         | "monument"
         | "lieu_culte"
+      genre_notification:
+        | "offre_recue"
+        | "contre_offre"
+        | "offre_acceptee"
+        | "course_annulee"
+        | "message"
+        | "document_decide"
+        | "demande_expiree"
+        | "offre_caduque"
+        | "conducteur_arrive"
       motif_signalement:
         | "insulte"
         | "conduite_dangereuse"
@@ -2497,6 +2634,17 @@ export const Constants = {
         "centre_commercial",
         "monument",
         "lieu_culte",
+      ],
+      genre_notification: [
+        "offre_recue",
+        "contre_offre",
+        "offre_acceptee",
+        "course_annulee",
+        "message",
+        "document_decide",
+        "demande_expiree",
+        "offre_caduque",
+        "conducteur_arrive",
       ],
       motif_signalement: [
         "insulte",

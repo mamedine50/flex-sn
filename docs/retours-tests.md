@@ -32,6 +32,8 @@ quand le correctif est **commité**, pas quand il est écrit.
 | 13 | L'écran des offres reste figé quand la course est acceptée | Il ne partait que si le PASSAGER acceptait. Le conducteur accepte aussi — et depuis la négociation à double sens, c'est le cas le plus fréquent en fin de fil. Le passager restait devant un minuteur pendant qu'une voiture roulait vers lui | — |
 | 14 | Itinéraire pour se rendre au client | Passage de main à Plans / Google Maps. Directions est facturé à l'appel et interdit ; le trait sur la carte est POINTILLÉ pour ne pas se faire passer pour une route | — |
 | 15 | Prévenir le conducteur qu'il est arrivé | Bandeau « Vous y êtes » à 80 m. Il met le bouton en avant, il ne l'appuie pas : laisser le GPS avancer la course, ce serait démarrer une attente payante sur un point qui a sauté d'un immeuble | — |
+| 18 | « Vous avez déjà répondu » bloqué chez le conducteur | La demande restait dans la file alors que `submit_offer()` allait la refuser. La carte proposait un geste que le serveur interdisait — un bouton qui existe est une promesse. Elle sort de la file ; le fil se poursuit dans `negociations_conducteur`, en tête d'écran | — |
+| 19 | Écran des notifications | Boîte, cloche et compte. Sans temps réel : 200 connexions au plan gratuit, et une pastille n'a pas besoin d'être juste à la seconde | — |
 | 17 | « Ce conducteur a pris une autre course » sous une simple contre-offre | Deux défauts. `contre_proposer()` marque l'offre précédente `caduque` avant d'insérer la nouvelle, et la liste affichait TOUS les tours : quatre cartes pour un conducteur, et « 2 offres » annoncé au-dessus de trois. Et la phrase était fausse dans tous les cas — une offre devient caduque parce que LE PASSAGER a choisi quelqu'un d'autre | — |
 | 16 | Prévenir le passager que le conducteur est là | Notification `conducteur_arrive` — la seule étape du trajet qui en vaut une, parce que le passager attend DEHORS, téléphone en poche | — |
 
@@ -39,8 +41,6 @@ quand le correctif est **commité**, pas quand il est écrit.
 
 | # | Retour | État |
 |---|---|---|
-| A | « Vous avez déjà répondu à cette demande » reste bloqué chez le conducteur | **Non commencé** — à diagnostiquer |
-| D | Écran des notifications | **Base faite** (table, 6 déclencheurs, temps réel, distant), interface non commencée |
 | E | Poids des photos (295 Ko par pièce) | **Proposé, non fait** — diviserait par deux la place et par trois le trafic |
 
 ## Décidé, pas à faire

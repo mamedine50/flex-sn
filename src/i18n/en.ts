@@ -340,6 +340,26 @@ export const en: Dictionnaire = {
     rapide_ouetesvous: 'Where are you?',
   },
 
+  notifications: {
+    titre: 'Notifications',
+    vide: 'Nothing new.',
+    videAide: 'Replies to your requests and your rides show up here.',
+    toutLu: 'Mark all as read',
+    illisible: 'Could not load your notifications.',
+
+    offre_recue: '{prenom} offers {montant}',
+    contre_offre: '{prenom} now offers {montant}',
+    offre_acceptee: 'Ride confirmed with {prenom} at {montant}',
+    offre_caduque: 'This ride went to another driver',
+    conducteur_arrive: '{prenom} has arrived',
+    course_annulee: 'Ride cancelled',
+    message: '{prenom} wrote to you',
+    document_decide: 'Your driver file has been reviewed',
+    demande_expiree: 'Your request expired with no reply',
+
+    quelquun: 'Someone',
+  },
+
   enRoute: {
     puce_ponctuel: 'On time',
     puce_conduite_sure: 'Safe driving',

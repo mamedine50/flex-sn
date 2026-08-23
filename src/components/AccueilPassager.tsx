@@ -27,6 +27,7 @@ import { useCourse } from '../lib/course';
 import { horsCouverture } from '../lib/couverture';
 import { dejaVu, marquerVu } from '../lib/premiereFois';
 import { configurerGabarit, noterMesure } from '../lib/gabarit';
+import PastilleNotifications from './PastilleNotifications';
 import { useDemandeEnCours } from '../lib/offres';
 import { useLocalisation, type EtatLocalisation } from '../lib/localisation';
 import { useTheme } from '../theme/ThemeProvider';
@@ -317,7 +318,8 @@ export default function AccueilPassager({
         {/* Raccourci conducteur : un conducteur en service bascule en un appui,
             sans passer par le Profil. Invisible pour tout le monde d'autre. */}
         {capacite === 'oui' ? (
-          <View className="items-end px-16 pb-8" pointerEvents="box-none">
+          <View className="flex-row items-center justify-end gap-8 px-16 pb-8" pointerEvents="box-none">
+            <PastilleNotifications />
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={t('accueil.passerEnLigne')}
@@ -331,7 +333,14 @@ export default function AccueilPassager({
               </Text>
             </Pressable>
           </View>
-        ) : null}
+        ) : (
+          // Même sans le raccourci conducteur, la cloche doit avoir sa place :
+          // c'est l'accueil du passager, et c'est là qu'on apprend qu'un
+          // conducteur a répondu.
+          <View className="items-end px-16 pb-8" pointerEvents="box-none">
+            <PastilleNotifications />
+          </View>
+        )}
 
         {/* Pastille du point de départ : 16 pt au-dessus du bord de la feuille. */}
         <View className="items-center pb-16" pointerEvents="box-none">
