@@ -19,7 +19,11 @@
 -- `x-flex-secret` est la VRAIE autorisation, lue dans le coffre. Sans elle,
 -- n'importe qui connaissant l'URL déclencherait des envois : la fonction
 -- travaille en `service_role` et peut écrire à n'importe quel appareil.
-create extension if not exists pg_net with schema extensions;
+-- `pg_net` NE SE LAISSE PAS INSTALLER dans le schéma qu'on lui demande : il
+-- crée le sien, `net`, et `with schema` ne l'y déplace pas. Écrire
+-- `extensions.net.http_post` fait lire à Postgres base.schéma.fonction, d'où
+-- « cross-database references are not implemented ». On appelle donc `net`.
+create extension if not exists pg_net;
 
 create function public.declencher_push()
 returns trigger
@@ -40,17 +44,30 @@ begin
     return new;
   end if;
 
-  perform extensions.net.http_post(
-    url := 'https://gwnprkzzyfnryltdcpzk.supabase.co/functions/v1/push',
-    headers := jsonb_build_object(
+  -- ── L'APPEL NE PEUT JAMAIS FAIRE TOMBER LA TRANSACTION ──
+  -- Le déclencheur est APRÈS INSERT sur `notifications` : son échec ferait
+  -- échouer la transaction entière. Plus aucune offre, plus aucune acceptation,
+  -- plus aucun message ne passerait — pour un push manqué. Le commentaire disait
+  -- déjà « le push est un bonus, la table est la vérité » ; le code ne le tenait
+  -- pas. Maintenant si.
+  begin
+      perform net.http_post(
+      url := 'https://gwnprkzzyfnryltdcpzk.supabase.co/functions/v1/push',
+      headers := jsonb_build_object(
       'content-type', 'application/json',
       'x-flex-secret', v_secret,
       'Authorization',
       'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd3bnBya3p6eWZucnlsdGRjcHprIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcwOTE4ODIsImV4cCI6MjEwMjY2Nzg4Mn0.BDH0O3DYul_ReAkcpPY3nB1knHtlSZtNrhIYcVNKU0M'
     ),
-    body := jsonb_build_object('id', new.id),
-    timeout_milliseconds := 3000
-  );
+      body := jsonb_build_object('id', new.id),
+      timeout_milliseconds := 3000
+    );
+  exception
+    when others then
+      -- Un téléphone qui ne sonne pas est un désagrément ; une offre qui
+      -- n'existe pas est une course perdue.
+      null;
+  end;
 
   return new;
 end;

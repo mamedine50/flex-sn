@@ -43,6 +43,7 @@ quand le correctif est **commité**, pas quand il est écrit.
 | # | Retour | État |
 |---|---|---|
 | E | Poids des photos (295 Ko par pièce) | **Proposé, non fait** — diviserait par deux la place et par trois le trafic |
+| F | Bach et Oumar ne peuvent pas conduire | **Se règle tout seul** : ils suppriment leur compte et en refont un. L'assistant demande les CINQ pièces, photo du véhicule comprise |
 
 ## Décidé, pas à faire
 
