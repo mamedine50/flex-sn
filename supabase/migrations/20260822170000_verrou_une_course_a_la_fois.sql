@@ -265,3 +265,22 @@ $function$;
 -- `create or replace` : ni signature ni type de retour ne bougent, donc aucun
 -- re-grant. Les droits existants restent en place — et c'est vérifié par
 -- l'inventaire de `010_schema.sql`.
+--
+-- ═══════════════════════════════════════════════════════════════════════════
+-- CE QUI S'EST PASSÉ SUR LE DISTANT, ET QUI VAUT D'ÊTRE ÉCRIT ICI
+--
+-- Le distant n'a pas reçu ce fichier tel quel : ses corps de fonctions
+-- pouvaient diverger, alors la migration distante les a réécrits à partir de
+-- `pg_get_functiondef()`, par un `replace`. Le motif remplacé ne couvrait que
+-- `statut in (...)` et laissait `where conducteur_id = X and` devant lui — or
+-- la variable s'appelle `v_uid` dans l'une et `v_conducteur_id` dans l'autre.
+--
+-- LA MIGRATION A RÉUSSI. `submit_offer` était morte : plpgsql ne compile son
+-- corps qu'à la PREMIÈRE EXÉCUTION, et aucun conducteur ne pouvait plus
+-- proposer de prix. Une migration verte ne prouve rien sur une fonction plpgsql.
+--
+-- Deux règles en sortent, et elles valent au-delà de ce fichier :
+--   1. un `replace` de code remplace une expression ENTIÈRE et refermée, jamais
+--      un morceau qui laisse du contexte derrière lui ;
+--   2. après toute migration touchant une fonction plpgsql, on l'APPELLE.
+--      C'est l'appel qui prouve, pas le « success ».
