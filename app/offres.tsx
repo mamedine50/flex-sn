@@ -190,10 +190,35 @@ export default function OffresRecues() {
     offres.relire();
   }, [contre, montant, offres]);
 
+  /**
+   * ── UNE LIGNE PAR CONDUCTEUR, PAS UNE PAR TOUR ────────────────────────────
+   * La liste montrait TOUTES les offres, y compris celles remplacées par une
+   * contre-proposition du même conducteur. Une négociation à quatre tours
+   * produisait donc quatre cartes pour une seule personne, et l'en-tête
+   * annonçait « 2 offres » au-dessus de trois cartes — il comptait les offres
+   * vivantes, la liste affichait l'historique.
+   *
+   * Pire : `contre_proposer()` marque l'offre précédente `caduque` avant
+   * d'insérer la nouvelle. Le passager lisait donc « ce conducteur a pris une
+   * autre course » sous un conducteur qui venait simplement de RÉVISER SON
+   * PRIX, et qui l'attendait toujours.
+   *
+   * Un fil de négociation a un ÉTAT, pas un historique à faire lire au
+   * passager. On garde le dernier tour de chaque fil.
+   */
+  const dernierParConducteur = new Map<string, (typeof offres.offres)[number]>();
+  for (const offre of offres.offres) {
+    // Sans conducteur identifié, l'offre est son propre fil : on ne fusionne
+    // jamais deux inconnus sous une même ligne.
+    const fil = offre.conducteur_id ?? `offre:${offre.id}`;
+    const vu = dernierParConducteur.get(fil);
+    if (!vu || (offre.tour ?? 0) > (vu.tour ?? 0)) dernierParConducteur.set(fil, offre);
+  }
+
   // LE TRI SE FAIT À L'AFFICHAGE, pas en base : la vue sert les offres, elle ne
   // décide pas de l'ordre dans lequel on les compare. La moins chère en haut,
   // parce que c'est la question que le passager se pose en premier.
-  const triees = [...offres.offres].sort(
+  const triees = [...dernierParConducteur.values()].sort(
     (a, b) => (a.prix_xof ?? 0) - (b.prix_xof ?? 0),
   );
 

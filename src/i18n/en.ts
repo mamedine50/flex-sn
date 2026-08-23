@@ -151,7 +151,7 @@ export const en: Dictionnaire = {
     acceptee: 'Offer accepted',
     refusee: 'Offer declined',
     expiree: 'This offer has expired.',
-    caduque: 'This driver took another ride.',
+    caduque: 'You chose another driver.',
 
     horsLigne: 'Offline. New offers are not coming in.',
     resynchronisation: 'Updating…',

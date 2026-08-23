@@ -159,7 +159,7 @@ export const fr = {
     acceptee: 'Offre acceptée',
     refusee: 'Offre refusée',
     expiree: 'Cette offre a expiré.',
-    caduque: 'Ce conducteur a pris une autre course.',
+    caduque: 'Vous avez choisi un autre conducteur.',
 
     horsLigne: 'Hors ligne. Les nouvelles offres n’arrivent pas.',
     resynchronisation: 'Mise à jour…',
