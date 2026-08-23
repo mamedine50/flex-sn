@@ -313,7 +313,18 @@ export default function EnRoute() {
         style={{ paddingTop: marges.top + 8 }}
       >
         <View className="flex-row items-center justify-between">
-          <Text className="text-[22px] font-extrabold text-ink">{t('enRoute.titre')}</Text>
+          {/* LE TITRE SUIT L'ÉTAT. Il disait « En route » sur une course
+              TERMINÉE, sous un écran de notation : le seul mot de l'écran qui
+              résume où l'on en est disait le contraire du reste. Un en-tête qui
+              ment coûte plus cher qu'un en-tête absent — on le lit en premier
+              et on lui fait confiance. */}
+          <Text className="text-[22px] font-extrabold text-ink">
+            {annulee
+              ? t('enRoute.titreAnnulee')
+              : terminee
+                ? t('enRoute.titreTerminee')
+                : t('enRoute.titre')}
+          </Text>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('commun.retour')}

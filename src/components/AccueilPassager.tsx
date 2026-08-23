@@ -168,10 +168,20 @@ export default function AccueilPassager({
   const capacite = useEstConducteur();
   const course = useCourse();
   const demande = useDemandeEnCours();
+  /**
+   * ── UNE COURSE TERMINÉE N'EST PAS « EN COURS » ────────────────────────────
+   * `useCourse()` sert aussi les courses TERMINÉES tant qu'on ne les a pas
+   * notées — c'est le péage de la note, et il est voulu. Mais la bande
+   * annonçait « Course en cours · Revenir au suivi » pour une course finie
+   * depuis longtemps : on croit sa voiture en route, on appuie, on tombe sur un
+   * écran de notation. Ce n'est pas la même information, et ce n'est pas la
+   * même urgence.
+   */
+  const aNoter = course.course?.statut === 'terminee';
   const reprise = course.course
     ? {
-        titre: t('accueil.reprendreCourse'),
-        sous: t('accueil.reprendreCourseSous'),
+        titre: aNoter ? t('accueil.noterCourse') : t('accueil.reprendreCourse'),
+        sous: aNoter ? t('accueil.noterCourseSous') : t('accueil.reprendreCourseSous'),
         vers: '/course' as const,
       }
     : demande.demande?.statut === 'ouverte'
