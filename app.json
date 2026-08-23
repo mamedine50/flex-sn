@@ -65,7 +65,14 @@
           "cameraPermission": "Flex utilise l’appareil photo pour le selfie qui sera comparé à votre pièce d’identité."
         }
       ],
-      "expo-dev-client"
+      "expo-dev-client",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icone-adaptative.png",
+          "color": "#0B7A5F"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

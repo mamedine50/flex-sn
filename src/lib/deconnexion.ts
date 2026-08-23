@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 
 import { quitterLaLigne } from './conducteur';
+import { oublierAppareil } from './push';
 import { supabase } from './supabase';
 
 /**
@@ -25,6 +26,16 @@ import { supabase } from './supabase';
 export async function seDeconnecter(): Promise<{ erreur: boolean }> {
   const { error } = await quitterLaLigne();
   if (error) return { erreur: true };
+
+  // L'appareil se détache AVANT la fermeture de session, pour la même raison
+  // que la mise hors ligne : après, `oublier_jeton_push()` n'aurait plus de
+  // `auth.uid()`. Le téléphone continuerait de recevoir les notifications de
+  // quelqu'un qui vient de partir — et qui l'a peut-être rendu.
+  //
+  // On n'abandonne PAS si ça échoue, contrairement à la mise hors ligne : un
+  // push de trop est un désagrément, rester en ligne dans le dos des passagers
+  // est un dysfonctionnement.
+  await oublierAppareil();
 
   await supabase.auth.signOut();
 

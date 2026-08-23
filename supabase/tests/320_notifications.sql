@@ -9,7 +9,7 @@
 begin;
 create extension if not exists pgtap with schema public;
 
-select plan(14);
+select plan(16);
 
 create function public.t_utilisateur(p_prenom text) returns uuid language plpgsql as $$
 declare v_id uuid := gen_random_uuid();
@@ -185,6 +185,23 @@ select is(
       and data_type in ('text', 'character varying')),
   0,
   'La table ne porte AUCUNE colonne de texte — trois langues, et un prénom recopié sort des vues publiques'
+);
+
+-- ════════════ 9. UN JETON PUSH NE SE LIT PAR PERSONNE ════════════════════
+-- Le posséder permet d'envoyer une notification à quelqu'un. Aucun client n'a
+-- de raison d'en voir un — seule la fonction d'envoi, en `service_role`.
+select public.t_devenir((select passagere from f));
+set local role authenticated;
+
+select lives_ok(
+  $$ select public.enregistrer_jeton_push('ExponentPushToken[aaaaaaaaaaaaaaaaaaaaaa]', 'ios') $$,
+  'On enregistre son appareil'
+);
+
+select throws_ok(
+  $$ select 1 from public.jetons_push $$,
+  '42501', 'permission denied for table jetons_push',
+  'mais AUCUN jeton ne se lit depuis un client — pas même le sien'
 );
 
 select * from finish();

@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import Avatar from '../src/components/Avatar';
 import { useT } from '../src/i18n';
+import { cheminNotification } from '../src/lib/cheminNotification';
 import { formatXof } from '../src/lib/format';
 import { configurerGabarit, noterMesure } from '../src/lib/gabarit';
 import { useGardeSession } from '../src/lib/garde';
@@ -100,31 +101,10 @@ export default function Notifications() {
   );
 }
 
-/** Où mène chaque genre. Une notification qui ne mène nulle part est un constat. */
-function destination(n: Notification): string | null {
-  switch (n.genre) {
-    case 'offre_recue':
-    case 'contre_offre':
-    case 'demande_expiree':
-      return '/offres';
-    case 'offre_acceptee':
-    case 'conducteur_arrive':
-    case 'message':
-      return '/course';
-    case 'course_annulee':
-      return '/historique';
-    case 'document_decide':
-      return '/devenir-conducteur';
-    default:
-      // `offre_caduque` : la course est partie ailleurs, il n'y a rien à ouvrir.
-      return null;
-  }
-}
-
 function Ligne({ notification, nom }: { notification: Notification; nom?: string }) {
   const t = useT();
   const acteur = useProfilPublic(notification.acteur_id);
-  const vers = destination(notification);
+  const vers = cheminNotification(notification.genre);
 
   const prenom = acteur?.prenom ?? t('notifications.quelquun');
   const montant =
@@ -154,8 +134,6 @@ function Ligne({ notification, nom }: { notification: Notification; nom?: string
       </View>
     </View>
   );
-
-  if (!vers) return contenu;
 
   return (
     <Pressable

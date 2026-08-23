@@ -1,13 +1,14 @@
 import { router, Stack, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import '../global.css';
 import { I18nProvider } from '../src/i18n';
 import { useAccrocheVue } from '../src/lib/accroche';
+import { enregistrerAppareil, useAppuiPush } from '../src/lib/push';
 import { useSession } from '../src/lib/session';
 import { ThemeProvider, useTheme } from '../src/theme/ThemeProvider';
 
@@ -53,6 +54,31 @@ function Porte() {
       router.replace(accrocheVue ? '/connexion' : '/bienvenue');
     }
   }, [pret, session.statut, accrocheVue, segments]);
+
+  /**
+   * ── LA PERMISSION SE DEMANDE APRÈS LA CONNEXION, JAMAIS AVANT ────────────
+   * Une boîte de dialogue système au premier écran, avant même de savoir ce que
+   * fait le produit, se refuse par réflexe — et iOS ne repose JAMAIS la
+   * question. On n'a qu'une seule occasion, on ne la dépense pas sur un
+   * inconnu. Ici, la personne a donné son numéro et reçu un code : elle sait où
+   * elle est.
+   *
+   * Silencieux par construction. Permission refusée, jeton périmé, Expo en
+   * panne, téléphone sans services Google : rien de tout ça ne remonte, parce
+   * qu'il n'y a rien qu'elle puisse en faire. LE PUSH EST UN BONUS, LA TABLE
+   * `notifications` EST LA VÉRITÉ.
+   */
+  useEffect(() => {
+    if (session.statut !== 'connecte') return;
+    void enregistrerAppareil();
+  }, [session.statut]);
+
+  // L'appui sur une notification reçue écran verrouillé.
+  useAppuiPush(
+    useCallback((chemin: string) => {
+      router.push(chemin as never);
+    }, []),
+  );
 
   return null;
 }

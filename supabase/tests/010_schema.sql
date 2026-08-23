@@ -117,6 +117,9 @@ select is(
        -- appelables, comme `prix_suggere` l'est pour la grille de prix.
        'duree_demande', 'duree_offre',
        'demandes_proches',
+       -- Un jeton push s'enregistre et s'oublie depuis l'appareil : ces deux-là
+       -- n'agissent que sur `auth.uid()` et ne prennent aucune cible.
+       'enregistrer_jeton_push', 'oublier_jeton_push',
        'enregistrer_lieu_favori', 'envoyer_message',
        'est_admin', 'est_conducteur', 'maj_photo_profil',
        'maj_position', 'maj_profil', 'marquer_notifications_lues',

@@ -20,5 +20,8 @@
     "nativewind-env.d.ts",
     "types/**/*.d.ts"
   ],
-  "exclude": ["node_modules"]
+  // Les fonctions de bord tournent sous DENO, pas sous React Native : `Deno`
+  // n'existe pas dans ce projet, et ses dépendances s'importent par URL. Les
+  // vérifier ici ne prouverait rien et casserait la compilation de l'app.
+  "exclude": ["node_modules", "supabase/functions"]
 }

@@ -468,6 +468,56 @@ export type Database = {
           },
         ]
       }
+      jetons_push: {
+        Row: {
+          jeton: string
+          maj_le: string
+          plateforme: string
+          profil_id: string
+        }
+        Insert: {
+          jeton: string
+          maj_le?: string
+          plateforme: string
+          profil_id: string
+        }
+        Update: {
+          jeton?: string
+          maj_le?: string
+          plateforme?: string
+          profil_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "jetons_push_profil_id_fkey"
+            columns: ["profil_id"]
+            isOneToOne: false
+            referencedRelation: "candidat_admin"
+            referencedColumns: ["profil_id"]
+          },
+          {
+            foreignKeyName: "jetons_push_profil_id_fkey"
+            columns: ["profil_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers_en_attente"
+            referencedColumns: ["profil_id"]
+          },
+          {
+            foreignKeyName: "jetons_push_profil_id_fkey"
+            columns: ["profil_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "jetons_push_profil_id_fkey"
+            columns: ["profil_id"]
+            isOneToOne: false
+            referencedRelation: "profils_publics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lieux: {
         Row: {
           alias: string[]
@@ -2190,6 +2240,10 @@ export type Database = {
         Args: { p_service: Database["public"]["Enums"]["service_course"] }
         Returns: string
       }
+      enregistrer_jeton_push: {
+        Args: { p_jeton: string; p_plateforme: string }
+        Returns: undefined
+      }
       enregistrer_lieu_favori: {
         Args: {
           p_id?: string
@@ -2337,6 +2391,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      oublier_jeton_push: { Args: { p_jeton: string }; Returns: undefined }
       plafond_lieux_favoris: { Args: never; Returns: number }
       prix_suggere: {
         Args: {

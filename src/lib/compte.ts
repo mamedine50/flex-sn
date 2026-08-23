@@ -1,5 +1,6 @@
 import { router } from 'expo-router';
 
+import { oublierAppareil } from './push';
 import { supabase } from './supabase';
 
 /**
@@ -59,6 +60,11 @@ export async function supprimerMonCompte(): Promise<{ erreur: EchecSuppression |
 
   // Le serveur a détruit la session côté base ; on ferme la nôtre pour que
   // l'application n'attende pas le prochain rafraîchissement de jeton.
+  // On détache l'appareil AVANT de fermer la session : après, la RPC n'aurait
+  // plus de `auth.uid()` et le jeton resterait attaché à un compte fermé. Le
+  // téléphone continuerait de recevoir les notifications de quelqu'un qui s'est
+  // délibérément déconnecté — et qui a peut-être rendu l'appareil.
+  await oublierAppareil();
   await supabase.auth.signOut();
   router.replace('/');
   return { erreur: null };

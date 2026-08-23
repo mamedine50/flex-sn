@@ -3,7 +3,9 @@ const expo = require('eslint-config-expo/flat');
 module.exports = [
   ...expo,
   {
-    ignores: ['node_modules/**', '.expo/**', 'dist/**'],
+    // Les fonctions de bord tournent sous Deno : leurs imports sont des URL,
+    // qu'ESLint ne sait pas résoudre et n'a aucune raison de résoudre.
+    ignores: ['node_modules/**', '.expo/**', 'dist/**', 'supabase/functions/**'],
   },
   {
     rules: {

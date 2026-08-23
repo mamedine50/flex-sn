@@ -33,6 +33,7 @@ quand le correctif est **commité**, pas quand il est écrit.
 | 14 | Itinéraire pour se rendre au client | Passage de main à Plans / Google Maps. Directions est facturé à l'appel et interdit ; le trait sur la carte est POINTILLÉ pour ne pas se faire passer pour une route | — |
 | 15 | Prévenir le conducteur qu'il est arrivé | Bandeau « Vous y êtes » à 80 m. Il met le bouton en avant, il ne l'appuie pas : laisser le GPS avancer la course, ce serait démarrer une attente payante sur un point qui a sauté d'un immeuble | — |
 | 18 | « Vous avez déjà répondu » bloqué chez le conducteur | La demande restait dans la file alors que `submit_offer()` allait la refuser. La carte proposait un geste que le serveur interdisait — un bouton qui existe est une promesse. Elle sort de la file ; le fil se poursuit dans `negociations_conducteur`, en tête d'écran | — |
+| 20 | Notifications push | `expo-notifications` + une fonction de bord qui appelle Expo. Le déclencheur est ASYNCHRONE : un service tiers lent ne doit pas ralentir la transaction qui a créé la notification. **Dépendance native → reconstruction obligatoire** | — |
 | 19 | Écran des notifications | Boîte, cloche et compte. Sans temps réel : 200 connexions au plan gratuit, et une pastille n'a pas besoin d'être juste à la seconde | — |
 | 17 | « Ce conducteur a pris une autre course » sous une simple contre-offre | Deux défauts. `contre_proposer()` marque l'offre précédente `caduque` avant d'insérer la nouvelle, et la liste affichait TOUS les tours : quatre cartes pour un conducteur, et « 2 offres » annoncé au-dessus de trois. Et la phrase était fausse dans tous les cas — une offre devient caduque parce que LE PASSAGER a choisi quelqu'un d'autre | — |
 | 16 | Prévenir le passager que le conducteur est là | Notification `conducteur_arrive` — la seule étape du trajet qui en vaut une, parce que le passager attend DEHORS, téléphone en poche | — |
@@ -48,5 +49,4 @@ quand le correctif est **commité**, pas quand il est écrit.
 | Sujet | Décision |
 |---|---|
 | Appel masqué (relais) | **Plus tard.** Twilio coûterait 180 à 420 FCFA par appel — jusqu'à 17 % d'une course — et un numéro étranger ferait payer l'international à l'utilisateur. La piste est Sonatel, en contrat B2B, et le SMS de connexion passe avant |
-| Notifications push | **Hors V1.** Pas d'infrastructure push dans le produit |
 | Directions / tracé d'itinéraire | **Jamais.** Facturé à l'appel, interdit par la règle du dépôt |
