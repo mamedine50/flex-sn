@@ -12,6 +12,9 @@
       "bundleIdentifier": "sn.flex.app",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
+      },
+      "entitlements": {
+        "aps-environment": "production"
       }
     },
     "android": {
