@@ -11,6 +11,7 @@ import MinuteurCirculaire from '../src/components/MinuteurCirculaire';
 import RadarAttente from '../src/components/RadarAttente';
 import PanneauDev, { type EtatForce } from '../src/components/PanneauDev';
 import { useT } from '../src/i18n';
+import { useCourse } from '../src/lib/course';
 import { cleErreur } from '../src/lib/erreursServeur';
 import { formatXof } from '../src/lib/format';
 import { useGardeSession } from '../src/lib/garde';
@@ -57,6 +58,24 @@ export default function OffresRecues() {
   const demandeEnCours = useDemandeEnCours();
   const demande = demandeEnCours.demande;
   const offres = useOffres(demande?.id ?? null);
+
+  /**
+   * ── L'ÉCRAN SUIT LA COURSE, PAS SEULEMENT SON PROPRE APPUI ────────────────
+   * Il ne partait que lorsque le PASSAGER acceptait. Or le conducteur accepte
+   * aussi — c'est la moitié des accords, et depuis la négociation à double sens
+   * c'est même le cas le plus fréquent en fin de fil. Le passager restait alors
+   * devant « Offres reçues », minuteur qui tourne et « Annuler ma demande » en
+   * bas, pendant qu'une voiture roulait déjà vers lui. Rien à l'écran ne disait
+   * que c'était fait.
+   *
+   * `useCourse` écoute déjà les insertions dans `rides` : dès que la course
+   * existe, quel que soit CELUI QUI A APPUYÉ, l'écran s'en va.
+   */
+  const course = useCourse();
+
+  useEffect(() => {
+    if (course.course) router.replace('/course');
+  }, [course.course]);
 
   const [enAction, setEnAction] = useState<string | null>(null);
   // La contre-proposition en cours de saisie. `null` = la feuille est fermée.

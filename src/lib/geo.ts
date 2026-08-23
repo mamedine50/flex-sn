@@ -77,3 +77,31 @@ export function doitRepublier(
   // position fausse.
   return avant === null || distanceM(avant, maintenant) >= DERIVE_MIN_M;
 }
+
+/**
+ * À quelle distance du point de rendez-vous on considère qu'on y est.
+ *
+ * QUATRE-VINGTS MÈTRES, et le chiffre est un compromis assumé. Un point GPS en
+ * ville se trompe couramment de vingt à trente mètres, entre les immeubles
+ * parfois davantage. Plus serré, le conducteur serait devant la porte sans que
+ * l'application le reconnaisse — et il chercherait le bouton en se demandant ce
+ * qui cloche. Plus large, elle annoncerait son arrivée alors qu'il est encore
+ * au bout de la rue, et c'est le passager qui sortirait pour rien.
+ */
+export const RAYON_ARRIVEE_M = 80;
+
+/**
+ * Le conducteur est-il arrivé ?
+ *
+ * Elle ne DÉCIDE rien toute seule : elle met le bouton en avant, elle ne
+ * l'appuie pas. Laisser le GPS avancer la course à la place du conducteur, ce
+ * serait faire démarrer une attente payante sur un point qui a sauté d'un
+ * immeuble — et c'est le genre d'automatisme qu'on ne peut pas contester.
+ */
+export function estArrive(
+  position: { latitude: number; longitude: number } | null,
+  rendezVous: { latitude: number; longitude: number } | null,
+): boolean {
+  if (!position || !rendezVous) return false;
+  return distanceM(position, rendezVous) <= RAYON_ARRIVEE_M;
+}

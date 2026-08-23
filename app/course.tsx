@@ -3,7 +3,7 @@ import { useNetworkState } from 'expo-network';
 import { router } from 'expo-router';
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { Linking, Modal, Pressable, ScrollView, Text, View } from 'react-native';
-import { Marker } from 'react-native-maps';
+import { Marker, Polyline } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { EtatCarte } from '../src/components/CarteFond';
@@ -12,6 +12,7 @@ import FilMessages from '../src/components/FilMessages';
 import PanneauDev, { type EtatForce } from '../src/components/PanneauDev';
 import GlisserPourConfirmer from '../src/components/GlisserPourConfirmer';
 import { useT } from '../src/i18n';
+import { useTheme } from '../src/theme/ThemeProvider';
 import {
   annulerCourse,
   avancerCourse,
@@ -26,7 +27,10 @@ import {
 import { cleErreur } from '../src/lib/erreursServeur';
 import { formatXof } from '../src/lib/format';
 import { useGardeSession } from '../src/lib/garde';
+import { estArrive } from '../src/lib/geo';
 import { configurerGabarit, noterMesure } from '../src/lib/gabarit';
+import { useLocalisation } from '../src/lib/localisation';
+import { ouvrirItineraire } from '../src/lib/navigation';
 import { useProfilPublic } from '../src/lib/profilPublic';
 import { useSession } from '../src/lib/session';
 import {
@@ -149,6 +153,22 @@ export default function EnRoute() {
         : null;
   const eta = marqueur ? etaMinutes(marqueur, cible) : null;
 
+  // ── LE CONDUCTEUR SE LOCALISE LUI-MÊME ────────────────────────────────────
+  // Pour LUI, la position part de son appareil, pas de la ligne qu'il vient
+  // d'écrire en base : c'est la même donnée avec un aller-retour réseau en
+  // moins, et « vous y êtes » ne doit pas attendre un battement de trente
+  // secondes pour s'afficher. Le passager, lui, n'a que la base — c'est tout
+  // l'objet de `usePositionConducteur`.
+  const { couleurs } = useTheme();
+  const { position: maPosition } = useLocalisation();
+
+  // Le nom du point où l'on va — celui que l'application de cartes affichera.
+  const cibleLibelle =
+    course?.statut === 'commencee'
+      ? (course.demande?.destination_libelle ?? null)
+      : (course?.demande?.depart_libelle ?? null);
+  const jySuis = suisConducteur && course?.statut === 'en_route' && estArrive(maPosition, cible);
+
 
   configurerGabarit(
     !course ? 'course' : suisConducteur ? 'course+conducteur' : 'course+passager',
@@ -247,6 +267,25 @@ export default function EnRoute() {
                 <Marker coordinate={arrivee} anchor={{ x: 0.5, y: 0.5 }}>
                   <View className="h-24 w-24 rounded-pill border-2 border-shapeOutline bg-moneyFill" />
                 </Marker>
+              ) : null}
+
+              {/* ── LE TRAIT EST POINTILLÉ, ET C'EST DÉLIBÉRÉ ──
+                  C'est une ligne À VOL D'OISEAU, pas une route : le vrai tracé
+                  demanderait l'API Directions, facturée à l'appel et interdite
+                  ici. Un trait PLEIN se lirait comme un itinéraire et enverrait
+                  quelqu'un tout droit dans une corniche. Pointillé, il dit ce
+                  qu'il est — une direction et une distance. Le guidage réel se
+                  prend dans Plans ou Google Maps, par le bouton « Y aller ». */}
+              {marqueur && cible ? (
+                <Polyline
+                  coordinates={[
+                    { latitude: marqueur.latitude, longitude: marqueur.longitude },
+                    cible,
+                  ]}
+                  strokeColor={couleurs.accFill}
+                  strokeWidth={3}
+                  lineDashPattern={[8, 8]}
+                />
               ) : null}
               {marqueur ? (
                 <Marker
@@ -401,6 +440,45 @@ export default function EnRoute() {
               suisConducteur={suisConducteur}
               onEcrire={() => setFilOuvert(true)}
             />
+          ) : null}
+
+          {/* ── Y ALLER : ON PASSE LA MAIN ──────────────────────────────────
+              Le guidage réel se prend dans Plans ou Google Maps. Le conducteur
+              y gagne la voix, le trafic, les radars — tout ce qu'on ne
+              construira jamais, et qu'un tracé maison payé à l'appel ferait
+              moins bien. Flex n'a aucune valeur à ajouter entre un conducteur
+              et une route qu'il connaît mieux que nous.
+
+              La CIBLE suit la course : le point de rendez-vous tant qu'on va
+              chercher, la destination une fois le passager à bord. */}
+          {suisConducteur && cible && !terminee && !annulee ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('enRoute.yAller')}
+              onPress={() => void ouvrirItineraire(cible, cibleLibelle)}
+              className="mt-12 min-h-driving items-center justify-center rounded-field bg-card2"
+              style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+            >
+              <Text className="text-[15px] font-extrabold text-accInk">
+                {t('enRoute.yAller')}
+              </Text>
+            </Pressable>
+          ) : null}
+
+          {/* ── « VOUS Y ÊTES » ─────────────────────────────────────────────
+              Le bandeau MET EN AVANT le bouton, il ne l'appuie pas. Laisser le
+              GPS avancer la course tout seul, ce serait faire démarrer une
+              attente payante sur un point qui a sauté d'un immeuble — et c'est
+              le genre d'automatisme qu'on ne peut pas contester après coup. */}
+          {jySuis ? (
+            <View className="mt-12 rounded-field border-2 border-shapeOutline bg-accFill px-16 py-12">
+              <Text className="text-[15px] font-extrabold text-onAcc">
+                {t('enRoute.vousYEtes')}
+              </Text>
+              <Text className="mt-2 text-[12px] font-semibold text-onAcc">
+                {t('enRoute.vousYEtesAide')}
+              </Text>
+            </View>
           ) : null}
 
           {/* LE CONDUCTEUR PILOTE, ET DEUX DE SES GESTES SE GLISSENT.

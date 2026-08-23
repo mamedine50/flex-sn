@@ -9,7 +9,7 @@
 begin;
 create extension if not exists pgtap with schema public;
 
-select plan(11);
+select plan(14);
 
 create function public.t_utilisateur(p_prenom text) returns uuid language plpgsql as $$
 declare v_id uuid := gen_random_uuid();
@@ -120,6 +120,29 @@ select is(
     order by cree_le desc limit 1),
   'offre_acceptee',
   'Le conducteur accepte : la passagère apprend que c''est conclu'
+);
+
+-- ════════════ 5 bis. « votre conducteur est arrivé » ═════════════════════
+-- La seule étape du trajet qui vaut une notification : le passager attend
+-- DEHORS, téléphone en poche, canal temps réel fermé.
+select public.t_devenir((select conducteur from f));
+select lives_ok(
+  format($$ select public.avancer_course(%L::uuid, 'en_route') $$, (select id from c)),
+  'Le conducteur part'
+);
+select public.t_devenir((select conducteur from f));
+select lives_ok(
+  format($$ select public.avancer_course(%L::uuid, 'arrive') $$, (select id from c)),
+  'puis il signale son arrivée'
+);
+
+select public.t_devenir((select passagere from f));
+select is(
+  (select genre::text from public.notifications
+    where destinataire_id = (select passagere from f)
+    order by cree_le desc limit 1),
+  'conducteur_arrive',
+  'et la passagère est prévenue — c''est la notification la plus utile du produit'
 );
 
 -- ════════════ 6. un message notifie l'autre, jamais l'expéditeur ═════════

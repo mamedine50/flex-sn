@@ -1,0 +1,17 @@
+-- Flex — « votre conducteur est arrivé ».
+--
+-- C'est la notification la plus utile du produit, et elle manquait. Un passager
+-- qui attend chez lui a le téléphone dans la poche : l'écran de course est
+-- ouvert mais l'application est en arrière-plan, le canal temps réel est fermé,
+-- et il ne saura que la voiture est là qu'en ressortant le téléphone.
+--
+-- Toutes les autres notifications rattrapent un événement qu'on aurait pu
+-- manquer. Celle-ci rattrape quelqu'un qui attend DEHORS.
+--
+-- POURQUOI ELLE N'EXISTE QUE POUR « ARRIVE ». Les autres passages de statut ne
+-- valent pas une entrée dans une boîte : « en route » se voit sur la carte,
+-- « commencée » se vit dans la voiture, « terminée » ouvre l'écran de notation.
+-- Une boîte de notifications qui commente chaque étape devient un bruit qu'on
+-- cesse de lire — et le jour où elle dit quelque chose d'important, personne
+-- ne regarde.
+alter type public.genre_notification add value if not exists 'conducteur_arrive';

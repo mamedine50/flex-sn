@@ -376,6 +376,9 @@ export const en: Dictionnaire = {
     terminer: 'End the ride',
 
     appeler: 'Call',
+    yAller: 'Take me there',
+    vousYEtes: 'You have arrived',
+    vousYEtesAide: 'Tell your passenger you are here.',
     ecrire: 'Message',
     annuler: 'Cancel the ride',
     confirmerAnnulation: 'Cancel this ride?',

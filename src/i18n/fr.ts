@@ -393,6 +393,9 @@ export const fr = {
     terminer: 'Terminer la course',
 
     appeler: 'Appeler',
+    yAller: 'Y aller',
+    vousYEtes: 'Vous y êtes',
+    vousYEtesAide: 'Signalez votre arrivée pour prévenir votre passager.',
     ecrire: 'Écrire',
     annuler: 'Annuler la course',
     confirmerAnnulation: 'Annuler cette course ?',
