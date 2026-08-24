@@ -438,7 +438,9 @@ export const fr = {
     etaArrivee: 'Vous arrivez dans {minutes} min',
     horsLigne: 'Hors ligne. Le suivi reprendra au retour du réseau.',
     resynchronisation: 'Mise à jour…',
-    aucuneCourse: 'Vous n’avez pas de course en cours.',
+    aucuneCourse: 'Il n’y a plus de course ici.',
+    aucuneCourseAide: 'Elle est peut-être terminée. Vos trajets passés sont dans Mes courses.',
+    voirMesCourses: 'Voir mes courses',
 
     // Notation en double aveugle.
     noter: 'Comment s’est passée la course ?',

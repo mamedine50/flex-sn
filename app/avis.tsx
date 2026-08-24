@@ -4,6 +4,7 @@ import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import FeuilleSignalement from '../src/components/FeuilleSignalement';
+import Vide from '../src/components/Vide';
 import { useI18n, useT } from '../src/i18n';
 import { masquerGrossieretes } from '../src/lib/filtreMots';
 import type { Database } from '../src/lib/database.types';
@@ -34,6 +35,8 @@ export default function Avis() {
 
   const marges = useSafeAreaInsets();
   const [avis, setAvis] = useState<AvisRecu[]>([]);
+  // Même raison qu'ailleurs : un échec réseau doit pouvoir se retenter.
+  const [tour, setTour] = useState(0);
   const [statut, setStatut] = useState<'chargement' | 'pret' | 'erreur'>('chargement');
   const [aSignaler, setASignaler] = useState<string | null>(null);
   const [envoye, setEnvoye] = useState(false);
@@ -59,7 +62,7 @@ export default function Avis() {
     return () => {
       vivant.annule = true;
     };
-  }, []);
+  }, [tour]);
 
   return (
     <View className="flex-1 bg-bg">
@@ -87,7 +90,11 @@ export default function Avis() {
           <ActivityIndicator />
         </View>
       ) : statut === 'erreur' ? (
-        <Vide titre={t('avis.illisible')} />
+        <Vide
+          titre={t('avis.illisible')}
+          onReessayer={() => setTour((n) => n + 1)}
+          libelleReessayer={t('commun.reessayer')}
+        />
       ) : avis.length === 0 ? (
         <Vide titre={t('avis.vide')} aide={t('avis.videAide')} />
       ) : (
@@ -184,13 +191,3 @@ export default function Avis() {
   );
 }
 
-function Vide({ titre, aide }: { titre: string; aide?: string }) {
-  return (
-    <View className="mx-16 mt-24 rounded-card bg-card p-16">
-      <Text className="text-[15px] font-bold text-ink">{titre}</Text>
-      {aide ? (
-        <Text className="mt-4 text-[13px] font-semibold text-muted">{aide}</Text>
-      ) : null}
-    </View>
-  );
-}

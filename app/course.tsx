@@ -230,7 +230,12 @@ export default function EnRoute() {
 
   if (!course) {
     return (
-      <Vide texte={t('enRoute.aucuneCourse')} action={t('offres.proposerUnPrix')} />
+      <Vide
+        texte={t('enRoute.aucuneCourse')}
+        aide={t('enRoute.aucuneCourseAide')}
+        action={t('enRoute.voirMesCourses')}
+        onPress={() => router.replace('/historique')}
+      />
     );
   }
 
@@ -903,17 +908,58 @@ function Bandeau({ texte, danger = false }: { texte: string; danger?: boolean })
   );
 }
 
-function Vide({ texte, action }: { texte: string; action: string }) {
+/**
+ * L'écran de course, quand il n'y a plus de course.
+ *
+ * ── QUI ARRIVE ICI ────────────────────────────────────────────────────────
+ * UN SEUL chemin y mène : l'appui sur une NOTIFICATION. Les quatre autres
+ * entrées — acceptation d'une offre, écran des offres, bandeau de l'accueil,
+ * bandeau du conducteur — ne partent que si la course existe. Le cas concret :
+ * le téléphone est dans la poche, la course se termine, et une heure plus tard
+ * on appuie sur « Papa vous a écrit ».
+ *
+ * C'est la règle des notifications qui se réalise : une notification est un
+ * POINTEUR, pas un fait. En l'ouvrant, l'écran relit l'état courant — et il
+ * doit dire ce qu'il a trouvé.
+ *
+ * ── IL DISAIT « IL N'Y A RIEN », SANS DIRE POURQUOI ───────────────────────
+ * Quelqu'un qui vient d'appuyer sur « votre conducteur est arrivé » et lit
+ * « vous n'avez pas de course en cours » a toutes les raisons de croire
+ * l'application cassée. Il faut nommer la cause probable et donner la suite.
+ *
+ * On ne dit PAS « cette course est terminée » : le même état s'atteint aussi
+ * sans qu'aucune course n'ait jamais existé, et affirmer une chose qu'on ne
+ * sait pas est le défaut qu'on interdit déjà ailleurs — d'où « vers Plateau »
+ * plutôt que « Plateau ». On dit ce qui est certain, et on suggère le reste.
+ *
+ * ── ET LE BOUTON NE MENT PLUS ─────────────────────────────────────────────
+ * Il portait « Proposer un prix » et faisait `replace('/')` — l'accueil. Le
+ * MÊME libellé, dans `offres.tsx`, mène bien à l'écran des prix. Un mot, deux
+ * destinations. Il mène maintenant là où quelqu'un venu d'une notification
+ * veut aller : ses courses passées.
+ */
+function Vide({
+  texte,
+  aide,
+  action,
+  onPress,
+}: {
+  texte: string;
+  aide: string;
+  action: string;
+  onPress: () => void;
+}) {
   const marges = useSafeAreaInsets();
   return (
     <View
       className="flex-1 items-center justify-center bg-bg px-24"
       style={{ paddingTop: marges.top }}
     >
-      <Text className="text-center text-[15px] font-semibold text-muted">{texte}</Text>
+      <Text className="text-center text-[15px] font-bold text-ink">{texte}</Text>
+      <Text className="mt-8 text-center text-[13px] font-semibold text-muted">{aide}</Text>
       <Pressable
         accessibilityRole="button"
-        onPress={() => router.replace('/')}
+        onPress={onPress}
         className="mt-16 min-h-driving items-center justify-center rounded-button bg-accFill px-24"
         style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
       >

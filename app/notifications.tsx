@@ -3,6 +3,7 @@ import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import Avatar from '../src/components/Avatar';
+import Vide from '../src/components/Vide';
 import { useT } from '../src/i18n';
 import { cheminNotification } from '../src/lib/cheminNotification';
 import { formatXof } from '../src/lib/format';
@@ -83,7 +84,11 @@ export default function Notifications() {
           <ActivityIndicator />
         </View>
       ) : boite.statut === 'erreur' ? (
-        <Vide titre={t('notifications.illisible')} />
+        <Vide
+          titre={t('notifications.illisible')}
+          onReessayer={boite.relire}
+          libelleReessayer={t('commun.reessayer')}
+        />
       ) : boite.notifications.length === 0 ? (
         <Vide titre={t('notifications.vide')} aide={t('notifications.videAide')} />
       ) : (
@@ -147,13 +152,3 @@ function Ligne({ notification, nom }: { notification: Notification; nom?: string
   );
 }
 
-function Vide({ titre, aide }: { titre: string; aide?: string }) {
-  return (
-    <View className="mx-16 mt-24 rounded-card bg-card p-16">
-      <Text className="text-[15px] font-bold text-ink">{titre}</Text>
-      {aide ? (
-        <Text className="mt-4 text-[13px] font-semibold text-muted">{aide}</Text>
-      ) : null}
-    </View>
-  );
-}

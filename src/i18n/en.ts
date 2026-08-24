@@ -417,7 +417,9 @@ export const en: Dictionnaire = {
     etaArrivee: 'Arriving in about {minutes} min',
     horsLigne: 'Offline. Tracking resumes when the network returns.',
     resynchronisation: 'Updating…',
-    aucuneCourse: 'You have no ride in progress.',
+    aucuneCourse: 'There is no ride here any more.',
+    aucuneCourseAide: 'It may be finished. Your past trips are in My rides.',
+    voirMesCourses: 'See my rides',
 
     noter: 'How was the ride?',
     noterAide: 'Your rating stays hidden until the other person rates.',

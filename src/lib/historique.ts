@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import type { Database } from './database.types';
 import { supabase } from './supabase';
@@ -37,6 +37,9 @@ export function useHistorique() {
   const [courses, setCourses] = useState<LigneHistorique[]>([]);
   const [statut, setStatut] = useState<'chargement' | 'pret' | 'erreur'>('chargement');
   const [moi, setMoi] = useState<string | null>(null);
+  // Un compteur pour relire. Sur un réseau sénégalais, l'échec est l'ordinaire :
+  // un écran qui ne sait pas retenter est un cul-de-sac.
+  const [tour, setTour] = useState(0);
 
   useEffect(() => {
     const vivant = { annule: false };
@@ -88,7 +91,7 @@ export function useHistorique() {
     return () => {
       vivant.annule = true;
     };
-  }, []);
+  }, [tour]);
 
-  return { courses, statut, moi };
+  return { courses, statut, moi, relire: useCallback(() => setTour((n) => n + 1), []) };
 }

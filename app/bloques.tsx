@@ -4,6 +4,7 @@ import { ActivityIndicator, FlatList, Modal, Pressable, Text, View } from 'react
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import Avatar from '../src/components/Avatar';
+import Vide from '../src/components/Vide';
 import { useI18n, useT } from '../src/i18n';
 import { debloquer, useBlocages, type Blocage } from '../src/lib/blocages';
 import { cleErreur } from '../src/lib/erreursServeur';
@@ -71,7 +72,11 @@ export default function Bloques() {
           <ActivityIndicator />
         </View>
       ) : statut === 'erreur' ? (
-        <Vide titre={t('blocages.illisible')} />
+        <Vide
+          titre={t('blocages.illisible')}
+          onReessayer={relire}
+          libelleReessayer={t('commun.reessayer')}
+        />
       ) : blocages.length === 0 ? (
         <Vide titre={t('blocages.vide')} aide={t('blocages.videAide')} />
       ) : (
@@ -157,13 +162,3 @@ export default function Bloques() {
   );
 }
 
-function Vide({ titre, aide }: { titre: string; aide?: string }) {
-  return (
-    <View className="mx-16 mt-24 rounded-card bg-card p-16">
-      <Text className="text-[15px] font-bold text-ink">{titre}</Text>
-      {aide ? (
-        <Text className="mt-4 text-[13px] font-semibold text-muted">{aide}</Text>
-      ) : null}
-    </View>
-  );
-}

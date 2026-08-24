@@ -38,6 +38,8 @@ quand le correctif est **commité**, pas quand il est écrit.
 | 20 | Notifications push | `expo-notifications` + une fonction de bord qui appelle Expo. Le déclencheur est ASYNCHRONE : un service tiers lent ne doit pas ralentir la transaction qui a créé la notification. **Dépendance native → reconstruction obligatoire** | — |
 | 19 | Écran des notifications | Boîte, cloche et compte. Sans temps réel : 200 connexions au plan gratuit, et une pastille n'a pas besoin d'être juste à la seconde | — |
 | 17 | « Ce conducteur a pris une autre course » sous une simple contre-offre | Deux défauts. `contre_proposer()` marque l'offre précédente `caduque` avant d'insérer la nouvelle, et la liste affichait TOUS les tours : quatre cartes pour un conducteur, et « 2 offres » annoncé au-dessus de trois. Et la phrase était fausse dans tous les cas — une offre devient caduque parce que LE PASSAGER a choisi quelqu'un d'autre | — |
+| 23 | « Vous n'avez pas de course en cours » sans dire pourquoi | Un SEUL chemin y mène : l'appui sur une notification dont la course n'existe plus. L'écran disait qu'il n'y avait rien, sans nommer la cause — et son bouton portait « Proposer un prix » en menant à l'accueil | — |
+| 24 | Quatre états d'ERREUR sans aucune sortie | « Impossible de charger » et rien d'autre. Sur un réseau sénégalais l'échec est l'ordinaire : « Réessayer » est l'action la plus fréquente du produit, et elle manquait partout | — |
 | 16 | Prévenir le passager que le conducteur est là | Notification `conducteur_arrive` — la seule étape du trajet qui en vaut une, parce que le passager attend DEHORS, téléphone en poche | — |
 
 ## Pas encore traité
