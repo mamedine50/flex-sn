@@ -560,7 +560,7 @@ export const en: Dictionnaire = {
   },
 
   reglages: {
-    titre: 'Display',
+    titre: 'Settings',
     theme: 'Theme',
     themeAide: 'Light, dark, or follow the phone.',
     langue: 'Language',

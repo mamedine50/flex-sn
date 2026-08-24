@@ -39,9 +39,11 @@ export async function seDeconnecter(): Promise<{ erreur: boolean }> {
 
   await supabase.auth.signOut();
 
-  // On repart de l'ACCUEIL, pas de la connexion : il se consulte sans compte, et
-  // renvoyer vers un clavier numérique quelqu'un qui vient de partir est la
-  // seule chose qu'il n'a pas demandée.
+  // On repart de l'ACCUEIL. Depuis que la connexion est obligatoire, la porte
+  // y renvoie aussitôt vers l'écran du numéro — et c'est très bien : c'est ELLE
+  // qui décide où va quelqu'un sans session, pas cette fonction. Écrire
+  // `/connexion` ici dupliquerait la règle à un second endroit, et les deux
+  // finiraient par diverger.
   router.replace('/');
   return { erreur: false };
 }

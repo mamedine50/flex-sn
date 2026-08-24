@@ -40,6 +40,8 @@ quand le correctif est **commité**, pas quand il est écrit.
 | 17 | « Ce conducteur a pris une autre course » sous une simple contre-offre | Deux défauts. `contre_proposer()` marque l'offre précédente `caduque` avant d'insérer la nouvelle, et la liste affichait TOUS les tours : quatre cartes pour un conducteur, et « 2 offres » annoncé au-dessus de trois. Et la phrase était fausse dans tous les cas — une offre devient caduque parce que LE PASSAGER a choisi quelqu'un d'autre | — |
 | 23 | « Vous n'avez pas de course en cours » sans dire pourquoi | Un SEUL chemin y mène : l'appui sur une notification dont la course n'existe plus. L'écran disait qu'il n'y avait rien, sans nommer la cause — et son bouton portait « Proposer un prix » en menant à l'accueil | — |
 | 24 | Quatre états d'ERREUR sans aucune sortie | « Impossible de charger » et rien d'autre. Sur un réseau sénégalais l'échec est l'ordinaire : « Réessayer » est l'action la plus fréquente du produit, et elle manquait partout | — |
+| 25 | L'écran des réglages s'appelait « Affichage » | Il contient aussi les personnes bloquées, l'aide et « à propos ». La ligne du profil dit « Réglages » : le même écran portait deux noms, et celui qu'on lisait en arrivant était le plus étroit des deux | — |
+| 26 | Le compte de revue s'affichait « Conducteur Conducteur Test » | `nom_complet` porte le NOM DE FAMILLE — l'écran demande « Nom » et affiche prénom + nom. Ma donnée d'amorce y avait mis le nom entier. Corrigé sur le distant ET dans le bloc de `docs/publication.md`, sans quoi le prochain qui le rejoue le reproduirait | — |
 | 16 | Prévenir le passager que le conducteur est là | Notification `conducteur_arrive` — la seule étape du trajet qui en vaut une, parce que le passager attend DEHORS, téléphone en poche | — |
 
 ## Pas encore traité
@@ -47,6 +49,8 @@ quand le correctif est **commité**, pas quand il est écrit.
 | # | Retour | État |
 |---|---|---|
 | E | Poids des photos (295 Ko par pièce) | **Proposé, non fait** — diviserait par deux la place et par trois le trafic |
+| G | « Aucun lieu enregistré » s'affiche au-dessus de trois lignes visibles | **Constaté, non corrigé** — techniquement juste (Domicile et Travail sont des emplacements à définir, pas des lieux enregistrés) mais ça se lit comme une contradiction |
+| H | « Cinq pièces à fournir » puis « ÉTAPE 1 SUR 8 » | **Constaté, non corrigé** — les deux sont vrais : photo de profil, cinq pièces, véhicule, récapitulatif. Mais on annonce cinq et on en montre huit |
 | F | Bach et Oumar ne peuvent pas conduire | **Se règle tout seul** : ils suppriment leur compte et en refont un. L'assistant demande les CINQ pièces, photo du véhicule comprise |
 
 ## Décidé, pas à faire

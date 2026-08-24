@@ -582,7 +582,7 @@ export const fr = {
   },
 
   reglages: {
-    titre: 'Affichage',
+    titre: 'Réglages',
     theme: 'Thème',
     themeAide: 'Clair, sombre, ou comme le téléphone.',
     langue: 'Langue',

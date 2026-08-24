@@ -55,7 +55,10 @@ begin
   end if;
 
   update public.profiles
-     set prenom = 'Conducteur', nom_complet = 'Conducteur Test'
+     -- `nom_complet` porte le NOM DE FAMILLE, pas le nom entier : l'écran de
+     -- profil demande « Nom » et affiche « prénom + nom ». Y mettre
+     -- « Conducteur Test » donnait « Conducteur Conducteur Test » au relecteur.
+     set prenom = 'Conducteur', nom_complet = 'Test'
    where id = v_uid;
 
   -- Les quatre pièces. Le chemin pointe vers ce que le compte a déjà envoyé ;
