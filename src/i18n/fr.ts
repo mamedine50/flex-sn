@@ -95,6 +95,8 @@ export const fr = {
     // MINIMUM que le passager peut dépasser, pas un milieu autour duquel viser.
     recommandeAPartirDe: 'Recommandé à partir de {prix}',
     saisirPrix: 'Entrez votre prix',
+    trajetDabord: 'Choisissez d’abord votre trajet.',
+    trajetDabordAide: 'Le prix recommandé se calcule sur la distance : sans départ ni destination, il n’y a rien à proposer.',
     interurbainSansRecommandation:
       'Pas de recommandation sur l’interurbain : proposez votre prix.',
     peagesNonCompris: 'Péages non compris.',

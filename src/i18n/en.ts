@@ -89,6 +89,8 @@ export const en: Dictionnaire = {
 
     recommandeAPartirDe: 'Recommended from {prix}',
     saisirPrix: 'Enter your price',
+    trajetDabord: 'Pick your trip first.',
+    trajetDabordAide: 'The recommended price comes from the distance: with no pick-up or destination, there is nothing to suggest.',
     interurbainSansRecommandation:
       'No recommendation for intercity rides: name your price.',
     peagesNonCompris: 'Tolls not included.',

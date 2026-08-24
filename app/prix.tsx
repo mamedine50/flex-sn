@@ -118,13 +118,30 @@ export default function FixerPrix() {
   const prixPourTrajet = useRef<string | null>(null);
   const [envoi, setEnvoi] = useState<EtatEnvoi>({ statut: 'repos' });
 
-  configurerGabarit('prix', {
-    champDepart: GABARIT.champ,
-    champDestination: GABARIT.champ,
-    pasMoins: GABARIT.pas,
-    pasPlus: GABARIT.pas,
-    envoi: GABARIT.envoi,
-  });
+  /** Le prix ne se saisit qu'une fois les deux points connus. */
+  const trajetComplet = Boolean(depart && destination);
+
+  // DEUX VARIANTES, parce que l'écran a deux états réels. Tant que le trajet
+  // est incomplet, les boutons de pas n'existent pas : les attendre ferait
+  // taire l'assertion pour toujours — elle ne se déclenche que lorsque TOUTES
+  // les mesures sont arrivées. Une garde qui ne se déclenche jamais est pire
+  // qu'une garde absente : elle donne l'impression d'être tenue.
+  configurerGabarit(
+    trajetComplet ? 'prix+saisie' : 'prix',
+    trajetComplet
+      ? {
+          champDepart: GABARIT.champ,
+          champDestination: GABARIT.champ,
+          pasMoins: GABARIT.pas,
+          pasPlus: GABARIT.pas,
+          envoi: GABARIT.envoi,
+        }
+      : {
+          champDepart: GABARIT.champ,
+          champDestination: GABARIT.champ,
+          envoi: GABARIT.envoi,
+        },
+  );
 
   // Mémorisé : sans ça l'objet est neuf à chaque rendu et les `useMemo` en aval
   // se recalculent en boucle.
@@ -338,6 +355,24 @@ export default function FixerPrix() {
                   {t('commun.reessayer')}
                 </Text>
               </Pressable>
+            </View>
+          ) : !trajetComplet ? (
+            /* ── ON NE RÉPOND PAS À UNE QUESTION QUI N'A PAS ÉTÉ POSÉE ──
+               Le champ était saisissable avant qu'un trajet existe. On tapait
+               2 000 dans le vide, on choisissait ensuite sa destination, et le
+               chiffre restait — l'écran avait l'air de ne rien calculer.
+               Réconcilier après coup traitait le symptôme ; ne pas laisser
+               répondre trop tôt traite la cause.
+
+               L'état désactivé change de COULEUR, pas seulement d'opacité : un
+               aplat clair à 50 % reste lumineux, et l'on croit le champ actif. */
+            <View className="mt-4 rounded-field bg-card2 px-16 py-16">
+              <Text className="text-[15px] font-bold text-muted">
+                {t('prix.trajetDabord')}
+              </Text>
+              <Text className="mt-4 text-[13px] font-semibold text-muted">
+                {t('prix.trajetDabordAide')}
+              </Text>
             </View>
           ) : (
             <>
