@@ -3,7 +3,7 @@
 begin;
 create extension if not exists pgtap with schema public;
 
-select plan(14);
+select plan(15);
 
 -- Les tests calculent leurs valeurs attendues avec ces utilitaires. Le PRODUIT
 -- ne les appelle que depuis des fonctions SECURITY DEFINER, qui n'ont pas besoin
@@ -177,6 +177,23 @@ select throws_ok(
   format($$ select public.accept_offer(%L) $$, (select id from oc)),
   'P0001', 'offre_expiree',
   'une offre expirée ne s''accepte pas'
+);
+set local role postgres;
+
+-- ════════ UNE COURSE À LA FOIS VAUT AUSSI POUR LE PASSAGER ════════════════
+-- Le conducteur était tenu par un index unique partiel ; le passager n'avait
+-- qu'une garde sur ses demandes OUVERTES. Après acceptation la demande passe à
+-- « verrouillee » : la garde ne mordait plus, et il pouvait en commander une
+-- seconde pendant qu'une voiture roulait déjà vers lui. C'est le SECOND
+-- conducteur qui se déplaçait pour rien.
+select public.t_devenir((select passager from f));
+set local role authenticated;
+
+select throws_ok(
+  $$ select public.create_ride_request('urbain', 14.7091, -17.4478, 'Colobane',
+                                       14.7074, -17.4744, 'Mermoz', 2000) $$,
+  'P0001', 'course_deja_en_cours',
+  'Un passager EN COURSE ne peut pas en commander une seconde'
 );
 set local role postgres;
 

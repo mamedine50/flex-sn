@@ -731,6 +731,7 @@ export const fr = {
     prixHorsBornes: 'Ce prix est hors de la fourchette acceptée.',
     prixNonMultipleDe100: 'Le prix se règle par pas de 100 FCFA.',
     demandeDejaOuverte: 'Vous avez déjà une demande en cours.',
+    courseDejaEnCours: 'Terminez votre course avant d’en commander une autre.',
     documentsNonValides: 'Vos documents conducteur ne sont pas encore validés.',
     vehiculeAbsent: 'Aucun véhicule actif sur votre compte.',
     demandeASoi: 'C’est votre propre demande.',

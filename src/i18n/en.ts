@@ -707,6 +707,7 @@ export const en: Dictionnaire = {
     prixHorsBornes: 'This price is outside the accepted range.',
     prixNonMultipleDe100: 'Price moves in steps of 100 FCFA.',
     demandeDejaOuverte: 'You already have a request in progress.',
+    courseDejaEnCours: 'Finish your ride before ordering another one.',
     documentsNonValides: 'Your driver documents are not validated yet.',
     vehiculeAbsent: 'No active vehicle on your account.',
     demandeASoi: 'This is your own request.',

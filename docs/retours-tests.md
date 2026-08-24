@@ -42,6 +42,8 @@ quand le correctif est **commité**, pas quand il est écrit.
 | 24 | Quatre états d'ERREUR sans aucune sortie | « Impossible de charger » et rien d'autre. Sur un réseau sénégalais l'échec est l'ordinaire : « Réessayer » est l'action la plus fréquente du produit, et elle manquait partout | — |
 | 25 | L'écran des réglages s'appelait « Affichage » | Il contient aussi les personnes bloquées, l'aide et « à propos ». La ligne du profil dit « Réglages » : le même écran portait deux noms, et celui qu'on lisait en arrivant était le plus étroit des deux | — |
 | 26 | Le compte de revue s'affichait « Conducteur Conducteur Test » | `nom_complet` porte le NOM DE FAMILLE — l'écran demande « Nom » et affiche prénom + nom. Ma donnée d'amorce y avait mis le nom entier. Corrigé sur le distant ET dans le bloc de `docs/publication.md`, sans quoi le prochain qui le rejoue le reproduirait | — |
+| 27 | Un passager EN COURSE pouvait commander une seconde voiture | Le verrou « une course à la fois » existait pour le conducteur, pas pour lui. Après acceptation sa demande passe à « verrouillee », donc la garde sur les demandes OUVERTES ne mordait plus. C'est le SECOND conducteur qui se déplaçait pour rien — et un trajet perdu est ce qu'un marché de course produit de plus cher | — |
+| 28 | Un signalement rejoué après coupure réseau en créait deux | Les gestes qui coûtent de l'argent étaient déjà protégés par des contraintes métier ; le signalement, non. Deux lignes pour un seul fait faussent une file de modération | — |
 | 16 | Prévenir le passager que le conducteur est là | Notification `conducteur_arrive` — la seule étape du trajet qui en vaut une, parce que le passager attend DEHORS, téléphone en poche | — |
 
 ## Pas encore traité

@@ -17,6 +17,7 @@ const CORRESPONDANCE: Record<string, CleTraduction> = {
   prix_hors_bornes: 'erreurs.prixHorsBornes',
   prix_non_multiple_de_100: 'erreurs.prixNonMultipleDe100',
   demande_deja_ouverte: 'erreurs.demandeDejaOuverte',
+  course_deja_en_cours: 'erreurs.courseDejaEnCours',
   demande_expiree: 'erreurs.demandeExpiree',
   demande_verrouillee: 'erreurs.dejaVerrouillee',
   conducteur_indisponible: 'erreurs.conducteurIndisponible',

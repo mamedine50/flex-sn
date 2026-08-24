@@ -6,7 +6,7 @@
 begin;
 create extension if not exists pgtap with schema public;
 
-select plan(10);
+select plan(12);
 
 create function public.t_utilisateur(p_prenom text) returns uuid
 language plpgsql as $$
@@ -151,6 +151,28 @@ select is_empty(
      where table_schema = 'public' and table_name = 'signalements_recus'
        and column_name = 'auteur' $$,
   'la vue ne projette PAS l''auteur : traiter un signalement ne demande pas de savoir qui a parlé');
+
+-- ════════ UN SIGNALEMENT REJOUÉ N'EN CRÉE PAS DEUX ════════════════════
+-- Le cas visé : la 3G coupe entre le commit et la réponse, l'écran croit que
+-- l'envoi a échoué, la personne réappuie. Ce second appui porte le MÊME motif —
+-- on ne change pas d'avis en deux secondes.
+reset role;
+select public.t_devenir((select passager from f));
+set local role authenticated;
+
+select throws_ok(
+  $$ select public.signaler((select id from c), 'conduite_dangereuse') $$,
+  '23505',
+  'duplicate key value violates unique constraint "signalements_sans_doublon"',
+  'Un signalement identique rejoué est refusé par la base'
+);
+
+-- Mais deux reproches DIFFÉRENTS sur la même course restent possibles : le
+-- motif fait partie de la clé, précisément pour ne pas interdire ça.
+select lives_ok(
+  $$ select public.signaler((select id from c), 'fraude') $$,
+  'Un motif DIFFÉRENT sur la même course passe encore'
+);
 
 select * from finish();
 rollback;
