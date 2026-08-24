@@ -44,6 +44,7 @@ quand le correctif est **commité**, pas quand il est écrit.
 | 26 | Le compte de revue s'affichait « Conducteur Conducteur Test » | `nom_complet` porte le NOM DE FAMILLE — l'écran demande « Nom » et affiche prénom + nom. Ma donnée d'amorce y avait mis le nom entier. Corrigé sur le distant ET dans le bloc de `docs/publication.md`, sans quoi le prochain qui le rejoue le reproduirait | — |
 | 27 | Un passager EN COURSE pouvait commander une seconde voiture | Le verrou « une course à la fois » existait pour le conducteur, pas pour lui. Après acceptation sa demande passe à « verrouillee », donc la garde sur les demandes OUVERTES ne mordait plus. C'est le SECOND conducteur qui se déplaçait pour rien — et un trajet perdu est ce qu'un marché de course produit de plus cher | — |
 | 28 | Un signalement rejoué après coupure réseau en créait deux | Les gestes qui coûtent de l'argent étaient déjà protégés par des contraintes métier ; le signalement, non. Deux lignes pour un seul fait faussent une file de modération | — |
+| 29 | Un prix tapé avant la destination ne bougeait plus | La règle « on n'écrase jamais une saisie » traitait un prix choisi AVANT qu'un trajet existe comme une décision. Il n'y avait rien sur quoi se baser : ni distance, ni recommandation. L'écran avait l'air de ne rien calculer | — |
 | 16 | Prévenir le passager que le conducteur est là | Notification `conducteur_arrive` — la seule étape du trajet qui en vaut une, parce que le passager attend DEHORS, téléphone en poche | — |
 
 ## Pas encore traité

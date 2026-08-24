@@ -1,7 +1,7 @@
 import * as Haptics from 'expo-haptics';
 import { useNetworkState } from 'expo-network';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -10,6 +10,7 @@ import PanneauDev, { type EtatForce } from '../src/components/PanneauDev';
 import { useT } from '../src/i18n';
 import { useBornesPrix } from '../src/lib/bornesPrix';
 import { cleErreur } from '../src/lib/erreursServeur';
+import { ancrePrix } from '../src/lib/ancragePrix';
 import { arrondirAuPas, formatXof, PAS_XOF, separerMilliers } from '../src/lib/format';
 import { exigerSession } from '../src/lib/garde';
 import { configurerGabarit, noterMesure } from '../src/lib/gabarit';
@@ -93,6 +94,28 @@ export default function FixerPrix() {
   const [suggestion, setSuggestion] = useState<{ cle: string; valeur: number | null } | null>(
     null,
   );
+
+  /**
+   * POUR QUEL TRAJET LE PRIX AFFICHÉ A-T-IL ÉTÉ CHOISI ?
+   *
+   * « On n'écrase jamais une saisie de l'utilisateur » était trop large. Elle
+   * traitait un prix tapé AVANT qu'un trajet existe comme un choix délibéré —
+   * or il n'y avait rien sur quoi se baser : ni distance, ni recommandation.
+   * On choisissait 2 000 dans le vide, on désignait ensuite Mermoz, et le
+   * chiffre ne bougeait pas. L'écran avait l'air de ne rien calculer.
+   *
+   * Un prix est une RÉPONSE À UN TRAJET PRÉCIS. Tant que la réponse n'a pas été
+   * donnée pour CE trajet-là, la recommandation reprend la main ; dès qu'elle
+   * l'a été, plus rien ne l'écrase.
+   *
+   * `null` = le prix courant n'a été choisi pour aucun trajet connu.
+   *
+   * Une RÉFÉRENCE et non un état : cette valeur ne s'affiche jamais. En état,
+   * elle devrait entrer dans les dépendances de l'effet — qui relancerait alors
+   * `prix_suggere()` à chaque frappe au clavier, sur une 3G où chaque requête
+   * se paie.
+   */
+  const prixPourTrajet = useRef<string | null>(null);
   const [envoi, setEnvoi] = useState<EtatEnvoi>({ statut: 'repos' });
 
   configurerGabarit('prix', {
@@ -137,8 +160,15 @@ export default function FixerPrix() {
       if (vivant.annule) return;
       const valeur = typeof data === 'number' ? data : null;
       setSuggestion({ cle: clePaire, valeur });
-      // On n'écrase jamais une saisie de l'utilisateur.
-      setPrix((actuel) => (actuel === null && valeur !== null ? valeur : actuel));
+
+      // La recommandation prend la main tant que le prix affiché n'a pas été
+      // choisi POUR CE TRAJET. Changer de destination change la recommandation :
+      // le prix doit suivre, sinon l'écran ment sur ce qu'il calcule.
+      if (valeur !== null) {
+        const repondu = prixPourTrajet.current === clePaire;
+        setPrix((actuel) => ancrePrix({ prix: actuel, repondu, recommande: valeur }));
+        prixPourTrajet.current = clePaire;
+      }
     })();
 
     return () => {
@@ -162,6 +192,9 @@ export default function FixerPrix() {
     prix !== null &&
     (prix < bornes.bornes.min || prix > bornes.bornes.max);
 
+  // Toucher au prix, c'est répondre POUR LE TRAJET COURANT. À partir de là, la
+  // recommandation ne reprend plus la main — jusqu'au prochain changement de
+  // trajet, qui rendra cette réponse caduque à son tour.
   const deplacer = useCallback(
     (sens: 1 | -1) => {
       setPrix((actuel) => {
@@ -169,15 +202,20 @@ export default function FixerPrix() {
         const suivant = arrondirAuPas(base) + sens * PAS_XOF;
         return suivant < PAS_XOF ? PAS_XOF : suivant;
       });
+      prixPourTrajet.current = clePaire;
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     },
-    [],
+    [clePaire],
   );
 
-  const saisir = useCallback((texte: string) => {
-    const chiffres = texte.replace(/[^0-9]/g, '');
-    setPrix(chiffres === '' ? null : Number.parseInt(chiffres, 10));
-  }, []);
+  const saisir = useCallback(
+    (texte: string) => {
+      const chiffres = texte.replace(/[^0-9]/g, '');
+      setPrix(chiffres === '' ? null : Number.parseInt(chiffres, 10));
+      prixPourTrajet.current = clePaire;
+    },
+    [clePaire],
+  );
 
   const envoyer = useCallback(async () => {
     if (!depart || !destination || prix === null) return;
